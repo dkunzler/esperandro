@@ -8,6 +8,40 @@
     <artifactId>esperandro-parent</artifactId>
     <packaging>pom</packaging>
     <version>0.1-SNAPSHOT</version>
+
+    <name>esperandro</name>
+    <description>An annotation processor designed to ease the access and use of Android SharedPreferences</description>
+    <url>http://devland.de/#esperandro</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:git@github.com:dkunzler/esperandro.git</connection>
+        <developerConnection>scm:git:git@github.com:dkunzler/esperandro.git</developerConnection>
+        <url>git@github.com:dkunzler/esperandro.git</url>
+    </scm>
+    <developers>
+        <developer>
+            <id>deekay</id>
+            <name>David Kunzler</name>
+            <email>dk@devland.de</email>
+            <roles>
+                <role>Owner</role>
+            </roles>
+        </developer>
+    </developers>
+
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
     <modules>
         <module>api</module>
         <module>processor</module>
