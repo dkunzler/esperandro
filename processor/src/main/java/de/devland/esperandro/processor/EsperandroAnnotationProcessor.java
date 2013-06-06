@@ -70,8 +70,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                                 } else if (isGetter(method)) {
                                     createGetter(method, writer);
                                 } else {
-                                    processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
-                                            "No getter or setter for preference detected.", method);
+                                    emitWarning("No getter or setter for preference detected.", method);
                                 }
                             }
                         }
@@ -84,6 +83,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
 
         return false;
+    }
+
+    private void emitWarning(String message, Element element) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                message, element);
     }
 
     private void finish(JavaWriter writer) throws IOException {
@@ -119,33 +123,44 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             case INT:
                 methodSuffix = "Int";
                 if (hasDefault && defaultAnnotation.ofInt() == Default.intDefault) {
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
-                            "No overwritten default int value detected, please check the annotation.", method);
+                    emitMissingDefaultWarning("int", method);
                 }
                 defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofInt()) : String
                         .valueOf(Default.intDefault);
                 break;
             case LONG:
                 methodSuffix = "Long";
+                if (hasDefault && defaultAnnotation.ofLong() == Default.longDefault) {
+                    emitMissingDefaultWarning("long", method);
+                }
                 defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofLong()) : String
                         .valueOf(Default.longDefault);
                 break;
             case FLOAT:
                 methodSuffix = "Float";
+                if (hasDefault && defaultAnnotation.ofFloat() == Default.floatDefault) {
+                    emitMissingDefaultWarning("float", method);
+                }
                 defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofFloat()) : String
                         .valueOf(Default.floatDefault);
                 break;
             case BOOLEAN:
                 methodSuffix = "Boolean";
+                if (hasDefault && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
+                    emitMissingDefaultWarning("boolean", method);
+                }
                 defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofBoolean()) : String
                         .valueOf(Default.booleanDefault);
                 break;
             case STRING:
+                if (hasDefault && defaultAnnotation.ofString().equals(Default.stringDefault)) {
+                    emitMissingDefaultWarning("String", method);
+                }
                 methodSuffix = "String";
-
                 defaultValue = (hasDefault ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default.stringDefault + "\""));
                 break;
             case STRINGSET:
+                emitWarning("No default for Set<String> preferences allowed.", method);
                 methodSuffix = "StringSet";
                 defaultValue = "null";
                 break;
@@ -155,6 +170,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitStatement("return %s", statement);
         writer.endMethod();
         writer.emitEmptyLine();
+    }
+
+    private void emitMissingDefaultWarning(String type, ExecutableElement method) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                "No overwritten default " + type + " value detected, please check the annotation.", method);
     }
 
     private void createPutter(ExecutableElement method, JavaWriter writer)
