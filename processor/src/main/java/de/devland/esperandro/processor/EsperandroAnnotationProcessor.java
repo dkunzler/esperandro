@@ -5,13 +5,12 @@ import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.Default;
 import de.devland.esperandro.annotations.SharedPreferences;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
@@ -37,6 +36,7 @@ import java.util.Set;
  */
 // TODO errorHandling
 // TODO implement other actions
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("de.devland.esperandro.annotations.SharedPreferences")
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
@@ -69,6 +69,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                                     createPutter(method, writer);
                                 } else if (isGetter(method)) {
                                     createGetter(method, writer);
+                                } else {
+                                    processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                                            "No getter or setter for preference detected.", method);
                                 }
                             }
                         }
@@ -115,28 +118,32 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         switch (preferenceType) {
             case INT:
                 methodSuffix = "Int";
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.intDefault()) : String
+                if (hasDefault && defaultAnnotation.ofInt() == Default.intDefault) {
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                            "No overwritten default int value detected, please check the annotation.", method);
+                }
+                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofInt()) : String
                         .valueOf(Default.intDefault);
                 break;
             case LONG:
                 methodSuffix = "Long";
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.longDefault()) : String
+                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofLong()) : String
                         .valueOf(Default.longDefault);
                 break;
             case FLOAT:
                 methodSuffix = "Float";
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.floatDefault()) : String
+                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofFloat()) : String
                         .valueOf(Default.floatDefault);
                 break;
             case BOOLEAN:
                 methodSuffix = "Boolean";
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.booleanDefault()) : String
+                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofBoolean()) : String
                         .valueOf(Default.booleanDefault);
                 break;
             case STRING:
                 methodSuffix = "String";
 
-                defaultValue = (hasDefault ? ("\"" + defaultAnnotation.stringDefault() + "\"") : ("\"" + Default.stringDefault + "\""));
+                defaultValue = (hasDefault ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default.stringDefault + "\""));
                 break;
             case STRINGSET:
                 methodSuffix = "StringSet";

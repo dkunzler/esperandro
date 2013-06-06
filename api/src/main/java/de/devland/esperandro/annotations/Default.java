@@ -26,13 +26,13 @@ public @interface Default {
     public static final float floatDefault = -1.0f;
     public static final String stringDefault = "";
 
-    boolean booleanDefault() default booleanDefault;
+    boolean ofBoolean() default booleanDefault;
 
-    int intDefault() default intDefault;
+    int ofInt() default intDefault;
 
-    long longDefault() default longDefault;
+    long ofLong() default longDefault;
 
-    float floatDefault() default floatDefault;
+    float ofFloat() default floatDefault;
 
-    String stringDefault() default stringDefault;
+    String ofString() default stringDefault;
 }

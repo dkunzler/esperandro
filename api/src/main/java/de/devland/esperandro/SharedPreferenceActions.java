@@ -20,6 +20,8 @@ import android.content.SharedPreferences;
 public interface SharedPreferenceActions {
 	SharedPreferences get();
 
+    boolean contains(String key);
+
 	void registerOnChangeListener(
             SharedPreferences.OnSharedPreferenceChangeListener listener);
 
