@@ -1,6 +1,7 @@
 package de.devland.esperandro.processor;
 
 import com.squareup.java.JavaWriter;
+import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.Default;
 import de.devland.esperandro.annotations.SharedPreferences;
@@ -41,27 +42,25 @@ import java.util.Set;
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     public static final String SUFFIX = "$$Impl";
-    public static final String[] neededImports = new String[]{"android.content.Context", "android.content.SharedPreferences", "android.preference.PreferenceManager", "java.util.Set"};
-    public static final String sharedPreferencesAnnotationName = "de.devland.esperandro.annotations" +
+    public static final String[] neededImports = new String[]{"android.content.Context",
+            "android.content.SharedPreferences", "android.preference.PreferenceManager", "java.util.Set"};
+    public static final String sharedPreferencesAnnotationName = "de.devland.esperandro.annotations" + "" +
             ".SharedPreferences";
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations,
-                           RoundEnvironment roundEnv) {
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         //assert (annotations.size() == 1);
 
         for (TypeElement typeElement : annotations) {
             if (typeElement.getQualifiedName().toString().equals(sharedPreferencesAnnotationName)) {
-                Set<? extends Element> interfaces = roundEnv
-                        .getElementsAnnotatedWith(SharedPreferences.class);
+                Set<? extends Element> interfaces = roundEnv.getElementsAnnotatedWith(SharedPreferences.class);
 
                 for (Element interfaze : interfaces) {
                     assert (interfaze.getKind() == ElementKind.INTERFACE);
 
                     try {
                         JavaWriter writer = initImplementation(interfaze);
-                        List<? extends Element> potentialMethods = interfaze
-                                .getEnclosedElements();
+                        List<? extends Element> potentialMethods = interfaze.getEnclosedElements();
                         for (Element element : potentialMethods) {
                             if (element.getKind() == ElementKind.METHOD) {
                                 ExecutableElement method = (ExecutableElement) element;
@@ -74,6 +73,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                                 }
                             }
                         }
+                        createGenericActions(writer);
                         finish(writer);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -85,9 +85,36 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         return false;
     }
 
+    private void createGenericActions(JavaWriter writer) throws IOException {
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("android.content.SharedPreferences", "get", Modifier.PUBLIC);
+        writer.emitStatement("return preferences");
+        writer.endMethod();
+        writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("boolean", "contains", Modifier.PUBLIC, String.class.getName(), "key");
+        writer.emitStatement("return preferences.contains(key)");
+        writer.endMethod();
+        writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("void", "registerOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences" +
+                ".OnSharedPreferenceChangeListener", "listener");
+        writer.emitStatement("preferences.registerOnSharedPreferenceChangeListener");
+        writer.endMethod();
+        writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("void", "unregisterOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences" +
+                ".OnSharedPreferenceChangeListener", "listener");
+        writer.emitStatement("preferences.unregisterOnSharedPreferenceChangeListener");
+        writer.endMethod();
+        writer.emitEmptyLine();
+    }
+
     private void emitWarning(String message, Element element) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
-                message, element);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
     }
 
     private void finish(JavaWriter writer) throws IOException {
@@ -100,15 +127,14 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         List<? extends VariableElement> parameters = method.getParameters();
         TypeMirror returnType = method.getReturnType();
 
-        if ((parameters == null || parameters.size() == 0)
-                && PreferenceType.toPreferenceType(returnType) != PreferenceType.NONE) {
+        if ((parameters == null || parameters.size() == 0) && PreferenceType.toPreferenceType(returnType) !=
+                PreferenceType.NONE) {
             isGetter = true;
         }
         return isGetter;
     }
 
-    private void createGetter(ExecutableElement method, JavaWriter writer)
-            throws IOException {
+    private void createGetter(ExecutableElement method, JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
         PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getReturnType());
         writer.beginMethod(preferenceType.getTypeName(), method.getSimpleName().toString(), Modifier.PUBLIC);
@@ -125,39 +151,40 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 if (hasDefault && defaultAnnotation.ofInt() == Default.intDefault) {
                     emitMissingDefaultWarning("int", method);
                 }
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofInt()) : String
-                        .valueOf(Default.intDefault);
+                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofInt()) : String.valueOf(Default
+                        .intDefault);
                 break;
             case LONG:
                 methodSuffix = "Long";
                 if (hasDefault && defaultAnnotation.ofLong() == Default.longDefault) {
                     emitMissingDefaultWarning("long", method);
                 }
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofLong()) : String
-                        .valueOf(Default.longDefault);
+                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofLong()) : String.valueOf(Default
+                        .longDefault);
                 break;
             case FLOAT:
                 methodSuffix = "Float";
                 if (hasDefault && defaultAnnotation.ofFloat() == Default.floatDefault) {
                     emitMissingDefaultWarning("float", method);
                 }
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofFloat()) : String
-                        .valueOf(Default.floatDefault);
+                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofFloat()) : String.valueOf(Default
+                        .floatDefault);
                 break;
             case BOOLEAN:
                 methodSuffix = "Boolean";
                 if (hasDefault && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
                     emitMissingDefaultWarning("boolean", method);
                 }
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofBoolean()) : String
-                        .valueOf(Default.booleanDefault);
+                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofBoolean()) : String.valueOf(Default
+                        .booleanDefault);
                 break;
             case STRING:
                 if (hasDefault && defaultAnnotation.ofString().equals(Default.stringDefault)) {
                     emitMissingDefaultWarning("String", method);
                 }
                 methodSuffix = "String";
-                defaultValue = (hasDefault ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default.stringDefault + "\""));
+                defaultValue = (hasDefault ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default
+                        .stringDefault + "\""));
                 break;
             case STRINGSET:
                 emitWarning("No default for Set<String> preferences allowed.", method);
@@ -173,12 +200,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void emitMissingDefaultWarning(String type, ExecutableElement method) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
-                "No overwritten default " + type + " value detected, please check the annotation.", method);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "No overwritten default " + type + " value " +
+                "detected, please check the annotation.", method);
     }
 
-    private void createPutter(ExecutableElement method, JavaWriter writer)
-            throws IOException {
+    private void createPutter(ExecutableElement method, JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
         TypeMirror parameterType = method.getParameters().get(0).asType();
         PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
@@ -219,9 +245,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         List<? extends VariableElement> parameters = method.getParameters();
         TypeMirror returnType = method.getReturnType();
         TypeKind returnTypeKind = returnType.getKind();
-        if (parameters != null && parameters.size() == 1
-                && returnTypeKind.equals(TypeKind.VOID)
-                && PreferenceType.toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
+        if (parameters != null && parameters.size() == 1 && returnTypeKind.equals(TypeKind.VOID) && PreferenceType
+                .toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
             isPutter = true;
         }
         return isPutter;
@@ -237,9 +262,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         try {
             QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
-            JavaFileObject jfo = filer
-                    .createSourceFile(qualifiedNameable
-                            .getQualifiedName() + SUFFIX);
+            JavaFileObject jfo = filer.createSourceFile(qualifiedNameable.getQualifiedName() + SUFFIX);
             Writer writer = jfo.openWriter();
             result = new JavaWriter(writer);
             String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
@@ -254,13 +277,15 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             result.emitPackage(packageName);
             result.emitImports(neededImports);
             result.emitEmptyLine();
-            result.beginType(typeName + SUFFIX, "class", Modifier.PUBLIC, null, qualifiedNameable.getQualifiedName().toString());
+            result.beginType(typeName + SUFFIX, "class", Modifier.PUBLIC, null, qualifiedNameable.getQualifiedName()
+                    .toString(), SharedPreferenceActions.class.getName());
             result.emitEmptyLine();
             result.emitField("android.content.SharedPreferences", "preferences", Modifier.PRIVATE);
 
 
             result.emitEmptyLine();
-            result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + SUFFIX, Modifier.PUBLIC, "Context", "context");
+            result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + SUFFIX, Modifier.PUBLIC,
+                    "Context", "context");
             if (preferencesName != null && !preferencesName.equals("")) {
                 result.emitStatement("this.preferences = context.getSharedPreferences(\"%s\", %s)", preferencesName,
                         mode.getSharedPreferenceModeStatement());
