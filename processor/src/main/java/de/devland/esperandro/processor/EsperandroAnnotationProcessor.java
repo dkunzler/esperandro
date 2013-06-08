@@ -36,7 +36,6 @@ import java.util.Set;
  *
  */
 // TODO errorHandling
-// TODO implement other actions
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("de.devland.esperandro.annotations.SharedPreferences")
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
@@ -85,42 +84,55 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         return false;
     }
 
-    private void createGenericActions(JavaWriter writer) throws IOException {
-        writer.emitAnnotation(Override.class);
-        writer.beginMethod("android.content.SharedPreferences", "get", Modifier.PUBLIC);
-        writer.emitStatement("return preferences");
-        writer.endMethod();
-        writer.emitEmptyLine();
+    private JavaWriter initImplementation(Element interfaze) {
+        JavaWriter result;
+        SharedPreferences prefAnnotation = interfaze.getAnnotation(SharedPreferences.class);
+        String preferencesName = prefAnnotation.name();
+        SharedPreferenceMode mode = prefAnnotation.mode();
 
-        writer.emitAnnotation(Override.class);
-        writer.beginMethod("boolean", "contains", Modifier.PUBLIC, String.class.getName(), "key");
-        writer.emitStatement("return preferences.contains(key)");
-        writer.endMethod();
-        writer.emitEmptyLine();
+        Filer filer = processingEnv.getFiler();
 
-        writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "registerOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences" +
-                ".OnSharedPreferenceChangeListener", "listener");
-        writer.emitStatement("preferences.registerOnSharedPreferenceChangeListener");
-        writer.endMethod();
-        writer.emitEmptyLine();
+        try {
+            QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
+            JavaFileObject jfo = filer.createSourceFile(qualifiedNameable.getQualifiedName() + SUFFIX);
+            Writer writer = jfo.openWriter();
+            result = new JavaWriter(writer);
+            String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
+            String packageName = "";
+            String typeName = split[split.length - 1];
+            for (int i = 0; i < split.length - 1; i++) {
+                packageName += split[i];
+                if (i < split.length - 2) {
+                    packageName += ".";
+                }
+            }
+            result.emitPackage(packageName);
+            result.emitImports(neededImports);
+            result.emitEmptyLine();
+            result.beginType(typeName + SUFFIX, "class", Modifier.PUBLIC, null, qualifiedNameable.getQualifiedName()
+                    .toString(), SharedPreferenceActions.class.getName());
+            result.emitEmptyLine();
+            result.emitField("android.content.SharedPreferences", "preferences", Modifier.PRIVATE);
 
-        writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "unregisterOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences" +
-                ".OnSharedPreferenceChangeListener", "listener");
-        writer.emitStatement("preferences.unregisterOnSharedPreferenceChangeListener");
-        writer.endMethod();
-        writer.emitEmptyLine();
+
+            result.emitEmptyLine();
+            result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + SUFFIX, Modifier.PUBLIC,
+                    "Context", "context");
+            if (preferencesName != null && !preferencesName.equals("")) {
+                result.emitStatement("this.preferences = context.getSharedPreferences(\"%s\", %s)", preferencesName,
+                        mode.getSharedPreferenceModeStatement());
+            } else {
+                result.emitStatement("this.preferences = PreferenceManager.getDefaultSharedPreferences(context)");
+            }
+            result.endMethod();
+            result.emitEmptyLine();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
-    private void emitWarning(String message, Element element) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
-    }
-
-    private void finish(JavaWriter writer) throws IOException {
-        writer.endType();
-        writer.close();
-    }
 
     private boolean isGetter(ExecutableElement method) {
         boolean isGetter = false;
@@ -199,9 +211,17 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
     }
 
-    private void emitMissingDefaultWarning(String type, ExecutableElement method) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "No overwritten default " + type + " value " +
-                "detected, please check the annotation.", method);
+
+    private boolean isPutter(ExecutableElement method) {
+        boolean isPutter = false;
+        List<? extends VariableElement> parameters = method.getParameters();
+        TypeMirror returnType = method.getReturnType();
+        TypeKind returnTypeKind = returnType.getKind();
+        if (parameters != null && parameters.size() == 1 && returnTypeKind.equals(TypeKind.VOID) && PreferenceType
+                .toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
+            isPutter = true;
+        }
+        return isPutter;
     }
 
     private void createPutter(ExecutableElement method, JavaWriter writer) throws IOException {
@@ -240,65 +260,47 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
     }
 
-    private boolean isPutter(ExecutableElement method) {
-        boolean isPutter = false;
-        List<? extends VariableElement> parameters = method.getParameters();
-        TypeMirror returnType = method.getReturnType();
-        TypeKind returnTypeKind = returnType.getKind();
-        if (parameters != null && parameters.size() == 1 && returnTypeKind.equals(TypeKind.VOID) && PreferenceType
-                .toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
-            isPutter = true;
-        }
-        return isPutter;
+
+    private void createGenericActions(JavaWriter writer) throws IOException {
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("android.content.SharedPreferences", "get", Modifier.PUBLIC);
+        writer.emitStatement("return preferences");
+        writer.endMethod();
+        writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("boolean", "contains", Modifier.PUBLIC, String.class.getName(), "key");
+        writer.emitStatement("return preferences.contains(key)");
+        writer.endMethod();
+        writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("void", "registerOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences" +
+                ".OnSharedPreferenceChangeListener", "listener");
+        writer.emitStatement("preferences.registerOnSharedPreferenceChangeListener");
+        writer.endMethod();
+        writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("void", "unregisterOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences"
+                + ".OnSharedPreferenceChangeListener", "listener");
+        writer.emitStatement("preferences.unregisterOnSharedPreferenceChangeListener");
+        writer.endMethod();
+        writer.emitEmptyLine();
     }
 
-    private JavaWriter initImplementation(Element interfaze) {
-        JavaWriter result;
-        SharedPreferences prefAnnotation = interfaze.getAnnotation(SharedPreferences.class);
-        String preferencesName = prefAnnotation.name();
-        SharedPreferenceMode mode = prefAnnotation.mode();
+    private void emitWarning(String message, Element element) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
+    }
 
-        Filer filer = processingEnv.getFiler();
+    private void emitMissingDefaultWarning(String type, ExecutableElement method) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "No overwritten default " + type + " value " +
+                "detected, please check the annotation.", method);
+    }
 
-        try {
-            QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
-            JavaFileObject jfo = filer.createSourceFile(qualifiedNameable.getQualifiedName() + SUFFIX);
-            Writer writer = jfo.openWriter();
-            result = new JavaWriter(writer);
-            String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
-            String packageName = "";
-            String typeName = split[split.length - 1];
-            for (int i = 0; i < split.length - 1; i++) {
-                packageName += split[i];
-                if (i < split.length - 2) {
-                    packageName += ".";
-                }
-            }
-            result.emitPackage(packageName);
-            result.emitImports(neededImports);
-            result.emitEmptyLine();
-            result.beginType(typeName + SUFFIX, "class", Modifier.PUBLIC, null, qualifiedNameable.getQualifiedName()
-                    .toString(), SharedPreferenceActions.class.getName());
-            result.emitEmptyLine();
-            result.emitField("android.content.SharedPreferences", "preferences", Modifier.PRIVATE);
-
-
-            result.emitEmptyLine();
-            result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + SUFFIX, Modifier.PUBLIC,
-                    "Context", "context");
-            if (preferencesName != null && !preferencesName.equals("")) {
-                result.emitStatement("this.preferences = context.getSharedPreferences(\"%s\", %s)", preferencesName,
-                        mode.getSharedPreferenceModeStatement());
-            } else {
-                result.emitStatement("this.preferences = PreferenceManager.getDefaultSharedPreferences(context)");
-            }
-            result.endMethod();
-            result.emitEmptyLine();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return result;
+    private void finish(JavaWriter writer) throws IOException {
+        writer.endType();
+        writer.close();
     }
 
     public enum PreferenceType {
