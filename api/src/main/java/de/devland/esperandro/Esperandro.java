@@ -20,10 +20,21 @@ import java.lang.reflect.Constructor;
  *   limitations under the License.
  *
  */
+
+/**
+ * Manager to give access to the generated Esperandro-SharedPreference implementations.
+ */
 public class Esperandro {
 
     private static final String SUFFIX = "$$Impl";
 
+    /**
+     * Returns an instance of the pre-generated class of the given SharedPreferences-annotated interface.
+     *
+     * @param preferenceClass The interface whose implementation should be returned.
+     * @param context A context to be able to construct the android SharedPreference.
+     * @return An instance of the given interface.
+     */
     @SuppressWarnings("unchecked")
     public static <T> T getPreferences(Class<T> preferenceClass, Context context) {
         T implementation = null;

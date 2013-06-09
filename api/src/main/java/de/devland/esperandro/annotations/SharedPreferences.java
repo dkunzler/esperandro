@@ -23,6 +23,12 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  *   limitations under the License.
  *
  */
+
+/**
+ * Declares an interface as SharedPreference. Esperandro will generate a class for each interface that is annotated with
+ * this annotation. As parameter a name and a mode can be given. These mimic the behaviour of android when accessing a
+ * SharedPreference with name and/or mode.
+ */
 @Target(TYPE)
 @Retention(SOURCE)
 public @interface SharedPreferences {

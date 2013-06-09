@@ -17,17 +17,44 @@ import android.content.SharedPreferences;
  *   limitations under the License.
  *
  */
+
+/**
+ * This interface defines some actions to make the use of Esperandro-generated classes easier without using the
+ * underlying SharedPreference-instance directly.
+ */
 public interface SharedPreferenceActions {
+    /**
+     * Return the underlying SharedPreference instance.
+     * @return
+     */
 	SharedPreferences get();
 
+    /**
+     * Checks if a value for the given key exists.
+     * @param key
+     * @return
+     */
     boolean contains(String key);
 
+    /**
+     * Registers a callback to be invoked when a change happens to a preference.
+     * @param listener The callback that will run.
+     */
 	void registerOnChangeListener(
             SharedPreferences.OnSharedPreferenceChangeListener listener);
 
+    /**
+     * Unregisters a previous callback.
+     * @param listener The callback that should be unregistered.
+     */
 	void unregisterOnChangeListener(
             SharedPreferences.OnSharedPreferenceChangeListener listener);
 
+    /**
+     * Clears the complete sharedPreferences of the previously given name. (Be aware that ALL preferences under this
+     * name are cleared not only the ones defined in your interface)
+     */
+    // TODO intelligent clear: only delete those values that are defined in the interface
 	void clear();
 
 }
