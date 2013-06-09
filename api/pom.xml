@@ -3,7 +3,7 @@
     <parent>
         <artifactId>esperandro-parent</artifactId>
         <groupId>de.devland.esperandro</groupId>
-        <version>0.9</version>
+        <version>0.10-SNAPSHOT</version>
     </parent>
     <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
