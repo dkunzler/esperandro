@@ -277,14 +277,20 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitAnnotation(Override.class);
         writer.beginMethod("void", "registerOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences" +
                 ".OnSharedPreferenceChangeListener", "listener");
-        writer.emitStatement("preferences.registerOnSharedPreferenceChangeListener");
+        writer.emitStatement("preferences.registerOnSharedPreferenceChangeListener(listener)");
         writer.endMethod();
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
         writer.beginMethod("void", "unregisterOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences"
                 + ".OnSharedPreferenceChangeListener", "listener");
-        writer.emitStatement("preferences.unregisterOnSharedPreferenceChangeListener");
+        writer.emitStatement("preferences.unregisterOnSharedPreferenceChangeListener(listener)");
+        writer.endMethod();
+        writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("void", "clear", Modifier.PUBLIC);
+        writer.emitStatement("preferences.edit().clear().commit()");
         writer.endMethod();
         writer.emitEmptyLine();
     }
