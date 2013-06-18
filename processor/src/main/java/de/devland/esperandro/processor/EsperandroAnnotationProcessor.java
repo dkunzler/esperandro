@@ -354,6 +354,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     break;
                 case LONG:
                     type = LONG;
+					break;
                 case FLOAT:
                     type = FLOAT;
                     break;
