@@ -152,7 +152,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.beginMethod(preferenceType.getTypeName(), method.getSimpleName().toString(), Modifier.PUBLIC);
 
         Default defaultAnnotation = method.getAnnotation(Default.class);
-        boolean hasDefault = defaultAnnotation != null;
+        boolean hasDefaultAnnotation = defaultAnnotation != null;
+        boolean allDefaults = false;
+        if (hasDefaultAnnotation) {
+            allDefaults = hasAllDefaults(defaultAnnotation);
+        }
         String statementPattern = "preferences.get%s(\"%s\", %s)";
         String valueName = method.getSimpleName().toString();
         String methodSuffix = "";
@@ -160,42 +164,43 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         switch (preferenceType) {
             case INT:
                 methodSuffix = "Int";
-                if (hasDefault && defaultAnnotation.ofInt() == Default.intDefault) {
+                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofInt() == Default.intDefault) {
                     emitMissingDefaultWarning("int", method);
                 }
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofInt()) : String.valueOf(Default
+                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofInt()) : String.valueOf(Default
                         .intDefault);
                 break;
             case LONG:
                 methodSuffix = "Long";
-                if (hasDefault && defaultAnnotation.ofLong() == Default.longDefault) {
+                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofLong() == Default.longDefault) {
                     emitMissingDefaultWarning("long", method);
                 }
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofLong()) : String.valueOf(Default
+                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofLong()) : String.valueOf(Default
                         .longDefault);
                 break;
             case FLOAT:
                 methodSuffix = "Float";
-                if (hasDefault && defaultAnnotation.ofFloat() == Default.floatDefault) {
+                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofFloat() == Default.floatDefault) {
                     emitMissingDefaultWarning("float", method);
                 }
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofFloat()) : String.valueOf(Default
+                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofFloat()) : String.valueOf(Default
                         .floatDefault);
                 break;
             case BOOLEAN:
                 methodSuffix = "Boolean";
-                if (hasDefault && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
+                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
                     emitMissingDefaultWarning("boolean", method);
                 }
-                defaultValue = hasDefault ? String.valueOf(defaultAnnotation.ofBoolean()) : String.valueOf(Default
+                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofBoolean()) : String.valueOf(Default
                         .booleanDefault);
                 break;
             case STRING:
-                if (hasDefault && defaultAnnotation.ofString().equals(Default.stringDefault)) {
+                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofString().equals(Default.stringDefault)
+                        ) {
                     emitMissingDefaultWarning("String", method);
                 }
                 methodSuffix = "String";
-                defaultValue = (hasDefault ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default
+                defaultValue = (hasDefaultAnnotation ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default
                         .stringDefault + "\""));
                 break;
             case STRINGSET:
@@ -209,6 +214,18 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitStatement("return %s", statement);
         writer.endMethod();
         writer.emitEmptyLine();
+    }
+
+    private boolean hasAllDefaults(Default defaultAnnotation) {
+        boolean hasAllDefaults = true;
+
+        hasAllDefaults &= defaultAnnotation.ofBoolean() == Default.booleanDefault;
+        hasAllDefaults &= defaultAnnotation.ofInt() == Default.intDefault;
+        hasAllDefaults &= defaultAnnotation.ofFloat() == Default.floatDefault;
+        hasAllDefaults &= defaultAnnotation.ofLong() == Default.longDefault;
+        hasAllDefaults &= defaultAnnotation.ofString().equals(Default.stringDefault);
+
+        return hasAllDefaults;
     }
 
 
