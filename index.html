@@ -38,12 +38,12 @@
 
          <h2>What Is It?</h2>
          <p>
-         esperandro helps Android developers using the <code>SharedPreferences</code> of the Android system. Normally there is a lot of boilerplate code when using them and you have
-         to know everywhere where you are using a specific preference of which type it is. Furthermore you could potentially override
+         esperandro helps us Android developers using the <code>SharedPreferences</code> of the Android system. Normally there is a lot of boilerplate code when using them and we have
+         to know everywhere when we are using a specific preference of which type it is. Furthermore we could potentially override
          existing preferences when using the same key twice.
          </p>
          <p>
-         There comes esperandro to play. By defining which keys exist and their type in a specific <code>SharedPreference</code>
+         There comes esperandro to play. By defining which keys exist, along with their type, in a specific <code>SharedPreference</code>
          the usage of these preferences is both, typesafe and easy.<br />
          For this purpose esperandro uses an Annotation Processor to generate a class implementing the defined interface at compile time.
          When storing and accessing preferences in the future, this generated class is used.
@@ -53,25 +53,88 @@
          Usage
          </h2>
          <p>
-         To work with esperandro you have to include the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.11/esperandro-api-0.11.jar">esperandro-api jar</a> in your Android App.
+         To work with esperandro we have to include the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.11/esperandro-api-0.11.jar">esperandro-api</a> in your Android App.
+         The <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.11/esperandro-0.11-jar-with-dependencies.jar">esperandro annotation processor</a> itself has to be in the classpath of the java compiler for annotation processing.
          </p>
 
          <h3>
          Defining Preferences
          </h3>
          <p>
+         When defining the preferences used by our App we start with an emtpy interface and annotate it with <code>@SharedPreferences</code>.
+         At this point we have two possibilities, either we don't specify any parameters at the annotation and end up with the default preferences,
+         or we give them a name (and optionally a mode) to access a <code>SharedPreference</code> with the given name and mode.
+         </p>
+         <p>
+         Something like
+
+         <pre>
+@SharedPreferences
+public interface DefaultPreferences {</pre>
+<br />
+         would mimic a call as <code>PreferenceManager.getDefaultSharedPreferences(context)</code>.
+         </p>
+         <p>
+         In contrast a definition like
+
+         <pre>
+@SharedPreferences(name = "eventPrefs", mode = SharedPreferenceMode.PRIVATE)
+public interface EventPreferences {</pre>
+<br />
+         would mimic a call as <code>context.getSharedPreferences("eventPrefs", Context.MODE_PRIVATE)</code>. <br />
+         The <i>mode</i> given here equivalents to the possible <code>Context.MODE_*</code> attributes. If no mode is given explicitly,
+         <code>SharedPreferenceMode.PRIVATE</code> is assumed.
          </p>
 
          <h3>
          Obtain Instance
          </h3>
          <p>
+         Obtaining an instance of the generated class is easy. We just call
+         <pre>
+getPreferences(Class&lt;T&gt; preferenceClass, Context context)</pre>
+         <br />
+         where <code>preferenceClass</code> is the Class of our interface.
          </p>
 
          <h3>
          Goodies
          </h3>
          <p>
+         All generated classes do not only implement our defined preference interface but also the <code>de.devland.esperandro.SharedPreferenceActions</code>
+         interface. That means, if we let our interface extend it we have access to these convenience methods:
+         <pre>
+    /**
+     * @return the underlying SharedPreference instance.
+     */
+    SharedPreferences get();
+
+    /**
+     * Checks if a value for the given key exists.
+     * @param key
+     * @return true if the given key exists, false otherwise
+     */
+    boolean contains(String key);
+
+    /**
+     * Registers a callback to be invoked when a change happens to a preference.
+     * @param listener The callback that will run.
+     */
+    void registerOnChangeListener(
+            SharedPreferences.OnSharedPreferenceChangeListener listener);
+
+    /**
+     * Unregisters a previous callback.
+     * @param listener The callback that should be unregistered.
+     */
+    void unregisterOnChangeListener(
+            SharedPreferences.OnSharedPreferenceChangeListener listener);
+
+    /**
+     * Clears the complete sharedPreferences of the previously given name. (Be aware that ALL preferences under this
+     * name are cleared not only the ones defined in your interface)
+     */
+    void clear();</pre>
          </p>
 
          <h2>
@@ -92,6 +155,12 @@
 
          <h2>
          Maven
+         </h2>
+         <p>
+         </p>
+
+         <h2>
+         New Gradle Build System
          </h2>
          <p>
          </p>
