@@ -87,6 +87,54 @@ public interface EventPreferences {</pre>
          </p>
 
          <h3>
+         Getters and Setters for Preference Values
+         </h2>
+         <p>
+         For each preference value of a given name there should be two methods in the interface. One getter and one setter.
+         A getter returns the desired type of the preference. It's method name is the name that is used to retrieve the value from the
+         <code>SharedPreference</code> object. It takes no further parameters.<br />
+         A setter returns <code>void</code> and takes exactly one parameter. This parameter but be the type that should be stored in the preference.
+         Again the name of the method is the key used to access the underlying Android <code>SharedPreference</code> object.
+         </p>
+         <p>
+         So for each value that should be stored in a specific <code>SharedPreference</code> we end up defining a pair of methods like:
+         <pre>
+String superFancyPreference();
+void superFancyPreference(String superFancyPreferenceValue);</pre>
+         <br />
+         The possible types are <code>int</code>, <code>long</code>, <code>float</code>, <code>boolean</code>, <code>String</code> and <code>Set&lt;String&gt;</code>.
+         </p>
+
+         <h3>
+         Defaults
+         </h2>
+         <p>
+         With no further configuration the following defaults apply when retrieving preference values that were not set before:
+         <br />
+         <code>int</code> - <code>-1</code><br />
+         <code>long</code> - <code>-1l</code><br />
+         <code>float</code> - <code>-1.0f</code><br />
+         <code>boolean</code> - <code>false</code><br />
+         <code>String</code> - <code>""</code> (empty String)<br />
+         <code>Set&lt;String&gt;</code> - <code>null</code>
+         </p>
+
+         <p>
+         For all types except <code>Set&lt;String&gt;</code> other defaults can be given using the <code>@Default</code> annotation.
+         To make use of this mechanism the getter of a preference value has to be annotated with this annotation. The desired default can then be
+         configured using the respective <code>of*</code> property of the annotation where * expands to the type of the getter.
+         </p>
+
+         <p>
+         We then finally end up with something like
+         <pre>
+@Default(ofString = "superFancyDefaultValue")
+String superFancyPreference();
+void superFancyPreference(String superFancyPreferenceValue);</pre>
+         in our interface.
+         </p>
+
+         <h3>
          Obtain Instance
          </h3>
          <p>
@@ -148,28 +196,104 @@ getPreferences(Class&lt;T&gt; preferenceClass, Context context)</pre>
          <h3>
          Eclipse
          </h3>
+         <p>
+         Follow the instructions at <a href="http://help.eclipse.org/kepler/index.jsp?topic=%2Forg.eclipse.jdt.doc.isv%2Fguide%2Fjdt_apt_getting_started.htm">http://help.eclipse.org/</a> and
+         add the downloaded jar-with-dependencies bundle as external jar in the dialog at the third screenshot.
+         </p>
          <h3>
          IntelliJ IDEA
          </h3>
+         <p>
+         Follow the instruction at <a href="http://www.jetbrains.com/idea/webhelp/configuring-annotation-processing.html">http://www.jetbrains.com/</a>
+         and choose at the third step the folder where you downloaded the jar-with-dependencies file.
          </p>
 
          <h2>
          Maven
          </h2>
          <p>
+         <pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
+    &lt;artifactId&gt;esperandro-api&lt;/artifactId&gt;
+    &lt;version&gt;0.11&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
+    &lt;artifactId&gt;esperandro&lt;/artifactId&gt;
+    &lt;version&gt;0.11&lt;/version&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency></pre>
          </p>
 
          <h2>
          New Gradle Build System
          </h2>
          <p>
+         The instructions below apply to the android gradle plugin version 0.5.+.
+         <pre>
+repositories {
+     mavenCentral();
+}
+
+configurations {
+    apt
+}
+
+dependencies {
+    compile 'de.devland.esperandro:esperandro-api:0.11'
+    apt 'de.devland.esperandro:esperandro:0.11'
+}
+
+android.applicationVariants.each { variant ->
+    aptOutput = file("${project.buildDir}/source/apt_generated/${variant.dirName}")
+    println "****************************"
+    println "variant: ${variant.name}"
+    println "manifest:  ${variant.processResources.manifestFile}"
+    println "aptOutput:  ${aptOutput}"
+    println "****************************"
+
+    variant.javaCompile.doFirst {
+        println "*** compile doFirst ${variant.name}"
+        aptOutput.mkdirs()
+        variant.javaCompile.options.compilerArgs += [
+                '-processorpath', configurations.apt.getAsPath(),
+                '-s', aptOutput
+        ]
+    }
+}</pre>
          </p>
 
          <h2>
-         Binaries
+         Binaries Overview
          </h2>
          <p>
+          <ul>
+           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.11/esperandro-0.11-jar-with-dependencies.jar">esperandro</a> - The annotation processor itself. Do not include in final packaged application, just use at compile time.</li>
+           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.11/esperandro-api-0.11.jar">esperandro-api</a> - The annotations and interfaces needed at runtime. Include in the final package.</li>
+          </ul>
          </p>
+
+         <h2>
+         License
+         </h2>
+         <p>
+         <pre>
+Copyright 2013 David Kunzler
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</pre>
+         </p>
+
       </section>
     </div>
 
