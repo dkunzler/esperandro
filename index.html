@@ -39,11 +39,11 @@
          <h2>What Is It?</h2>
          <p>
          esperandro helps us Android developers using the <code>SharedPreferences</code> of the Android system. Normally there is a lot of boilerplate code when using them and we have
-         to know everywhere when we are using a specific preference of which type it is. Furthermore we could potentially override
+         to know everytime we are using a specific preference of which type it is. Furthermore we could potentially override
          existing preferences when using the same key twice.
          </p>
          <p>
-         There comes esperandro to play. By defining which keys exist, along with their type, in a specific <code>SharedPreference</code>
+         There comes esperandro to play. By defining which keys exist, along with their type, for each used named <code>SharedPreference</code>
          the usage of these preferences is both, typesafe and easy.<br />
          For this purpose esperandro uses an Annotation Processor to generate a class implementing the defined interface at compile time.
          When storing and accessing preferences in the future, this generated class is used.
@@ -53,7 +53,7 @@
          Usage
          </h2>
          <p>
-         To work with esperandro we have to include the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.11/esperandro-api-0.11.jar">esperandro-api</a> in your Android App.
+         To work with esperandro we have to include the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.11/esperandro-api-0.11.jar">esperandro-api</a> in our Android App.
          The <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.11/esperandro-0.11-jar-with-dependencies.jar">esperandro annotation processor</a> itself has to be in the classpath of the java compiler for annotation processing.
          </p>
 
