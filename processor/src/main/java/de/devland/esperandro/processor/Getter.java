@@ -23,14 +23,19 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Getter {
 
-    Warner warner;
+    private Warner warner;
+
+    private Map<String, ExecutableElement> preferenceKeys;
 
     public Getter(Warner warner) {
         this.warner = warner;
+        preferenceKeys = new HashMap<String, ExecutableElement>();
     }
 
     public boolean isGetter(ExecutableElement method) {
@@ -47,6 +52,9 @@ public class Getter {
 
     public void createGetter(ExecutableElement method, JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
+        String valueName = method.getSimpleName().toString();
+        preferenceKeys.put(valueName, method);
+
         PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getReturnType());
         writer.beginMethod(preferenceType.getTypeName(), method.getSimpleName().toString(), Modifier.PUBLIC);
 
@@ -57,7 +65,6 @@ public class Getter {
             allDefaults = hasAllDefaults(defaultAnnotation);
         }
         String statementPattern = "preferences.get%s(\"%s\", %s)";
-        String valueName = method.getSimpleName().toString();
         String methodSuffix = "";
         String defaultValue = "";
         switch (preferenceType) {
@@ -113,6 +120,10 @@ public class Getter {
         writer.emitStatement("return %s", statement);
         writer.endMethod();
         writer.emitEmptyLine();
+    }
+
+    public Map<String, ExecutableElement> getPreferenceKeys() {
+        return preferenceKeys;
     }
 
 

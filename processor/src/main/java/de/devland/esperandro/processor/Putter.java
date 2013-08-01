@@ -23,9 +23,17 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Putter {
+
+    private Map<String, ExecutableElement> preferenceKeys;
+
+    public Putter() {
+        preferenceKeys = new HashMap<String, ExecutableElement>();
+    }
 
     public boolean isPutter(ExecutableElement method) {
         boolean isPutter = false;
@@ -40,13 +48,15 @@ public class Putter {
     }
 
     public void createPutter(ExecutableElement method, JavaWriter writer) throws IOException {
+        String valueName = method.getSimpleName().toString();
+        preferenceKeys.put(valueName, method);
+
         writer.emitAnnotation(Override.class);
         TypeMirror parameterType = method.getParameters().get(0).asType();
         PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
         writer.beginMethod("void", method.getSimpleName().toString(), Modifier.PUBLIC, preferenceType.getTypeName(),
                 method.getSimpleName().toString());
         String statementPattern = "preferences.edit().put%s(\"%s\", %s).commit()";
-        String valueName = method.getSimpleName().toString();
         String methodSuffix = "";
         switch (preferenceType) {
             case INT:
@@ -73,5 +83,9 @@ public class Putter {
         writer.emitStatement(statement);
         writer.endMethod();
         writer.emitEmptyLine();
+    }
+
+    public Map<String, ExecutableElement> getPreferenceKeys() {
+        return preferenceKeys;
     }
 }

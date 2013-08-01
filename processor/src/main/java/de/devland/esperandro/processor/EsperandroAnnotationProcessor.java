@@ -8,8 +8,6 @@ import de.devland.esperandro.annotations.SharedPreferences;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
@@ -87,7 +85,23 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             }
         }
 
+        checkPreferenceKeys();
+
         return false;
+    }
+
+    private void checkPreferenceKeys() {
+        for (String key : getter.getPreferenceKeys().keySet()) {
+            if (!putter.getPreferenceKeys().containsKey(key)) {
+                warner.emitWarning("No putter found for getter '" + key + "'", getter.getPreferenceKeys().get(key));
+            }
+        }
+
+        for (String key : putter.getPreferenceKeys().keySet()) {
+            if (!getter.getPreferenceKeys().containsKey(key)) {
+                warner.emitWarning("No getter found for putter '" + key + "'", putter.getPreferenceKeys().get(key));
+            }
+        }
     }
 
     private JavaWriter initImplementation(Element interfaze) {
@@ -180,67 +194,5 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.close();
     }
 
-    public enum PreferenceType {
-        NONE(null, null), INT(TypeKind.INT), LONG(TypeKind.LONG), FLOAT(TypeKind.FLOAT), BOOLEAN(TypeKind.BOOLEAN),
-        STRING(TypeKind.DECLARED, "java.lang.String"), STRINGSET(TypeKind.DECLARED, "java.util.Set<java.lang.String>");
-        private final TypeKind typeKind;
-        private final String declaredTypeName;
-
-        PreferenceType(TypeKind typeKind) {
-            this.typeKind = typeKind;
-            this.declaredTypeName = null;
-        }
-
-        PreferenceType(TypeKind typeKind, String declaredTypeName) {
-            this.typeKind = typeKind;
-            this.declaredTypeName = declaredTypeName;
-        }
-
-        public static PreferenceType toPreferenceType(TypeMirror typeMirror) {
-            PreferenceType type = NONE;
-
-            switch (typeMirror.getKind()) {
-                case BOOLEAN:
-                    type = BOOLEAN;
-                    break;
-                case INT:
-                    type = INT;
-                    break;
-                case LONG:
-                    type = LONG;
-                    break;
-                case FLOAT:
-                    type = FLOAT;
-                    break;
-                case DECLARED:
-                    if (typeMirror.toString().equals(PreferenceType.STRING.declaredTypeName)) {
-                        type = STRING;
-                    } else if (typeMirror.toString().equals(PreferenceType.STRINGSET.declaredTypeName)) {
-                        type = STRINGSET;
-                    }
-            }
-
-            return type;
-        }
-
-        public String getTypeName() {
-            String typeName = declaredTypeName;
-            switch (this) {
-                case INT:
-                    typeName = "int";
-                    break;
-                case LONG:
-                    typeName = "long";
-                    break;
-                case FLOAT:
-                    typeName = "float";
-                    break;
-                case BOOLEAN:
-                    typeName = "boolean";
-                    break;
-            }
-            return typeName;
-        }
-    }
 
 }
