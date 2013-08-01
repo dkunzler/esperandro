@@ -3,7 +3,6 @@ package de.devland.esperandro.processor;
 import com.squareup.java.JavaWriter;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
-import de.devland.esperandro.annotations.Default;
 import de.devland.esperandro.annotations.SharedPreferences;
 
 import javax.annotation.processing.*;
@@ -11,7 +10,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
@@ -46,9 +44,17 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     public static final String sharedPreferencesAnnotationName = "de.devland.esperandro.annotations" + "" +
             ".SharedPreferences";
 
+    Warner warner;
+    Getter getter;
+    Putter putter;
+
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        //assert (annotations.size() == 1);
+        warner = new Warner(processingEnv);
+        getter = new Getter(warner);
+        putter = new Putter();
+
 
         for (TypeElement typeElement : annotations) {
             if (typeElement.getQualifiedName().toString().equals(sharedPreferencesAnnotationName)) {
@@ -63,12 +69,12 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                         for (Element element : potentialMethods) {
                             if (element.getKind() == ElementKind.METHOD) {
                                 ExecutableElement method = (ExecutableElement) element;
-                                if (isPutter(method)) {
-                                    createPutter(method, writer);
-                                } else if (isGetter(method)) {
-                                    createGetter(method, writer);
+                                if (putter.isPutter(method)) {
+                                    putter.createPutter(method, writer);
+                                } else if (getter.isGetter(method)) {
+                                    getter.createGetter(method, writer);
                                 } else {
-                                    emitWarning("No getter or setter for preference detected.", method);
+                                    warner.emitWarning("No getter or setter for preference detected.", method);
                                 }
                             }
                         }
@@ -134,150 +140,6 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
 
-    private boolean isGetter(ExecutableElement method) {
-        boolean isGetter = false;
-        List<? extends VariableElement> parameters = method.getParameters();
-        TypeMirror returnType = method.getReturnType();
-
-        if ((parameters == null || parameters.size() == 0) && PreferenceType.toPreferenceType(returnType) !=
-                PreferenceType.NONE) {
-            isGetter = true;
-        }
-        return isGetter;
-    }
-
-    private void createGetter(ExecutableElement method, JavaWriter writer) throws IOException {
-        writer.emitAnnotation(Override.class);
-        PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getReturnType());
-        writer.beginMethod(preferenceType.getTypeName(), method.getSimpleName().toString(), Modifier.PUBLIC);
-
-        Default defaultAnnotation = method.getAnnotation(Default.class);
-        boolean hasDefaultAnnotation = defaultAnnotation != null;
-        boolean allDefaults = false;
-        if (hasDefaultAnnotation) {
-            allDefaults = hasAllDefaults(defaultAnnotation);
-        }
-        String statementPattern = "preferences.get%s(\"%s\", %s)";
-        String valueName = method.getSimpleName().toString();
-        String methodSuffix = "";
-        String defaultValue = "";
-        switch (preferenceType) {
-            case INT:
-                methodSuffix = "Int";
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofInt() == Default.intDefault) {
-                    emitMissingDefaultWarning("int", method);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofInt()) : String.valueOf(Default
-                        .intDefault);
-                break;
-            case LONG:
-                methodSuffix = "Long";
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofLong() == Default.longDefault) {
-                    emitMissingDefaultWarning("long", method);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofLong()) : String.valueOf(Default
-                        .longDefault);
-                break;
-            case FLOAT:
-                methodSuffix = "Float";
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofFloat() == Default.floatDefault) {
-                    emitMissingDefaultWarning("float", method);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofFloat()) : String.valueOf(Default
-                        .floatDefault);
-                break;
-            case BOOLEAN:
-                methodSuffix = "Boolean";
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
-                    emitMissingDefaultWarning("boolean", method);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofBoolean()) : String.valueOf(Default
-                        .booleanDefault);
-                break;
-            case STRING:
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofString().equals(Default.stringDefault)
-                        ) {
-                    emitMissingDefaultWarning("String", method);
-                }
-                methodSuffix = "String";
-                defaultValue = (hasDefaultAnnotation ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default
-                        .stringDefault + "\""));
-                break;
-            case STRINGSET:
-                emitWarning("No default for Set<String> preferences allowed.", method);
-                methodSuffix = "StringSet";
-                defaultValue = "null";
-                break;
-        }
-
-        String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-        writer.emitStatement("return %s", statement);
-        writer.endMethod();
-        writer.emitEmptyLine();
-    }
-
-    private boolean hasAllDefaults(Default defaultAnnotation) {
-        boolean hasAllDefaults = true;
-
-        hasAllDefaults &= defaultAnnotation.ofBoolean() == Default.booleanDefault;
-        hasAllDefaults &= defaultAnnotation.ofInt() == Default.intDefault;
-        hasAllDefaults &= defaultAnnotation.ofFloat() == Default.floatDefault;
-        hasAllDefaults &= defaultAnnotation.ofLong() == Default.longDefault;
-        hasAllDefaults &= defaultAnnotation.ofString().equals(Default.stringDefault);
-
-        return hasAllDefaults;
-    }
-
-
-    private boolean isPutter(ExecutableElement method) {
-        boolean isPutter = false;
-        List<? extends VariableElement> parameters = method.getParameters();
-        TypeMirror returnType = method.getReturnType();
-        TypeKind returnTypeKind = returnType.getKind();
-        if (parameters != null && parameters.size() == 1 && returnTypeKind.equals(TypeKind.VOID) && PreferenceType
-                .toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
-            isPutter = true;
-        }
-        return isPutter;
-    }
-
-    private void createPutter(ExecutableElement method, JavaWriter writer) throws IOException {
-        writer.emitAnnotation(Override.class);
-        TypeMirror parameterType = method.getParameters().get(0).asType();
-        PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
-        writer.beginMethod("void", method.getSimpleName().toString(), Modifier.PUBLIC, preferenceType.getTypeName(),
-                method.getSimpleName().toString());
-        String statementPattern = "preferences.edit().put%s(\"%s\", %s).commit()";
-        String valueName = method.getSimpleName().toString();
-        String methodSuffix = "";
-        switch (preferenceType) {
-            case INT:
-                methodSuffix = "Int";
-                break;
-            case LONG:
-                methodSuffix = "Long";
-                break;
-            case FLOAT:
-                methodSuffix = "Float";
-                break;
-            case BOOLEAN:
-                methodSuffix = "Boolean";
-                break;
-            case STRING:
-                methodSuffix = "String";
-                break;
-            case STRINGSET:
-                methodSuffix = "StringSet";
-                break;
-        }
-
-        String statement = String.format(statementPattern, methodSuffix, valueName, valueName);
-        writer.emitStatement(statement);
-        writer.endMethod();
-        writer.emitEmptyLine();
-    }
-
-
     private void createGenericActions(JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
         writer.beginMethod("android.content.SharedPreferences", "get", Modifier.PUBLIC);
@@ -312,14 +174,6 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
     }
 
-    private void emitWarning(String message, Element element) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
-    }
-
-    private void emitMissingDefaultWarning(String type, ExecutableElement method) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "No overwritten default " + type + " value " +
-                "detected, please check the annotation.", method);
-    }
 
     private void finish(JavaWriter writer) throws IOException {
         writer.endType();
@@ -354,7 +208,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     break;
                 case LONG:
                     type = LONG;
-					break;
+                    break;
                 case FLOAT:
                     type = FLOAT;
                     break;
