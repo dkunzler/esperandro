@@ -83,6 +83,7 @@ public class Getter {
                 }
                 defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofLong()) : String.valueOf
                         (Default.longDefault);
+                defaultValue += "l";
                 break;
             case FLOAT:
                 methodSuffix = "Float";
@@ -91,6 +92,7 @@ public class Getter {
                 }
                 defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofFloat()) : String.valueOf
                         (Default.floatDefault);
+                defaultValue += "f";
                 break;
             case BOOLEAN:
                 methodSuffix = "Boolean";
