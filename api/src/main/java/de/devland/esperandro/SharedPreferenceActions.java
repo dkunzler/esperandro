@@ -24,37 +24,41 @@ import android.content.SharedPreferences;
  */
 public interface SharedPreferenceActions {
     /**
-     * Return the underlying SharedPreference instance.
-     * @return
+     * @return the underlying SharedPreference instance.
      */
-	SharedPreferences get();
+    SharedPreferences get();
 
     /**
      * Checks if a value for the given key exists.
+     *
      * @param key
-     * @return
+     *
+     * @return true if the given key exists, false otherwise
      */
     boolean contains(String key);
 
     /**
      * Registers a callback to be invoked when a change happens to a preference.
-     * @param listener The callback that will run.
+     *
+     * @param listener
+     *         The callback that will run.
      */
-	void registerOnChangeListener(
-            SharedPreferences.OnSharedPreferenceChangeListener listener);
+    void registerOnChangeListener(SharedPreferences.OnSharedPreferenceChangeListener listener);
 
     /**
      * Unregisters a previous callback.
-     * @param listener The callback that should be unregistered.
+     *
+     * @param listener
+     *         The callback that should be unregistered.
      */
-	void unregisterOnChangeListener(
-            SharedPreferences.OnSharedPreferenceChangeListener listener);
+    void unregisterOnChangeListener(SharedPreferences.OnSharedPreferenceChangeListener listener);
 
     /**
      * Clears the complete sharedPreferences of the previously given name. (Be aware that ALL preferences under this
-     * name are cleared not only the ones defined in your interface)
+     * name
+     * are cleared not only the ones defined in your interface)
      */
     // TODO intelligent clear: only delete those values that are defined in the interface
-	void clear();
+    void clear();
 
 }
