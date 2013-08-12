@@ -8,11 +8,14 @@ import de.devland.esperandro.annotations.SharedPreferences;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -46,12 +49,17 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     Getter getter;
     Putter putter;
 
+    Map<TypeMirror, Element> rootElements;
+
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         warner = new Warner(processingEnv);
         getter = new Getter(warner);
         putter = new Putter();
+        rootElements = new HashMap<TypeMirror, Element>();
+
+        preProcessEnvironment(roundEnv);
 
 
         for (TypeElement typeElement : annotations) {
@@ -63,19 +71,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
                     try {
                         JavaWriter writer = initImplementation(interfaze);
-                        List<? extends Element> potentialMethods = interfaze.getEnclosedElements();
-                        for (Element element : potentialMethods) {
-                            if (element.getKind() == ElementKind.METHOD) {
-                                ExecutableElement method = (ExecutableElement) element;
-                                if (putter.isPutter(method)) {
-                                    putter.createPutter(method, writer);
-                                } else if (getter.isGetter(method)) {
-                                    getter.createGetter(method, writer);
-                                } else {
-                                    warner.emitWarning("No getter or setter for preference detected.", method);
-                                }
-                            }
-                        }
+                        processInterfaceMethods(interfaze, writer);
                         createGenericActions(writer);
                         finish(writer);
                     } catch (IOException e) {
@@ -88,6 +84,36 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         checkPreferenceKeys();
 
         return false;
+    }
+
+    private void preProcessEnvironment(RoundEnvironment roundEnv) {
+        for (Element element : roundEnv.getRootElements()) {
+            rootElements.put(element.asType(), element);
+        }
+    }
+
+    private void processInterfaceMethods(Element interfaze, JavaWriter writer) throws IOException {
+        List<? extends Element> potentialMethods = interfaze.getEnclosedElements();
+        for (Element element : potentialMethods) {
+            if (element.getKind() == ElementKind.METHOD) {
+                ExecutableElement method = (ExecutableElement) element;
+                if (putter.isPutter(method)) {
+                    putter.createPutter(method, writer);
+                } else if (getter.isGetter(method)) {
+                    getter.createGetter(method, writer);
+                } else {
+                    warner.emitWarning("No getter or setter for preference detected.", method);
+                }
+            }
+        }
+
+        List<? extends TypeMirror> interfaces = ((TypeElement) interfaze).getInterfaces();
+        for (TypeMirror subInterfaceType : interfaces) {
+            Element subInterface = rootElements.get(subInterfaceType);
+            if (subInterface != null) {
+                processInterfaceMethods(subInterface, writer);
+            }
+        }
     }
 
     private void checkPreferenceKeys() {
