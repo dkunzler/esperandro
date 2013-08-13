@@ -53,8 +53,8 @@
          Usage
          </h2>
          <p>
-         To work with esperandro we have to include the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.11/esperandro-api-0.11.jar">esperandro-api</a> in our Android App.
-         The <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.11/esperandro-0.11-jar-with-dependencies.jar">esperandro annotation processor</a> itself has to be in the classpath of the java compiler for annotation processing.
+         To work with esperandro we have to include the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.12/esperandro-api-0.12.jar">esperandro-api</a> in our Android App.
+         The <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.12/esperandro-0.12-jar-with-dependencies.jar">esperandro annotation processor</a> itself has to be in the classpath of the java compiler for annotation processing.
          </p>
 
          <h3>
@@ -148,6 +148,9 @@ getPreferences(Class&lt;T&gt; preferenceClass, Context context)</pre>
          <h3>
          Goodies
          </h3>
+		 <h4>
+		 Additional actions
+		 </h4
          <p>
          All generated classes do not only implement our defined preference interface but also the <code>de.devland.esperandro.SharedPreferenceActions</code>
          interface. That means, if we let our interface extend it we have access to these convenience methods:
@@ -184,13 +187,19 @@ getPreferences(Class&lt;T&gt; preferenceClass, Context context)</pre>
      */
     void clear();</pre>
          </p>
+		 <h4>
+		 Inheritance
+		 </h4
+		 <p>
+		 If the annotated interface extends from other interfaces that define getters and putters for preferences, the generated class will implement them too. This way we can order the preferences hierarchically or even use common preference keys in different SharedPreference files.
+		 </p>
 
          <h2>
          Configure IDE
          </h2>
          <p>
          When configuring the IDE by hand you should download the
-         <i><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.11/esperandro-0.11-jar-with-dependencies.jar">jar-with-dependencies</a></i>
+         <i><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.12/esperandro-0.12-jar-with-dependencies.jar">jar-with-dependencies</a></i>
          bundle from <a href="http://search.maven.org/#search%7Cga%7C1%7Cesperandro">Maven central</a> and add this jar as annotation processor in your IDE.
          </p>
          <h3>
@@ -216,12 +225,12 @@ getPreferences(Class&lt;T&gt; preferenceClass, Context context)</pre>
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro-api&lt;/artifactId&gt;
-    &lt;version&gt;0.11&lt;/version&gt;
+    &lt;version&gt;0.12&lt;/version&gt;
 &lt;/dependency&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro&lt;/artifactId&gt;
-    &lt;version&gt;0.11&lt;/version&gt;
+    &lt;version&gt;0.12&lt;/version&gt;
     &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency></pre>
          </p>
@@ -241,8 +250,8 @@ configurations {
 }
 
 dependencies {
-    compile 'de.devland.esperandro:esperandro-api:0.11'
-    apt 'de.devland.esperandro:esperandro:0.11'
+    compile 'de.devland.esperandro:esperandro-api:0.12'
+    apt 'de.devland.esperandro:esperandro:0.12'
 }
 
 android.applicationVariants.each { variant ->
@@ -269,8 +278,8 @@ android.applicationVariants.each { variant ->
          </h2>
          <p>
           <ul>
-           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.11/esperandro-0.11-jar-with-dependencies.jar">esperandro</a> - The annotation processor itself. Do not include in final packaged application, just use at compile time.</li>
-           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.11/esperandro-api-0.11.jar">esperandro-api</a> - The annotations and interfaces needed at runtime. Include in the final package.</li>
+           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.12/esperandro-0.12-jar-with-dependencies.jar">esperandro</a> - The annotation processor itself. Do not include in final packaged application, just use at compile time.</li>
+           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.12/esperandro-api-0.12.jar">esperandro-api</a> - The annotations and interfaces needed at runtime. Include in the final package.</li>
           </ul>
          </p>
 
