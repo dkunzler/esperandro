@@ -112,7 +112,9 @@ public class Getter {
                         .stringDefault + "\""));
                 break;
             case STRINGSET:
-                warner.emitWarning("No default for Set<String> preferences allowed.", method);
+                if (hasDefaultAnnotation) {
+                    warner.emitWarning("No default for Set<String> preferences allowed.", method);
+                }
                 methodSuffix = "StringSet";
                 defaultValue = "null";
                 break;
