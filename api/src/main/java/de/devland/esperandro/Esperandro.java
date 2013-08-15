@@ -1,6 +1,7 @@
 package de.devland.esperandro;
 
 import android.content.Context;
+import de.devland.esperandro.serialization.Serializer;
 
 import java.lang.reflect.Constructor;
 
@@ -28,29 +29,45 @@ public class Esperandro {
 
     private static final String SUFFIX = "$$Impl";
 
+    private static Serializer serializer;
+
     /**
      * Returns an instance of the pre-generated class of the given SharedPreferences-annotated interface.
      *
-     * @param preferenceClass The interface whose implementation should be returned.
-     * @param context A context to be able to construct the android SharedPreference.
+     * @param preferenceClass
+     *         The interface whose implementation should be returned.
+     * @param context
+     *         A context to be able to construct the android SharedPreference.
+     *
      * @return An instance of the given interface.
      */
     @SuppressWarnings("unchecked")
     public static <T> T getPreferences(Class<T> preferenceClass, Context context) {
         T implementation = null;
         try {
-            Class<? extends T> implementationClass = (Class<? extends T>) Class
-                    .forName(preferenceClass.getCanonicalName()
-                            + SUFFIX);
-            Constructor<? extends T> constructor = implementationClass
-                    .getConstructor(Context.class);
+            Class<? extends T> implementationClass = (Class<? extends T>) Class.forName(preferenceClass
+                    .getCanonicalName() + SUFFIX);
+            Constructor<? extends T> constructor = implementationClass.getConstructor(Context.class);
             implementation = constructor.newInstance(context);
 
         } catch (Exception e) {
-            // TODO nice handling
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new RuntimeException("Couldn't load generated class. Please check esperandro processor " +
+                    "configuration in your project.", e);
         }
         return implementation;
     }
+
+    public static void setSerializer(Serializer serializer) {
+        Esperandro.serializer = serializer;
+    }
+
+    public static Serializer getSerializer() {
+        if (serializer == null) {
+            throw new IllegalStateException("Tried to save a serialized Object into preferences but no serializer is " +
+                    "" + "present");
+        } else {
+            return serializer;
+        }
+    }
+
 }
