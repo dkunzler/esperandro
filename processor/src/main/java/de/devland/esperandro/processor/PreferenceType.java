@@ -59,6 +59,7 @@ public enum PreferenceType {
                 } else {
                     type = OBJECT;
                     type.declaredTypeName = typeMirror.toString();
+                    // TODO check for serializable interface
                 }
         }
 

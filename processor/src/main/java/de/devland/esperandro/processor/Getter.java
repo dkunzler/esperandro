@@ -42,12 +42,24 @@ public class Getter {
         boolean isGetter = false;
         List<? extends VariableElement> parameters = method.getParameters();
         TypeMirror returnType = method.getReturnType();
+        PreferenceType preferenceType = PreferenceType.toPreferenceType(returnType);
 
-        if ((parameters == null || parameters.size() == 0) && PreferenceType.toPreferenceType(returnType) !=
-                PreferenceType.NONE) {
+        if ((parameters == null || parameters.size() == 0) && preferenceType != PreferenceType.NONE && preferenceType
+                != PreferenceType.OBJECT) {
+            // zero paramters and preferencetype != NONE or OBJECT
             isGetter = true;
+        } else if (parameters != null && parameters.size() == 1 && preferenceType == PreferenceType.OBJECT) {
+            String validParameterType = getClassDefinitionForType(returnType);
+            VariableElement parameter = parameters.get(0);
+            if (validParameterType.equals(parameter.asType().toString())) {
+                isGetter = true;
+            }
         }
         return isGetter;
+    }
+
+    private String getClassDefinitionForType(TypeMirror type) {
+        return String.format("java.lang.Class<%s>", type.toString());
     }
 
     public void createGetter(ExecutableElement method, JavaWriter writer) throws IOException {
@@ -56,11 +68,11 @@ public class Getter {
         preferenceKeys.put(valueName, method);
 
         PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getReturnType());
-        writer.beginMethod(preferenceType.getTypeName(), method.getSimpleName().toString(), Modifier.PUBLIC);
 
         Default defaultAnnotation = method.getAnnotation(Default.class);
         boolean hasDefaultAnnotation = defaultAnnotation != null;
         boolean allDefaults = false;
+        boolean isObjectPreference = false;
         if (hasDefaultAnnotation) {
             allDefaults = hasAllDefaults(defaultAnnotation);
         }
@@ -118,6 +130,23 @@ public class Getter {
                 methodSuffix = "StringSet";
                 defaultValue = "null";
                 break;
+            case OBJECT:
+                if (hasDefaultAnnotation) {
+                    warner.emitWarning("No default for Object preferences allowed.", method);
+                }
+                isObjectPreference = true;
+                methodSuffix = "String";
+                defaultValue = "null";
+                statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s)", statementPattern,
+                        "clazz");
+                break;
+        }
+
+        if (isObjectPreference) {
+            writer.beginMethod(preferenceType.getTypeName(), method.getSimpleName().toString(), Modifier.PUBLIC,
+                    getClassDefinitionForType(method.getReturnType()), "clazz");
+        } else {
+            writer.beginMethod(preferenceType.getTypeName(), method.getSimpleName().toString(), Modifier.PUBLIC);
         }
 
         String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);

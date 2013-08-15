@@ -32,6 +32,10 @@ public class GsonSerializer implements Serializer {
 
     @Override
     public <T> T deserialize(String serializedObject, Class<T> clazz) {
-        return gson.fromJson(serializedObject, clazz);
+        T deserialized = null;
+        if (serializedObject != null) {
+            deserialized = gson.fromJson(serializedObject, clazz);
+        }
+        return deserialized;
     }
 }
