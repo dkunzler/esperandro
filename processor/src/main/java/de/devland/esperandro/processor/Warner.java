@@ -28,6 +28,10 @@ public class Warner {
         this.processingEnv = processingEnv;
     }
 
+    public void emitError(String message, Element element) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, message, element);
+    }
+
     public void emitWarning(String message, Element element) {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
     }

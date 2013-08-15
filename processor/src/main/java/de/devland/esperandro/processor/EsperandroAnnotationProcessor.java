@@ -103,7 +103,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 } else if (getter.isGetter(method)) {
                     getter.createGetter(method, writer);
                 } else {
-                    warner.emitWarning("No valid getter or setter detected.", method);
+                    warner.emitError("No valid getter or setter detected.", method);
                 }
             }
         }
