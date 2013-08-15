@@ -41,7 +41,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     public static final String SUFFIX = "$$Impl";
     public static final String[] neededImports = new String[]{"android.content.Context",
-            "android.content.SharedPreferences", "android.preference.PreferenceManager", "java.util.Set"};
+            "android.content.SharedPreferences", "android.preference.PreferenceManager", "java.util.Set",
+            "de.devland.esperandro.Esperandro"};
     public static final String sharedPreferencesAnnotationName = "de.devland.esperandro.annotations" + "" +
             ".SharedPreferences";
 

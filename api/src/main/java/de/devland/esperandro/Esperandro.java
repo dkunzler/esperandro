@@ -1,6 +1,7 @@
 package de.devland.esperandro;
 
 import android.content.Context;
+import android.util.Log;
 import de.devland.esperandro.serialization.Serializer;
 
 import java.lang.reflect.Constructor;
@@ -28,6 +29,8 @@ import java.lang.reflect.Constructor;
 public class Esperandro {
 
     private static final String SUFFIX = "$$Impl";
+
+    private static final String TAG = "Esperandro";
 
     private static Serializer serializer;
 
@@ -63,11 +66,28 @@ public class Esperandro {
 
     public static Serializer getSerializer() {
         if (serializer == null) {
-            throw new IllegalStateException("Tried to save a serialized Object into preferences but no serializer is " +
-                    "" + "present");
-        } else {
-            return serializer;
+            serializer = getDefaultSerializer();
+            if (serializer == null) {
+                throw new IllegalStateException("Tried to save a serialized Object into preferences but no serializer" +
+                        " is " +
+                        "" + "present");
+            }
         }
+        return serializer;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Serializer getDefaultSerializer() {
+        Serializer defaultSerializer = null;
+        try {
+            Class<? extends Serializer> defaultSerializerClass = (Class<? extends Serializer>) Class.forName("de" + "" +
+                    ".devland.esperandro.serialization.GsonSerializer");
+            defaultSerializer = defaultSerializerClass.newInstance();
+        } catch (Exception e) {
+            Log.w(TAG, "Default Serializer (GsonSerializer) not present.");
+        }
+
+        return defaultSerializer;
     }
 
 }

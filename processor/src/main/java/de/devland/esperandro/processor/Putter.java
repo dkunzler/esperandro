@@ -49,13 +49,14 @@ public class Putter {
 
     public void createPutter(ExecutableElement method, JavaWriter writer) throws IOException {
         String valueName = method.getSimpleName().toString();
+        String value = valueName;
         preferenceKeys.put(valueName, method);
 
         writer.emitAnnotation(Override.class);
         TypeMirror parameterType = method.getParameters().get(0).asType();
         PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
         writer.beginMethod("void", method.getSimpleName().toString(), Modifier.PUBLIC, preferenceType.getTypeName(),
-                method.getSimpleName().toString());
+                valueName);
         String statementPattern = "preferences.edit().put%s(\"%s\", %s).commit()";
         String methodSuffix = "";
         switch (preferenceType) {
@@ -77,9 +78,13 @@ public class Putter {
             case STRINGSET:
                 methodSuffix = "StringSet";
                 break;
+            case OBJECT:
+                methodSuffix = "String";
+                value = String.format("Esperandro.getSerializer().serialize(%s)", valueName);
+                break;
         }
 
-        String statement = String.format(statementPattern, methodSuffix, valueName, valueName);
+        String statement = String.format(statementPattern, methodSuffix, valueName, value);
         writer.emitStatement(statement);
         writer.endMethod();
         writer.emitEmptyLine();

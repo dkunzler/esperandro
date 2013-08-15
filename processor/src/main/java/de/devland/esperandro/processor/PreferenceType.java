@@ -20,9 +20,10 @@ import javax.lang.model.type.TypeMirror;
 
 public enum PreferenceType {
     NONE(null, null), INT(TypeKind.INT), LONG(TypeKind.LONG), FLOAT(TypeKind.FLOAT), BOOLEAN(TypeKind.BOOLEAN),
-    STRING(TypeKind.DECLARED, "java.lang.String"), STRINGSET(TypeKind.DECLARED, "java.util.Set<java.lang.String>");
+    STRING(TypeKind.DECLARED, "java.lang.String"), STRINGSET(TypeKind.DECLARED, "java.util.Set<java.lang.String>"),
+    OBJECT(TypeKind.DECLARED, null);
     private final TypeKind typeKind;
-    private final String declaredTypeName;
+    private String declaredTypeName;
 
     PreferenceType(TypeKind typeKind) {
         this.typeKind = typeKind;
@@ -55,6 +56,9 @@ public enum PreferenceType {
                     type = STRING;
                 } else if (typeMirror.toString().equals(PreferenceType.STRINGSET.declaredTypeName)) {
                     type = STRINGSET;
+                } else {
+                    type = OBJECT;
+                    type.declaredTypeName = typeMirror.toString();
                 }
         }
 
