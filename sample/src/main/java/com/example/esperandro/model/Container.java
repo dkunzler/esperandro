@@ -1,4 +1,4 @@
-package com.example.esperandro;/*
+package com.example.esperandro.model;/*
  * Copyright 2013 David Kunzler
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");

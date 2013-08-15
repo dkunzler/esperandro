@@ -15,6 +15,7 @@ package com.example.esperandro;/*
  *
  */
 
+import com.example.esperandro.model.Container;
 import de.devland.esperandro.annotations.SharedPreferences;
 
 @SharedPreferences
@@ -22,6 +23,6 @@ public interface EsperandroSerializationExample {
 
     void containerValue(Container container);
 
-    Container containerValue(Class<Container> clazz);
+    Container containerValue();
 
 }
