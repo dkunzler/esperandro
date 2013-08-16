@@ -12,6 +12,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +73,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
                     try {
                         JavaWriter writer = initImplementation(interfaze);
-                        processInterfaceMethods(interfaze, writer);
+                        processInterfaceMethods(interfaze, interfaze, writer);
                         createGenericActions(writer);
                         finish(writer);
                     } catch (IOException e) {
@@ -93,8 +94,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void processInterfaceMethods(Element interfaze, JavaWriter writer) throws IOException {
-        List<? extends Element> potentialMethods = interfaze.getEnclosedElements();
+    private void processInterfaceMethods(Element topLevelInterface, Element currentInterfaze, JavaWriter writer) throws IOException {
+        List<? extends Element> potentialMethods = currentInterfaze.getEnclosedElements();
         for (Element element : potentialMethods) {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) element;
@@ -108,11 +109,34 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             }
         }
 
-        List<? extends TypeMirror> interfaces = ((TypeElement) interfaze).getInterfaces();
+        List<? extends TypeMirror> interfaces = ((TypeElement) currentInterfaze).getInterfaces();
         for (TypeMirror subInterfaceType : interfaces) {
             Element subInterface = rootElements.get(subInterfaceType);
-            if (subInterface != null) {
-                processInterfaceMethods(subInterface, writer);
+            String subInterfaceTypeName = subInterfaceType.toString();
+            if (!subInterfaceTypeName.equals(SharedPreferenceActions.class.getName())) {
+                if (subInterface != null) {
+                    processInterfaceMethods(topLevelInterface, subInterface, writer);
+                } else {
+                    try {
+                        Class<?> subInterfaceClass = Class.forName(subInterfaceTypeName);
+                        processInterfacesReflection(topLevelInterface, subInterfaceClass);
+                    } catch (ClassNotFoundException e) {
+                        warner.emitError("Could not load Interface '" + subInterfaceTypeName + "' for generation.", topLevelInterface);
+                    }
+                }
+            }
+        }
+    }
+
+    private void processInterfacesReflection(Element topLevelInterface, Class<?> interfaceClass) {
+
+        for (Method method : interfaceClass.getDeclaredMethods()) {
+            // TODO process reflection methods
+        }
+
+        for (Class<?> subInterfaceClass : interfaceClass.getInterfaces()) {
+            if (subInterfaceClass.getName() != null && !subInterfaceClass.getName().equals(SharedPreferenceActions.class.getName())) {
+                processInterfacesReflection(topLevelInterface, subInterfaceClass);
             }
         }
     }
