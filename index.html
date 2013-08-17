@@ -53,8 +53,8 @@
          Usage
          </h2>
          <p>
-         To work with esperandro we have to include the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.12/esperandro-api-0.12.jar">esperandro-api</a> in our Android App.
-         The <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.12/esperandro-0.12-jar-with-dependencies.jar">esperandro annotation processor</a> itself has to be in the classpath of the java compiler for annotation processing.
+         To work with esperandro we have to include the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.13/esperandro-api-0.13.jar">esperandro-api</a> in our Android App.
+         The <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.13/esperandro-0.13-jar-with-dependencies.jar">esperandro annotation processor</a> itself has to be in the classpath of the java compiler for annotation processing.
          </p>
 
          <h3>
@@ -88,7 +88,7 @@ public interface EventPreferences {</pre>
 
          <h3>
          Getters and Setters for Preference Values
-         </h2>
+         </h3>
          <p>
          For each preference value of a given name there should be two methods in the interface. One getter and one setter.
          A getter returns the desired type of the preference. It's method name is the name that is used to retrieve the value from the
@@ -104,10 +104,36 @@ void superFancyPreference(String superFancyPreferenceValue);</pre>
          <br />
          The possible types are <code>int</code>, <code>long</code>, <code>float</code>, <code>boolean</code>, <code>String</code> and <code>Set&lt;String&gt;</code>.
          </p>
+		 
+		 <h3>
+         Serialized object preferences
+         </h3>
+		 <p>
+		 Sometimes it can be useful to not only be able to store primitive or <code>String</code> preferences but also objects.<br />
+		 Esperandro provides an API for this use-case, too. There exists a <code>Serializer</code> interface that cat be implemented to be able to serialize and deserialize objects into a String preference.
+		 </p>
+		 
+		 <p>
+		 A <code>Serializer</code> can be set by calling <code>Esperandro.setSerializer(Serializer serializer)</code>. After this call all objects that are not compatible with Android's <code>SharedPreference</code>
+		 structure will be stored into a String preference using the previously set <code>Serializer</code>.
+		 </p>
+		 
+		 <p>
+		 If we don't want to provide our own <code>Serializer</code> we can use the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.13/esperandro-gson-addon-0.13-jar-with-dependencies.jar">esperandro gson addon</a>
+		 that will automatically be used to serialize objects if no other <code>Serializer</code> was set. This addon will serialize objects into a JSON string.
+		 </p>
+		 
+		 <p>
+		 After setting our <code>Serializer</code> or adding the esperandro-gson-addon to the classpath we can use the following definition for object preferences:
+		 <pre>
+Container superFancyObjectPreference();
+void superFancyObjectPreference(Container superFancyObjectPreferenceValue);</pre>
+		where <code>Container</code> ca be any class that implements the Java <code>Serializable</code> interface.
+		 </p>
 
          <h3>
          Defaults
-         </h2>
+         </h3>
          <p>
          With no further configuration the following defaults apply when retrieving preference values that were not set before:
          <br />
@@ -199,7 +225,7 @@ getPreferences(Class&lt;T&gt; preferenceClass, Context context)</pre>
          </h2>
          <p>
          When configuring the IDE by hand you should download the
-         <i><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.12/esperandro-0.12-jar-with-dependencies.jar">jar-with-dependencies</a></i>
+         <i><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.13/esperandro-0.13-jar-with-dependencies.jar">jar-with-dependencies</a></i>
          bundle from <a href="http://search.maven.org/#search%7Cga%7C1%7Cesperandro">Maven central</a> and add this jar as annotation processor in your IDE.
          </p>
          <h3>
@@ -225,15 +251,25 @@ getPreferences(Class&lt;T&gt; preferenceClass, Context context)</pre>
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro-api&lt;/artifactId&gt;
-    &lt;version&gt;0.12&lt;/version&gt;
+    &lt;version&gt;0.13&lt;/version&gt;
 &lt;/dependency&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro&lt;/artifactId&gt;
-    &lt;version&gt;0.12&lt;/version&gt;
+    &lt;version&gt;0.13&lt;/version&gt;
     &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency></pre>
          </p>
+		 
+		 <p>
+		 Optional, if we want to use object serialization but don't provide our own <code>Serializer</code>:
+		 <pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
+    &lt;artifactId&gt;esperandro-gson-addon&lt;/artifactId&gt;
+    &lt;version&gt;0.13&lt;/version&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency></pre>		 
 
          <h2>
          New Gradle Build System
@@ -250,11 +286,14 @@ configurations {
 }
 
 dependencies {
-    compile 'de.devland.esperandro:esperandro-api:0.12'
-    apt 'de.devland.esperandro:esperandro:0.12'
+    compile 'de.devland.esperandro:esperandro-api:0.13'
+    apt 'de.devland.esperandro:esperandro:0.13'
+	
+    // optional, if we want to use object serialization but don't provide our own Serializer
+    // compile 'de.devland.esperandro:esperandro-gson-addon:0.13'
 }
 
-android.applicationVariants.each { variant ->
+android.applicationVariants.all { variant ->
     aptOutput = file("${project.buildDir}/source/apt_generated/${variant.dirName}")
     println "****************************"
     println "variant: ${variant.name}"
@@ -278,8 +317,8 @@ android.applicationVariants.each { variant ->
          </h2>
          <p>
           <ul>
-           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.12/esperandro-0.12-jar-with-dependencies.jar">esperandro</a> - The annotation processor itself. Do not include in final packaged application, just use at compile time.</li>
-           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.12/esperandro-api-0.12.jar">esperandro-api</a> - The annotations and interfaces needed at runtime. Include in the final package.</li>
+           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/0.13/esperandro-0.13-jar-with-dependencies.jar">esperandro</a> - The annotation processor itself. Do not include in final packaged application, just use at compile time.</li>
+           <li><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/0.13/esperandro-api-0.13.jar">esperandro-api</a> - The annotations and interfaces needed at runtime. Include in the final package.</li>
           </ul>
          </p>
 
