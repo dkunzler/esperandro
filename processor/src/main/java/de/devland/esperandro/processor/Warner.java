@@ -17,7 +17,6 @@ package de.devland.esperandro.processor;/*
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.tools.Diagnostic;
 
 public class Warner {
@@ -36,8 +35,8 @@ public class Warner {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
     }
 
-    public void emitMissingDefaultWarning(String type, ExecutableElement method) {
+    public void emitMissingDefaultWarning(String type, Element element) {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "No overwritten default " + type + " value " +
-                "detected, please check the annotation.", method);
+                "detected, please check the annotation.", element);
     }
 }

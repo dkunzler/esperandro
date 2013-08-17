@@ -18,11 +18,14 @@ package de.devland.esperandro.processor;/*
 import com.squareup.java.JavaWriter;
 import de.devland.esperandro.annotations.Default;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +34,11 @@ public class Getter {
 
     private Warner warner;
 
-    private Map<String, ExecutableElement> preferenceKeys;
+    private Map<String, Element> preferenceKeys;
 
     public Getter(Warner warner) {
         this.warner = warner;
-        preferenceKeys = new HashMap<String, ExecutableElement>();
+        preferenceKeys = new HashMap<String, Element>();
     }
 
     public boolean isGetter(ExecutableElement method) {
@@ -50,19 +53,51 @@ public class Getter {
         return isGetter;
     }
 
+    public boolean isGetter(Method method) {
+        boolean isGetter = false;
+        Class<?>[] parameters = method.getParameterTypes();
+        Type returnType = method.getGenericReturnType();
+        PreferenceType preferenceType = PreferenceType.toPreferenceType(returnType);
+
+        if ((parameters == null || parameters.length == 0) && preferenceType != PreferenceType.NONE) {
+            isGetter = true;
+        }
+
+        return isGetter;
+    }
+
     private String getClassDefinitionForType(TypeMirror type) {
         return String.format("java.lang.Class<%s>", type.toString());
     }
 
-    public void createGetter(ExecutableElement method, JavaWriter writer) throws IOException {
+    public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
         String valueName = method.getSimpleName().toString();
         preferenceKeys.put(valueName, method);
 
         PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getReturnType());
-
         Default defaultAnnotation = method.getAnnotation(Default.class);
+
+        createGetter(defaultAnnotation, method, writer, valueName, preferenceType);
+    }
+
+    public void createGetterFromReflection(Method method, Element topLevelInterface,
+                                           JavaWriter writer) throws IOException {
+        writer.emitAnnotation(Override.class);
+        String valueName = method.getName();
+        preferenceKeys.put(valueName, topLevelInterface);
+
+        PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getGenericReturnType());
+        Default defaultAnnotation = method.getAnnotation(Default.class);
+
+        createGetter(defaultAnnotation, topLevelInterface, writer, valueName, preferenceType);
+    }
+
+
+    private void createGetter(Default defaultAnnotation, Element element, JavaWriter writer, String valueName,
+                              PreferenceType preferenceType) throws IOException {
         boolean hasDefaultAnnotation = defaultAnnotation != null;
+
         boolean allDefaults = false;
         if (hasDefaultAnnotation) {
             allDefaults = hasAllDefaults(defaultAnnotation);
@@ -74,7 +109,7 @@ public class Getter {
             case INT:
                 methodSuffix = "Int";
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofInt() == Default.intDefault) {
-                    warner.emitMissingDefaultWarning("int", method);
+                    warner.emitMissingDefaultWarning("int", element);
                 }
                 defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofInt()) : String.valueOf
                         (Default.intDefault);
@@ -82,7 +117,7 @@ public class Getter {
             case LONG:
                 methodSuffix = "Long";
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofLong() == Default.longDefault) {
-                    warner.emitMissingDefaultWarning("long", method);
+                    warner.emitMissingDefaultWarning("long", element);
                 }
                 defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofLong()) : String.valueOf
                         (Default.longDefault);
@@ -91,7 +126,7 @@ public class Getter {
             case FLOAT:
                 methodSuffix = "Float";
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofFloat() == Default.floatDefault) {
-                    warner.emitMissingDefaultWarning("float", method);
+                    warner.emitMissingDefaultWarning("float", element);
                 }
                 defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofFloat()) : String.valueOf
                         (Default.floatDefault);
@@ -100,7 +135,7 @@ public class Getter {
             case BOOLEAN:
                 methodSuffix = "Boolean";
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
-                    warner.emitMissingDefaultWarning("boolean", method);
+                    warner.emitMissingDefaultWarning("boolean", element);
                 }
                 defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofBoolean()) : String.valueOf
                         (Default.booleanDefault);
@@ -108,7 +143,7 @@ public class Getter {
             case STRING:
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofString().equals(Default
                         .stringDefault)) {
-                    warner.emitMissingDefaultWarning("String", method);
+                    warner.emitMissingDefaultWarning("String", element);
                 }
                 methodSuffix = "String";
                 defaultValue = (hasDefaultAnnotation ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default
@@ -116,14 +151,14 @@ public class Getter {
                 break;
             case STRINGSET:
                 if (hasDefaultAnnotation) {
-                    warner.emitWarning("No default for Set<String> preferences allowed.", method);
+                    warner.emitWarning("No default for Set<String> preferences allowed.", element);
                 }
                 methodSuffix = "StringSet";
                 defaultValue = "null";
                 break;
             case OBJECT:
                 if (hasDefaultAnnotation) {
-                    warner.emitWarning("No default for Object preferences allowed.", method);
+                    warner.emitWarning("No default for Object preferences allowed.", element);
                 }
                 methodSuffix = "String";
                 defaultValue = "null";
@@ -132,7 +167,7 @@ public class Getter {
                 break;
         }
 
-        writer.beginMethod(preferenceType.getTypeName(), method.getSimpleName().toString(), Modifier.PUBLIC);
+        writer.beginMethod(preferenceType.getTypeName(), valueName, Modifier.PUBLIC);
 
         String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
         writer.emitStatement("return %s", statement);
@@ -140,7 +175,7 @@ public class Getter {
         writer.emitEmptyLine();
     }
 
-    public Map<String, ExecutableElement> getPreferenceKeys() {
+    public Map<String, Element> getPreferenceKeys() {
         return preferenceKeys;
     }
 
@@ -156,4 +191,6 @@ public class Getter {
 
         return hasAllDefaults;
     }
+
+
 }

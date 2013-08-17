@@ -17,6 +17,7 @@ package de.devland.esperandro.processor;/*
 
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.lang.reflect.Type;
 
 public enum PreferenceType {
     NONE(null, null), INT(TypeKind.INT), LONG(TypeKind.LONG), FLOAT(TypeKind.FLOAT), BOOLEAN(TypeKind.BOOLEAN),
@@ -64,6 +65,29 @@ public enum PreferenceType {
         }
 
         return type;
+    }
+
+    public static PreferenceType toPreferenceType(Type type) {
+        String typeString = type.toString();
+        PreferenceType preferenceType = NONE;
+
+        if (typeString.equals("int")) {
+            preferenceType = INT;
+        } else if (typeString.equals("long")) {
+            preferenceType = LONG;
+        } else if (typeString.equals("float")) {
+            preferenceType = FLOAT;
+        } else if (typeString.equals("boolean")) {
+            preferenceType = BOOLEAN;
+        } else if (typeString.equals("java.util.Set<java.lang.String>")) {
+            preferenceType = STRINGSET;
+        } else if (typeString.equals("class java.lang.String")) {
+            preferenceType = STRING;
+        } else if (typeString.startsWith("class ")) {
+            preferenceType = OBJECT;
+            preferenceType.declaredTypeName = typeString.substring(6);
+        }
+        return preferenceType;
     }
 
     public String getTypeName() {

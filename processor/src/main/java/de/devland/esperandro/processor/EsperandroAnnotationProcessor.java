@@ -94,15 +94,16 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void processInterfaceMethods(Element topLevelInterface, Element currentInterfaze, JavaWriter writer) throws IOException {
+    private void processInterfaceMethods(Element topLevelInterface, Element currentInterfaze,
+                                         JavaWriter writer) throws IOException {
         List<? extends Element> potentialMethods = currentInterfaze.getEnclosedElements();
         for (Element element : potentialMethods) {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) element;
                 if (putter.isPutter(method)) {
-                    putter.createPutter(method, writer);
+                    putter.createPutterFromModel(method, writer);
                 } else if (getter.isGetter(method)) {
-                    getter.createGetter(method, writer);
+                    getter.createGetterFromModel(method, writer);
                 } else {
                     warner.emitError("No valid getter or setter detected.", method);
                 }
@@ -119,24 +120,34 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 } else {
                     try {
                         Class<?> subInterfaceClass = Class.forName(subInterfaceTypeName);
-                        processInterfacesReflection(topLevelInterface, subInterfaceClass);
+                        processInterfacesReflection(topLevelInterface, subInterfaceClass, writer);
                     } catch (ClassNotFoundException e) {
-                        warner.emitError("Could not load Interface '" + subInterfaceTypeName + "' for generation.", topLevelInterface);
+                        warner.emitError("Could not load Interface '" + subInterfaceTypeName + "' for generation.",
+                                topLevelInterface);
                     }
                 }
             }
         }
     }
 
-    private void processInterfacesReflection(Element topLevelInterface, Class<?> interfaceClass) {
+    private void processInterfacesReflection(Element topLevelInterface, Class<?> interfaceClass,
+                                             JavaWriter writer) throws IOException {
 
         for (Method method : interfaceClass.getDeclaredMethods()) {
-            // TODO process reflection methods
+            if (putter.isPutter(method)) {
+                putter.createPutterFromReflection(method, topLevelInterface, writer);
+            } else if (getter.isGetter(method)) {
+                getter.createGetterFromReflection(method, topLevelInterface, writer);
+            } else {
+                warner.emitError("No valid getter or setter detected in class '" + interfaceClass.getName() + "' for " +
+                        "method: '" + method.getName() + "'.", topLevelInterface);
+            }
         }
 
         for (Class<?> subInterfaceClass : interfaceClass.getInterfaces()) {
-            if (subInterfaceClass.getName() != null && !subInterfaceClass.getName().equals(SharedPreferenceActions.class.getName())) {
-                processInterfacesReflection(topLevelInterface, subInterfaceClass);
+            if (subInterfaceClass.getName() != null && !subInterfaceClass.getName().equals(SharedPreferenceActions
+                    .class.getName())) {
+                processInterfacesReflection(topLevelInterface, subInterfaceClass, writer);
             }
         }
     }

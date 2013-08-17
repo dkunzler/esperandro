@@ -17,22 +17,25 @@ package de.devland.esperandro.processor;/*
 
 import com.squareup.java.JavaWriter;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Putter {
 
-    private Map<String, ExecutableElement> preferenceKeys;
+    private Map<String, Element> preferenceKeys;
 
     public Putter() {
-        preferenceKeys = new HashMap<String, ExecutableElement>();
+        preferenceKeys = new HashMap<String, Element>();
     }
 
     public boolean isPutter(ExecutableElement method) {
@@ -47,16 +50,44 @@ public class Putter {
         return isPutter;
     }
 
-    public void createPutter(ExecutableElement method, JavaWriter writer) throws IOException {
+    public boolean isPutter(Method method) {
+        boolean isPutter = false;
+        Type[] parameterTypes = method.getGenericParameterTypes();
+        if (parameterTypes != null && parameterTypes.length == 1 && method.getReturnType().toString().equals("void")) {
+            if (PreferenceType.toPreferenceType(parameterTypes[0]) != PreferenceType.NONE) {
+                isPutter = true;
+            }
+        }
+
+        return isPutter;
+    }
+
+    public void createPutterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         String valueName = method.getSimpleName().toString();
         String value = valueName;
         preferenceKeys.put(valueName, method);
-
-        writer.emitAnnotation(Override.class);
         TypeMirror parameterType = method.getParameters().get(0).asType();
         PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
-        writer.beginMethod("void", method.getSimpleName().toString(), Modifier.PUBLIC, preferenceType.getTypeName(),
-                valueName);
+
+        createPutter(writer, valueName, value, preferenceType);
+    }
+
+
+    public void createPutterFromReflection(Method method, Element topLevelInterface,
+                                           JavaWriter writer) throws IOException {
+        String valueName = method.getName();
+        String value = valueName;
+        preferenceKeys.put(valueName, topLevelInterface);
+        Type parameterType = method.getGenericParameterTypes()[0];
+        PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
+
+        createPutter(writer, valueName, value, preferenceType);
+    }
+
+    private void createPutter(JavaWriter writer, String valueName, String value,
+                              PreferenceType preferenceType) throws IOException {
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("void", valueName, Modifier.PUBLIC, preferenceType.getTypeName(), valueName);
         String statementPattern = "preferences.edit().put%s(\"%s\", %s).commit()";
         String methodSuffix = "";
         switch (preferenceType) {
@@ -90,7 +121,9 @@ public class Putter {
         writer.emitEmptyLine();
     }
 
-    public Map<String, ExecutableElement> getPreferenceKeys() {
+    public Map<String, Element> getPreferenceKeys() {
         return preferenceKeys;
     }
+
+
 }

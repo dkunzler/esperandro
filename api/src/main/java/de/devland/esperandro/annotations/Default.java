@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * int}: -1 {@code long}: -1l {@code float}: -1.0f {@code String}: "" (empty String)
  */
 @Target(ElementType.METHOD)
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Default {
 
     public static final boolean booleanDefault = false;

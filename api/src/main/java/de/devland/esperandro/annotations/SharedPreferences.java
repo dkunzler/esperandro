@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.SOURCE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /*
  * Copyright 2013 David Kunzler
  *
@@ -30,7 +30,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  * SharedPreference with name and/or mode.
  */
 @Target(TYPE)
-@Retention(SOURCE)
+@Retention(RUNTIME)
 public @interface SharedPreferences {
     String name() default "";
 
