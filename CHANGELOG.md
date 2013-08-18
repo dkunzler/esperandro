@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.13 (next release)
+0.13
 -------------------
  * allow storing and accessing of serializable Objects into the preferences
  * fixed interface inheritance for library projects in eclipse and for super interfaces in jars
