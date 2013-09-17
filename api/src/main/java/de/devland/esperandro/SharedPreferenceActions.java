@@ -36,6 +36,13 @@ public interface SharedPreferenceActions {
      * @return true if the given key exists, false otherwise
      */
     boolean contains(String key);
+    
+    /**
+     * Removes a value for the given key.
+     *
+     * @param key
+     */
+    void remove(String key);
 
     /**
      * Registers a callback to be invoked when a change happens to a preference.

@@ -228,6 +228,12 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitStatement("return preferences.contains(key)");
         writer.endMethod();
         writer.emitEmptyLine();
+        
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("void", "remove", Modifier.PUBLIC, String.class.getName(), "key");
+        writer.emitStatement("preferences.edit().remove(key).commit()");
+        writer.endMethod();
+        writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
         writer.beginMethod("void", "registerOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences" +
