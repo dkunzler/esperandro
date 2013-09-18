@@ -38,8 +38,7 @@ public interface SharedPreferenceActions {
     boolean contains(String key);
     
     /**
-     * Removes a value for the given key.
-     *
+     * Removes the value for the given key.
      * @param key
      */
     void remove(String key);
