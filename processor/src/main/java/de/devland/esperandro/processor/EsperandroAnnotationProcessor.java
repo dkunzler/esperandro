@@ -1,6 +1,6 @@
 package de.devland.esperandro.processor;
 
-import com.squareup.java.JavaWriter;
+import com.squareup.javawriter.JavaWriter;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.SharedPreferences;
@@ -13,11 +13,7 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /*
  * Copyright 2013 David Kunzler
@@ -46,6 +42,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             "de.devland.esperandro.Esperandro"};
     public static final String sharedPreferencesAnnotationName = "de.devland.esperandro.annotations" + "" +
             ".SharedPreferences";
+
+    protected static final Set<Modifier> modPrivate = new HashSet<Modifier>(Arrays.asList(Modifier.PRIVATE));
+    protected static final Set<Modifier> modPublic = new HashSet<Modifier>(Arrays.asList(Modifier.PUBLIC));
 
     Warner warner;
     Getter getter;
@@ -191,15 +190,15 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             result.emitPackage(packageName);
             result.emitImports(neededImports);
             result.emitEmptyLine();
-            result.beginType(typeName + SUFFIX, "class", Modifier.PUBLIC, null, qualifiedNameable.getQualifiedName()
+            result.beginType(typeName + SUFFIX, "class", modPublic, null, qualifiedNameable.getQualifiedName()
                     .toString(), SharedPreferenceActions.class.getName());
             result.emitEmptyLine();
-            result.emitField("android.content.SharedPreferences", "preferences", Modifier.PRIVATE);
+            result.emitField("android.content.SharedPreferences", "preferences", modPrivate);
 
 
             result.emitEmptyLine();
-            result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + SUFFIX, Modifier.PUBLIC,
-                    "Context", "context");
+            result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + SUFFIX, modPublic, "Context",
+                    "context");
             if (preferencesName != null && !preferencesName.equals("")) {
                 result.emitStatement("this.preferences = context.getSharedPreferences(\"%s\", %s)", preferencesName,
                         mode.getSharedPreferenceModeStatement());
@@ -218,39 +217,39 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     private void createGenericActions(JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("android.content.SharedPreferences", "get", Modifier.PUBLIC);
+        writer.beginMethod("android.content.SharedPreferences", "get", modPublic);
         writer.emitStatement("return preferences");
         writer.endMethod();
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("boolean", "contains", Modifier.PUBLIC, String.class.getName(), "key");
+        writer.beginMethod("boolean", "contains", modPublic, String.class.getName(), "key");
         writer.emitStatement("return preferences.contains(key)");
         writer.endMethod();
         writer.emitEmptyLine();
-        
+
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "remove", Modifier.PUBLIC, String.class.getName(), "key");
+        writer.beginMethod("void", "remove", modPublic, String.class.getName(), "key");
         writer.emitStatement("preferences.edit().remove(key).commit()");
         writer.endMethod();
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "registerOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences" +
+        writer.beginMethod("void", "registerOnChangeListener", modPublic, "android.content.SharedPreferences" + "" +
                 ".OnSharedPreferenceChangeListener", "listener");
         writer.emitStatement("preferences.registerOnSharedPreferenceChangeListener(listener)");
         writer.endMethod();
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "unregisterOnChangeListener", Modifier.PUBLIC, "android.content.SharedPreferences"
-                + ".OnSharedPreferenceChangeListener", "listener");
+        writer.beginMethod("void", "unregisterOnChangeListener", modPublic, "android.content.SharedPreferences" + "" +
+                ".OnSharedPreferenceChangeListener", "listener");
         writer.emitStatement("preferences.unregisterOnSharedPreferenceChangeListener(listener)");
         writer.endMethod();
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "clear", Modifier.PUBLIC);
+        writer.beginMethod("void", "clear", modPublic);
         writer.emitStatement("preferences.edit().clear().commit()");
         writer.endMethod();
         writer.emitEmptyLine();

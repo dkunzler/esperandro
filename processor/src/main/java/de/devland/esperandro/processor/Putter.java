@@ -15,7 +15,7 @@ package de.devland.esperandro.processor;/*
  *
  */
 
-import com.squareup.java.JavaWriter;
+import com.squareup.javawriter.JavaWriter;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -24,7 +24,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +86,8 @@ public class Putter {
     private void createPutter(JavaWriter writer, String valueName, String value,
                               PreferenceType preferenceType) throws IOException {
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", valueName, Modifier.PUBLIC, preferenceType.getTypeName(), valueName);
+        writer.beginMethod("void", valueName, EsperandroAnnotationProcessor.modPublic, preferenceType.getTypeName(),
+                valueName);
         String statementPattern = "preferences.edit().put%s(\"%s\", %s).commit()";
         String methodSuffix = "";
         switch (preferenceType) {

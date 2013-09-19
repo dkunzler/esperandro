@@ -15,7 +15,7 @@ package de.devland.esperandro.processor;/*
  *
  */
 
-import com.squareup.java.JavaWriter;
+import com.squareup.javawriter.JavaWriter;
 import de.devland.esperandro.annotations.Default;
 
 import javax.lang.model.element.Element;
@@ -24,7 +24,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -167,7 +166,7 @@ public class Getter {
                 break;
         }
 
-        writer.beginMethod(preferenceType.getTypeName(), valueName, Modifier.PUBLIC);
+        writer.beginMethod(preferenceType.getTypeName(), valueName, EsperandroAnnotationProcessor.modPublic);
 
         String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
         writer.emitStatement("return %s", statement);
