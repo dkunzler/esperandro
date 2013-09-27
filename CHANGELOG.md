@@ -4,7 +4,12 @@ Changelog
 next release
 ------------
  * ...
+
+1.0
+---
+ * updated JavaWriter to 2.1.2
  * added remove functionality in SharedPreferenceActions
+ * minor bugfix when using generics as serializable Objects
 
 0.13
 ----
