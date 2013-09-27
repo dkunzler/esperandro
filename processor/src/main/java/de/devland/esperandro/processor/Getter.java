@@ -162,7 +162,7 @@ public class Getter {
                 methodSuffix = "String";
                 defaultValue = "null";
                 statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
-                        statementPattern, preferenceType.getTypeName());
+                        statementPattern, preferenceType.getTypeName().replaceFirst("<.*>", ""));
                 break;
         }
 
