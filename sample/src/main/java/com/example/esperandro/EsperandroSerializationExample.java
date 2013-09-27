@@ -18,11 +18,17 @@ package com.example.esperandro;/*
 import com.example.esperandro.model.Container;
 import de.devland.esperandro.annotations.SharedPreferences;
 
+import java.util.ArrayList;
+
 @SharedPreferences
 public interface EsperandroSerializationExample {
 
     void containerValue(Container container);
 
     Container containerValue();
+
+    void stringList(ArrayList<String> stringList);
+
+    ArrayList<String> stringList();
 
 }
