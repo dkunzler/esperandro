@@ -192,6 +192,12 @@ getPreferences(Class&lt;T&gt; preferenceClass, Context context)</pre>
      * @return true if the given key exists, false otherwise
      */
     boolean contains(String key);
+	
+    /**
+     * Removes the value for the given key.
+     * @param key
+     */
+    void remove(String key);
 
     /**
      * Registers a callback to be invoked when a change happens to a preference.
