@@ -5,6 +5,8 @@ import android.util.Log;
 import de.devland.esperandro.serialization.Serializer;
 
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
 
 /*
  * Copyright 2013 David Kunzler
@@ -27,12 +29,28 @@ import java.lang.reflect.Constructor;
  * Manager to give access to the generated Esperandro-SharedPreference implementations.
  */
 public class Esperandro {
+    private static Esperandro instance;
 
     private static final String SUFFIX = "$$Impl";
 
     private static final String TAG = "Esperandro";
 
-    private static Serializer serializer;
+    private Esperandro() {}
+
+    private static Esperandro getInstance() {
+        if (instance == null) {
+            synchronized (Esperandro.class) {
+                if (instance == null) {
+                    instance = new Esperandro();
+                }
+            }
+        }
+        return instance;
+    }
+
+    private Serializer serializer;
+
+    private final Map<String, Object> preferenceInstances = new HashMap<String, Object>();
 
     /**
      * Returns an instance of the pre-generated class of the given SharedPreferences-annotated interface.
@@ -46,7 +64,19 @@ public class Esperandro {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getPreferences(Class<T> preferenceClass, Context context) {
-        T implementation = null;
+        Esperandro esperandro = Esperandro.getInstance();
+
+        T implementation = (T) esperandro.preferenceInstances.get(preferenceClass.getName());
+        if (implementation == null) {
+            implementation = esperandro.createInstance(preferenceClass, context);
+            esperandro.preferenceInstances.put(preferenceClass.getName(), implementation);
+        }
+        return implementation;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T createInstance(Class<T> preferenceClass, Context context) {
+        T implementation;
         try {
             Class<? extends T> implementationClass = (Class<? extends T>) Class.forName(preferenceClass
                     .getCanonicalName() + SUFFIX);
@@ -61,19 +91,20 @@ public class Esperandro {
     }
 
     public static void setSerializer(Serializer serializer) {
-        Esperandro.serializer = serializer;
+        Esperandro.getInstance().serializer = serializer;
     }
 
     public static Serializer getSerializer() {
-        if (serializer == null) {
-            serializer = getDefaultSerializer();
-            if (serializer == null) {
+        Esperandro esperandro = Esperandro.getInstance();
+        if (esperandro.serializer == null) {
+            esperandro.serializer = getDefaultSerializer();
+            if (esperandro.serializer == null) {
                 throw new IllegalStateException("Tried to save a serialized Object into preferences but no serializer" +
                         " is " +
                         "" + "present");
             }
         }
-        return serializer;
+        return esperandro.serializer;
     }
 
     @SuppressWarnings("unchecked")
