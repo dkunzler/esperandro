@@ -45,6 +45,7 @@
         <module>processor</module>
         <module>sample</module>
         <module>gson-serializer</module>
+        <module>tests</module>
     </modules>
 
     <properties>
