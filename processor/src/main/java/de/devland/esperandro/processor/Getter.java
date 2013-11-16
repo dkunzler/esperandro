@@ -1,4 +1,4 @@
-package de.devland.esperandro.processor;/*
+/*
  * Copyright 2013 David Kunzler
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@ package de.devland.esperandro.processor;/*
  *   limitations under the License.
  *
  */
+package de.devland.esperandro.processor;
 
 import com.squareup.javawriter.JavaWriter;
 import de.devland.esperandro.annotations.Default;
@@ -63,10 +64,6 @@ public class Getter {
         }
 
         return isGetter;
-    }
-
-    private String getClassDefinitionForType(TypeMirror type) {
-        return String.format("java.lang.Class<%s>", type.toString());
     }
 
     public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
@@ -182,7 +179,7 @@ public class Getter {
     private boolean hasAllDefaults(Default defaultAnnotation) {
         boolean hasAllDefaults = true;
 
-        hasAllDefaults &= defaultAnnotation.ofBoolean() == Default.booleanDefault;
+        hasAllDefaults = defaultAnnotation.ofBoolean() == Default.booleanDefault;
         hasAllDefaults &= defaultAnnotation.ofInt() == Default.intDefault;
         hasAllDefaults &= defaultAnnotation.ofFloat() == Default.floatDefault;
         hasAllDefaults &= defaultAnnotation.ofLong() == Default.longDefault;

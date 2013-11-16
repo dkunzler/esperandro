@@ -1,4 +1,4 @@
-package de.devland.esperandro.processor;/*
+/*
  * Copyright 2013 David Kunzler
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@ package de.devland.esperandro.processor;/*
  *   limitations under the License.
  *
  */
+package de.devland.esperandro.processor;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;

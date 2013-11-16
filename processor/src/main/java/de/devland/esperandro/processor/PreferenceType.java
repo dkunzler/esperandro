@@ -1,4 +1,4 @@
-package de.devland.esperandro.processor;/*
+/*
  * Copyright 2013 David Kunzler
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@ package de.devland.esperandro.processor;/*
  *   limitations under the License.
  *
  */
+package de.devland.esperandro.processor;
 
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -23,16 +24,13 @@ public enum PreferenceType {
     NONE(null, null), INT(TypeKind.INT), LONG(TypeKind.LONG), FLOAT(TypeKind.FLOAT), BOOLEAN(TypeKind.BOOLEAN),
     STRING(TypeKind.DECLARED, "java.lang.String"), STRINGSET(TypeKind.DECLARED, "java.util.Set<java.lang.String>"),
     OBJECT(TypeKind.DECLARED, null);
-    private final TypeKind typeKind;
     private String declaredTypeName;
 
     PreferenceType(TypeKind typeKind) {
-        this.typeKind = typeKind;
         this.declaredTypeName = null;
     }
 
     PreferenceType(TypeKind typeKind, String declaredTypeName) {
-        this.typeKind = typeKind;
         this.declaredTypeName = declaredTypeName;
     }
 
