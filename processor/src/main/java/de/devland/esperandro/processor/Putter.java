@@ -44,22 +44,17 @@ public class Putter {
         List<? extends VariableElement> parameters = method.getParameters();
         TypeMirror returnType = method.getReturnType();
         TypeKind returnTypeKind = returnType.getKind();
-        if (validPutterReturnTypes.contains(returnTypeKind)) {
-            if (parameters != null && parameters.size() == 1 && PreferenceType
-                    .toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
-                isPutter = true;
-            }
-        } else {
-            // TODO: emit warning here
+        if (parameters != null && parameters.size() == 1 && validPutterReturnTypes.contains(returnTypeKind) && PreferenceType
+                .toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
+            isPutter = true;
         }
         return isPutter;
     }
 
-    // TODO: find out when this is used and then add the possibility to detect return type boolean
     public boolean isPutter(Method method) {
         boolean isPutter = false;
         Type[] parameterTypes = method.getGenericParameterTypes();
-        if (parameterTypes != null && parameterTypes.length == 1 && method.getReturnType().toString().equals("void")) {
+        if (parameterTypes != null && parameterTypes.length == 1 && (method.getReturnType().toString().equals("void") || method.getReturnType().toString().equals("boolean"))) {
             if (PreferenceType.toPreferenceType(parameterTypes[0]) != PreferenceType.NONE) {
                 isPutter = true;
             }
@@ -78,7 +73,6 @@ public class Putter {
         createPutter(writer, valueName, valueName, preferenceType, returnType.toString());
     }
 
-    //TODO: find out when this is called and check if the returnType works for void and boolean
     public void createPutterFromReflection(Method method, Element topLevelInterface,
                                            JavaWriter writer) throws IOException {
         String valueName = method.getName();
@@ -87,7 +81,7 @@ public class Putter {
         PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
         Class<?> returnType = method.getReturnType();
 
-        createPutter(writer, valueName, valueName, preferenceType, returnType.getSimpleName());
+        createPutter(writer, valueName, valueName, preferenceType, returnType.toString());
     }
 
     private void createPutter(JavaWriter writer, String valueName, String value,
