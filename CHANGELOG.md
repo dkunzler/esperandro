@@ -5,6 +5,11 @@ next release
 ------------
  * ...
 
+1.1
+---
+ * changed default file system sync of preferences from commit() to apply(). Reduces load on the UI Thread.
+ * added support for setters with boolean return type. Those still use commit() to be able to tell about the success of the operation
+
 1.0
 ---
  * updated JavaWriter to 2.1.2
