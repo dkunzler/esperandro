@@ -1,4 +1,4 @@
-package de.devland.esperandro.processor;/*
+/*
  * Copyright 2013 David Kunzler
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@ package de.devland.esperandro.processor;/*
  *   limitations under the License.
  *
  */
+package de.devland.esperandro.processor;
 
 import com.squareup.javawriter.JavaWriter;
 
@@ -25,13 +26,14 @@ import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Putter {
 
     private Map<String, Element> preferenceKeys;
+
+    private Set<TypeKind> validPutterReturnTypes = new HashSet<TypeKind>(
+            Arrays.asList(TypeKind.VOID, TypeKind.BOOLEAN));
 
     public Putter() {
         preferenceKeys = new HashMap<String, Element>();
@@ -42,13 +44,18 @@ public class Putter {
         List<? extends VariableElement> parameters = method.getParameters();
         TypeMirror returnType = method.getReturnType();
         TypeKind returnTypeKind = returnType.getKind();
-        if (parameters != null && parameters.size() == 1 && returnTypeKind.equals(TypeKind.VOID) && PreferenceType
-                .toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
-            isPutter = true;
+        if (validPutterReturnTypes.contains(returnTypeKind)) {
+            if (parameters != null && parameters.size() == 1 && PreferenceType
+                    .toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
+                isPutter = true;
+            }
+        } else {
+            // TODO: emit warning here
         }
         return isPutter;
     }
 
+    // TODO: find out when this is used and then add the possibility to detect return type boolean
     public boolean isPutter(Method method) {
         boolean isPutter = false;
         Type[] parameterTypes = method.getGenericParameterTypes();
@@ -63,32 +70,42 @@ public class Putter {
 
     public void createPutterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         String valueName = method.getSimpleName().toString();
-        String value = valueName;
         preferenceKeys.put(valueName, method);
         TypeMirror parameterType = method.getParameters().get(0).asType();
         PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
+        TypeMirror returnType = method.getReturnType();
 
-        createPutter(writer, valueName, value, preferenceType);
+        createPutter(writer, valueName, valueName, preferenceType, returnType.toString());
     }
 
-
+    //TODO: find out when this is called and check if the returnType works for void and boolean
     public void createPutterFromReflection(Method method, Element topLevelInterface,
                                            JavaWriter writer) throws IOException {
         String valueName = method.getName();
-        String value = valueName;
         preferenceKeys.put(valueName, topLevelInterface);
         Type parameterType = method.getGenericParameterTypes()[0];
         PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
+        Class<?> returnType = method.getReturnType();
 
-        createPutter(writer, valueName, value, preferenceType);
+        createPutter(writer, valueName, valueName, preferenceType, returnType.getSimpleName());
     }
 
     private void createPutter(JavaWriter writer, String valueName, String value,
-                              PreferenceType preferenceType) throws IOException {
+                              PreferenceType preferenceType, String returnType) throws IOException {
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", valueName, EsperandroAnnotationProcessor.modPublic, preferenceType.getTypeName(),
+
+        boolean shouldReturnValue = returnType.equalsIgnoreCase(Boolean.class.getSimpleName());
+        String editorCommitStyle = "apply()";
+        StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s).%s");
+
+        writer.beginMethod(returnType, valueName, EsperandroAnnotationProcessor.modPublic, preferenceType.getTypeName(),
                 valueName);
-        String statementPattern = "preferences.edit().put%s(\"%s\", %s).commit()";
+
+        if (shouldReturnValue) {
+            statementPattern.insert(0, "return ");
+            editorCommitStyle = "commit()";
+        }
+
         String methodSuffix = "";
         switch (preferenceType) {
             case INT:
@@ -115,7 +132,7 @@ public class Putter {
                 break;
         }
 
-        String statement = String.format(statementPattern, methodSuffix, valueName, value);
+        String statement = String.format(statementPattern.toString(), methodSuffix, valueName, value, editorCommitStyle);
         writer.emitStatement(statement);
         writer.endMethod();
         writer.emitEmptyLine();
