@@ -1,11 +1,3 @@
-import de.devland.esperandro.Esperandro;
-import de.devland.esperandro.tests.EsperandroSimpleExample;
-import junit.framework.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-
 /*
  * Copyright 2013 David Kunzler
  *
@@ -22,6 +14,16 @@ import org.robolectric.RobolectricTestRunner;
  *   limitations under the License.
  *
  */
+
+import de.devland.esperandro.Esperandro;
+import de.devland.esperandro.tests.EsperandroSimpleExample;
+import junit.framework.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+
+
 @RunWith(RobolectricTestRunner.class)
 public class EsperandroTest {
 

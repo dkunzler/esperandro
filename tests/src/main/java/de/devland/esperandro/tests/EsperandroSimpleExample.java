@@ -1,4 +1,4 @@
-package de.devland.esperandro.tests;/*
+/*
  * Copyright 2013 David Kunzler
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@ package de.devland.esperandro.tests;/*
  *   limitations under the License.
  *
  */
+package de.devland.esperandro.tests;
 
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.Default;
@@ -53,4 +54,8 @@ public interface EsperandroSimpleExample {
 
     void stringSetPref(Set<String> pref);
 
+    @Default(ofString = "check the return value...")
+    String stringPrefWithBooleanPutter();
+
+    boolean stringPrefWithBooleanPutter(String value);
 }
