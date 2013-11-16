@@ -1,4 +1,4 @@
-package com.example.esperandro;/*
+/*
  * Copyright 2013 David Kunzler
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@ package com.example.esperandro;/*
  *   limitations under the License.
  *
  */
+package com.example.esperandro;
 
 import com.example.esperandro.model.Container;
 import de.devland.esperandro.annotations.SharedPreferences;
@@ -23,12 +24,16 @@ import java.util.ArrayList;
 @SharedPreferences
 public interface EsperandroSerializationExample {
 
-    void containerValue(Container container);
+    void containerValueAsync(Container container);
 
-    Container containerValue();
+    Container containerValueAsync();
 
     void stringList(ArrayList<String> stringList);
 
     ArrayList<String> stringList();
+
+    boolean containerValueSync(Container container);
+
+    Container containerValueSync();
 
 }

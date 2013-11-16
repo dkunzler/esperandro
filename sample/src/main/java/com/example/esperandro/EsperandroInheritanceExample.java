@@ -1,4 +1,4 @@
-package com.example.esperandro;/*
+/*
  * Copyright 2013 David Kunzler
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@ package com.example.esperandro;/*
  *   limitations under the License.
  *
  */
+package com.example.esperandro;
 
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.annotations.SharedPreferences;
