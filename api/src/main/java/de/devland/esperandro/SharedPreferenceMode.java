@@ -1,5 +1,3 @@
-package de.devland.esperandro;
-
 /*
  * Copyright 2013 David Kunzler
  *
@@ -16,6 +14,7 @@ package de.devland.esperandro;
  *   limitations under the License.
  *
  */
+package de.devland.esperandro;
 
 /**
  * Values correspond to the respective android equivalent of Context.MODE_${SharedPreferenceMode}.

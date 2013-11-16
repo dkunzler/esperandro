@@ -1,13 +1,3 @@
-package de.devland.esperandro;
-
-import android.content.Context;
-import android.util.Log;
-import de.devland.esperandro.serialization.Serializer;
-
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
-
 /*
  * Copyright 2013 David Kunzler
  *
@@ -24,6 +14,15 @@ import java.util.Map;
  *   limitations under the License.
  *
  */
+package de.devland.esperandro;
+
+import android.content.Context;
+import android.util.Log;
+import de.devland.esperandro.serialization.Serializer;
+
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Manager to give access to the generated Esperandro-SharedPreference implementations.
@@ -35,7 +34,8 @@ public class Esperandro {
 
     private static final String TAG = "Esperandro";
 
-    private Esperandro() {}
+    private Esperandro() {
+    }
 
     private static Esperandro getInstance() {
         if (instance == null) {
@@ -55,11 +55,8 @@ public class Esperandro {
     /**
      * Returns an instance of the pre-generated class of the given SharedPreferences-annotated interface.
      *
-     * @param preferenceClass
-     *         The interface whose implementation should be returned.
-     * @param context
-     *         A context to be able to construct the android SharedPreference.
-     *
+     * @param preferenceClass The interface whose implementation should be returned.
+     * @param context         A context to be able to construct the android SharedPreference.
      * @return An instance of the given interface.
      */
     @SuppressWarnings("unchecked")

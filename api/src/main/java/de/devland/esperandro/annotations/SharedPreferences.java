@@ -1,12 +1,3 @@
-package de.devland.esperandro.annotations;
-
-import de.devland.esperandro.SharedPreferenceMode;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /*
  * Copyright 2013 David Kunzler
  *
@@ -23,6 +14,15 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *   limitations under the License.
  *
  */
+package de.devland.esperandro.annotations;
+
+import de.devland.esperandro.SharedPreferenceMode;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Declares an interface as SharedPreference. Esperandro will generate a class for each interface that is annotated with

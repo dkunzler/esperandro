@@ -1,6 +1,3 @@
-package de.devland.esperandro;
-
-import android.content.SharedPreferences;
 /*
  * Copyright 2013 David Kunzler
  *
@@ -17,6 +14,9 @@ import android.content.SharedPreferences;
  *   limitations under the License.
  *
  */
+package de.devland.esperandro;
+
+import android.content.SharedPreferences;
 
 /**
  * This interface defines some actions to make the use of Esperandro-generated classes easier without using the
@@ -31,31 +31,29 @@ public interface SharedPreferenceActions {
     /**
      * Checks if a value for the given key exists.
      *
-     * @param key
-     *
+     * @param key the key for the value to be checked
      * @return true if the given key exists, false otherwise
      */
     boolean contains(String key);
-    
+
     /**
      * Removes the value for the given key.
-     * @param key
+     *
+     * @param key the key for the value to be removed
      */
     void remove(String key);
 
     /**
      * Registers a callback to be invoked when a change happens to a preference.
      *
-     * @param listener
-     *         The callback that will run.
+     * @param listener The callback that will run.
      */
     void registerOnChangeListener(SharedPreferences.OnSharedPreferenceChangeListener listener);
 
     /**
      * Unregisters a previous callback.
      *
-     * @param listener
-     *         The callback that should be unregistered.
+     * @param listener The callback that should be unregistered.
      */
     void unregisterOnChangeListener(SharedPreferences.OnSharedPreferenceChangeListener listener);
 
