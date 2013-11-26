@@ -1,10 +1,12 @@
-import de.devland.esperandro.Esperandro;
+package de.devland.esperandro;
+
 import de.devland.esperandro.tests.EsperandroSimpleExample;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 /*
  * Copyright 2013 David Kunzler
@@ -22,8 +24,9 @@ import org.robolectric.RobolectricTestRunner;
  *   limitations under the License.
  *
  */
+@Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner.class)
-public class EsperandroTest {
+public class BasicTest {
 
     @Test
     public void testNotNull() {
@@ -39,4 +42,6 @@ public class EsperandroTest {
         Assert.assertNotNull(preferences2);
         Assert.assertEquals(preferences1, preferences2);
     }
+
+
 }
