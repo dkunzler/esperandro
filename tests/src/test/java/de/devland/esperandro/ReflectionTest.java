@@ -12,31 +12,40 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
 
-import de.devland.esperandro.Esperandro;
-import de.devland.esperandro.tests.EsperandroSimpleExample;
+package de.devland.esperandro;
+
+import de.devland.esperandro.tests.EsperandroApplyReflectionExample;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-
+/**
+ * Basically checks that generation works when referencing a binary super interface instead of a local one.
+ * Functionality is the same. When the compiler does not correctly generate the class there will be compile failures
+ * because the implementation does not override all interface methods. Therefore only simple sanity checks are needed
+ * here.
+ */
+@Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner.class)
-public class EsperandroTest {
-
+public class ReflectionTest {
     @Test
     public void testNotNull() {
-        EsperandroSimpleExample preferences = Esperandro.getPreferences(EsperandroSimpleExample.class, Robolectric.application);
+        EsperandroApplyReflectionExample preferences = Esperandro.getPreferences(EsperandroApplyReflectionExample.class,
+                Robolectric.application);
         Assert.assertNotNull(preferences);
     }
 
     @Test
     public void testSameObject() {
-        EsperandroSimpleExample preferences1 = Esperandro.getPreferences(EsperandroSimpleExample.class, Robolectric.application);
-        EsperandroSimpleExample preferences2 = Esperandro.getPreferences(EsperandroSimpleExample.class, Robolectric.application);
+        EsperandroApplyReflectionExample preferences1 = Esperandro.getPreferences(EsperandroApplyReflectionExample.class,
+                Robolectric.application);
+        EsperandroApplyReflectionExample preferences2 = Esperandro.getPreferences(EsperandroApplyReflectionExample.class,
+                Robolectric.application);
         Assert.assertNotNull(preferences1);
         Assert.assertNotNull(preferences2);
         Assert.assertEquals(preferences1, preferences2);

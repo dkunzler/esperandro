@@ -13,12 +13,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package de.devland.esperandro.tests.model;
 
-import java.io.Serializable;
+package de.devland.esperandro.tests;
 
-public class Container implements Serializable {
+import de.devland.esperandro.annotations.SharedPreferences;
+import de.devland.esperandro.test.BaseApplyPreference;
 
-    public String value;
-    public int anotherValue;
+@SharedPreferences
+public interface EsperandroApplyReflectionExample extends BaseApplyPreference {
 }

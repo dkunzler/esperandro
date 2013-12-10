@@ -12,7 +12,6 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
 package de.devland.esperandro;
 
@@ -59,8 +58,7 @@ public interface SharedPreferenceActions {
 
     /**
      * Clears the complete sharedPreferences of the previously given name. (Be aware that ALL preferences under this
-     * name
-     * are cleared not only the ones defined in your interface)
+     * name are cleared not only the ones defined in your interface)
      */
     // TODO intelligent clear: only delete those values that are defined in the interface
     void clear();

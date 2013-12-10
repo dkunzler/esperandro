@@ -12,7 +12,6 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
 package de.devland.esperandro.processor;
 
@@ -68,6 +67,7 @@ public class Getter {
 
     public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
+        writer.emitAnnotation(SuppressWarnings.class, new String[]{"\"unchecked\""});
         String valueName = method.getSimpleName().toString();
         preferenceKeys.put(valueName, method);
 
