@@ -66,10 +66,6 @@ public class Getter {
         return isGetter;
     }
 
-    private String getClassDefinitionForType(TypeMirror type) {
-        return String.format("java.lang.Class<%s>", type.toString());
-    }
-
     public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
         writer.emitAnnotation(SuppressWarnings.class, new String[]{"\"unchecked\""});
