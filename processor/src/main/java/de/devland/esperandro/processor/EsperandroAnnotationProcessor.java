@@ -69,15 +69,17 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 Set<? extends Element> interfaces = roundEnv.getElementsAnnotatedWith(SharedPreferences.class);
 
                 for (Element interfaze : interfaces) {
-                    assert (interfaze.getKind() == ElementKind.INTERFACE);
-
-                    try {
-                        JavaWriter writer = initImplementation(interfaze);
-                        processInterfaceMethods(interfaze, interfaze, writer);
-                        createGenericActions(writer);
-                        finish(writer);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    // fix some weird behaviour where getElementsAnnotatedWith returns more elements than expected
+                    if (interfaze.getKind() == ElementKind.INTERFACE && interfaze.getAnnotation(SharedPreferences
+                            .class) != null) {
+                        try {
+                            JavaWriter writer = initImplementation(interfaze);
+                            processInterfaceMethods(interfaze, interfaze, writer);
+                            createGenericActions(writer);
+                            finish(writer);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
