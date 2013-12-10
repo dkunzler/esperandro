@@ -1,6 +1,3 @@
-package de.devland.esperandro;
-
-import android.content.SharedPreferences;
 /*
  * Copyright 2013 David Kunzler
  *
@@ -15,8 +12,11 @@ import android.content.SharedPreferences;
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
+
+package de.devland.esperandro;
+
+import android.content.SharedPreferences;
 
 /**
  * This interface defines some actions to make the use of Esperandro-generated classes easier without using the
@@ -36,9 +36,10 @@ public interface SharedPreferenceActions {
      * @return true if the given key exists, false otherwise
      */
     boolean contains(String key);
-    
+
     /**
      * Removes the value for the given key.
+     *
      * @param key
      */
     void remove(String key);
@@ -61,8 +62,7 @@ public interface SharedPreferenceActions {
 
     /**
      * Clears the complete sharedPreferences of the previously given name. (Be aware that ALL preferences under this
-     * name
-     * are cleared not only the ones defined in your interface)
+     * name are cleared not only the ones defined in your interface)
      */
     // TODO intelligent clear: only delete those values that are defined in the interface
     void clear();

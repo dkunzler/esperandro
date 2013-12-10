@@ -1,13 +1,3 @@
-package de.devland.esperandro;
-
-import de.devland.esperandro.tests.EsperandroSimpleExample;
-import junit.framework.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
 /*
  * Copyright 2013 David Kunzler
  *
@@ -22,8 +12,18 @@ import org.robolectric.annotation.Config;
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
+
+package de.devland.esperandro;
+
+import de.devland.esperandro.tests.EsperandroSimpleExample;
+import junit.framework.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner.class)
 public class BasicTest {

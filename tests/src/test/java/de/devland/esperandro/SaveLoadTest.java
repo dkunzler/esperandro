@@ -12,7 +12,6 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
 package de.devland.esperandro;
 
@@ -66,7 +65,8 @@ public class SaveLoadTest {
         Assert.assertEquals(23, esperandroPreferences.longPref()); // loaded correctly
 
         esperandroPreferences.stringPref("Some string");
-        Assert.assertEquals("Some string", androidPreferences.getString("stringPref", "default string")); // saved correctly
+        // saved correctly
+        Assert.assertEquals("Some string", androidPreferences.getString("stringPref", "default string"));
         Assert.assertEquals("Some string", esperandroPreferences.stringPref()); // loaded correctly
 
         List<String> strings = Arrays.asList("Some string", "other string");

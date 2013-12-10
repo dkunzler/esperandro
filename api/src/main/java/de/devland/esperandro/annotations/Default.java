@@ -1,9 +1,3 @@
-package de.devland.esperandro.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 /*
  * Copyright 2013 David Kunzler
  *
@@ -18,8 +12,14 @@ import java.lang.annotation.Target;
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
+
+package de.devland.esperandro.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Allows to set a default for the primitive preferences as well as {@code String}. A {@code Set<String>} will always

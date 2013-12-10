@@ -1,13 +1,3 @@
-package de.devland.esperandro;
-
-import android.content.Context;
-import android.util.Log;
-import de.devland.esperandro.serialization.Serializer;
-
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
-
 /*
  * Copyright 2013 David Kunzler
  *
@@ -22,8 +12,17 @@ import java.util.Map;
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
+
+package de.devland.esperandro;
+
+import android.content.Context;
+import android.util.Log;
+import de.devland.esperandro.serialization.Serializer;
+
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Manager to give access to the generated Esperandro-SharedPreference implementations.
@@ -35,7 +34,8 @@ public class Esperandro {
 
     private static final String TAG = "Esperandro";
 
-    private Esperandro() {}
+    private Esperandro() {
+    }
 
     private static Esperandro getInstance() {
         if (instance == null) {
