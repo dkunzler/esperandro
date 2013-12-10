@@ -72,6 +72,7 @@ public class Getter {
 
     public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
+        writer.emitAnnotation(SuppressWarnings.class, new String[]{"\"unchecked\""});
         String valueName = method.getSimpleName().toString();
         preferenceKeys.put(valueName, method);
 

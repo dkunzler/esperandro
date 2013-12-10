@@ -187,10 +187,10 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     packageName += ".";
                 }
             }
+
             result.emitPackage(packageName);
             result.emitImports(neededImports);
             result.emitEmptyLine();
-            result.emitAnnotation(SuppressWarnings.class, new String[]{"\"all\""});
             result.beginType(typeName + SUFFIX, "class", modPublic, null, qualifiedNameable.getQualifiedName()
                     .toString(), SharedPreferenceActions.class.getName());
             result.emitEmptyLine();
