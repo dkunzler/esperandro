@@ -257,6 +257,16 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitStatement("preferences.edit().clear().apply()");
         writer.endMethod();
         writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("void", "initDefaults", modPublic);
+        for (String preferenceKey : getter.getPreferenceKeys().keySet()) {
+            if (putter.getPreferenceKeys().containsKey(preferenceKey)) {
+                writer.emitStatement("this.%s(this.%s())", preferenceKey, preferenceKey);
+            }
+        }
+        writer.endMethod();
+        writer.emitEmptyLine();
     }
 
 

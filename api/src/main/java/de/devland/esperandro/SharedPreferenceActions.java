@@ -63,4 +63,10 @@ public interface SharedPreferenceActions {
     // TODO intelligent clear: only delete those values that are defined in the interface
     void clear();
 
+    /**
+     * Initializes the underlying SharedPreference object with the respective explicit or implicit default values. This
+     * can be useful when the defaults should be shown in the summary in a PreferenceActivity.
+     */
+    void initDefaults();
+
 }
