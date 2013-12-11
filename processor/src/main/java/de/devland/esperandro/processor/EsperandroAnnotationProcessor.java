@@ -77,6 +77,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             processInterfaceMethods(interfaze, interfaze, writer);
                             createGenericActions(writer);
                             finish(writer);
+                            putter.getPreferenceKeys().clear();
+                            getter.getPreferenceKeys().clear();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
