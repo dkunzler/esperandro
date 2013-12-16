@@ -7,14 +7,19 @@ Easy SharedPreference Engine foR ANDROid
 
 esperandro is for everybody that uses `SharedPreference`s in his Android App and is tired of the verbose usage of them.
 
-A call like `String superFancyPreference = preferences.getString("superFancyPreferenceKey",
-"default value")` would reduce to `String superFancyPreference = preferences
-.superFancyPreferenceKey()`.
-Furthermore a verbose put like `preferences.edit().putString("superFancyPreferenceKey",
-superFancyPrefence).commit()` will look like `preferences.superFancyPreferenceKey(superFancyPreference)` when using
-esperandro.
+**Load and save preferences without *esperandro*:**
 
-Looks clean and easy, doesn't it?
+* `String superFancyPreference = preferences.getString("superFancyPreferenceKey", "default value")`
+* `preferences.edit().putString("superFancyPreferenceKey", superFancyPrefence).commit()`
+
+
+
+**Load and save preferences with *esperandro*:**
+
+* `String superFancyPreference = preferences.superFancyPreferenceKey()`
+* `preferences.superFancyPreferenceKey(superFancyPreference)`
+
+Type safe, easy, less error-prone.
 
 More information about integration and deeper explanation of usage can be found on [the website](http://dkunzler.github.io/esperandro).
 
