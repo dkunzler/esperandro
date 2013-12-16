@@ -9,6 +9,8 @@ next release
 ---
  * changed default file system sync of preferences from commit() to apply(). Reduces load on the UI Thread.
  * added support for setters with boolean return type. Those still use commit() to be able to tell about the success of the operation
+ * added action "initDefaults". Can be used to initialize default values for immediate access in PreferenceActivities
+ * circumvent exception when using maven and robolectric
 
 1.0
 ---
