@@ -21,6 +21,8 @@ import javax.tools.Diagnostic;
 
 public class Warner {
 
+    public static final String MESSAGE_PREFIX = "esperandro: ";
+
     ProcessingEnvironment processingEnv;
 
     public Warner(ProcessingEnvironment processingEnv) {
@@ -28,15 +30,16 @@ public class Warner {
     }
 
     public void emitError(String message, Element element) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, message, element);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, MESSAGE_PREFIX + message, element);
     }
 
     public void emitWarning(String message, Element element) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message, element);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, MESSAGE_PREFIX + message, element);
     }
 
     public void emitMissingDefaultWarning(String type, Element element) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "No overwritten default " + type + " value " +
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, MESSAGE_PREFIX + "No overwritten default "
+                + type + " value " +
                 "detected, please check the annotation.", element);
     }
 }
