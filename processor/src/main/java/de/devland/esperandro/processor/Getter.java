@@ -43,8 +43,7 @@ public class Getter {
     public boolean isGetter(ExecutableElement method) {
         boolean isGetter = false;
         List<? extends VariableElement> parameters = method.getParameters();
-        TypeMirror returnType = method.getReturnType();
-        PreferenceType preferenceType = PreferenceType.toPreferenceType(returnType);
+        PreferenceType preferenceType = getPreferenceTypeFromMethod(method);
 
         if ((parameters == null || parameters.size() == 0) && preferenceType != PreferenceType.NONE) {
             isGetter = true;
@@ -65,9 +64,18 @@ public class Getter {
         return isGetter;
     }
 
+    public boolean isStringSet(ExecutableElement method){
+        PreferenceType typeFromMethod = getPreferenceTypeFromMethod(method);
+        return PreferenceType.STRINGSET.equals(typeFromMethod);
+    }
+
+    public boolean needsSerialization(ExecutableElement method){
+        PreferenceType typeFromMethod = getPreferenceTypeFromMethod(method);
+        return PreferenceType.OBJECT.equals(typeFromMethod);
+    }
+
     public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
-        writer.emitAnnotation(SuppressWarnings.class, new String[]{"\"unchecked\""});
         String valueName = method.getSimpleName().toString();
         preferenceKeys.put(valueName, method);
 
@@ -87,6 +95,11 @@ public class Getter {
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
         createGetter(defaultAnnotation, topLevelInterface, writer, valueName, preferenceType);
+    }
+
+    private PreferenceType getPreferenceTypeFromMethod(ExecutableElement method){
+        TypeMirror returnType = method.getReturnType();
+        return PreferenceType.toPreferenceType(returnType);
     }
 
 

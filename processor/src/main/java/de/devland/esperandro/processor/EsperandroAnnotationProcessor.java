@@ -38,15 +38,13 @@ import java.util.*;
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     public static final String SUFFIX = "$$Impl";
-    public static final String[] neededImports = new String[]{"android.content.Context",
-            "android.content.SharedPreferences", "android.preference.PreferenceManager", "java.util.Set",
-            "de.devland.esperandro.Esperandro"};
-    public static final String sharedPreferencesAnnotationName = "de.devland.esperandro.annotations" + "" +
-            ".SharedPreferences";
+    public static final String[] neededImports = new String[]{"android.content.Context", "android.content.SharedPreferences"};
+    public static final String sharedPreferencesAnnotationName = "de.devland.esperandro.annotations.SharedPreferences";
 
     protected static final Set<Modifier> modPrivate = new HashSet<Modifier>(Arrays.asList(Modifier.PRIVATE));
     protected static final Set<Modifier> modPublic = new HashSet<Modifier>(Arrays.asList(Modifier.PUBLIC));
 
+    private Set<String> additionalImports = new HashSet<String>();
     Warner warner;
     Getter getter;
     Putter putter;
@@ -70,9 +68,10 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
                 for (Element interfaze : interfaces) {
                     assert (interfaze.getKind() == ElementKind.INTERFACE);
-
+                    additionalImports.clear();
                     try {
-                        JavaWriter writer = initImplementation(interfaze);
+                        determineAdditionalImports(interfaze);
+                        JavaWriter writer = initImplementation(interfaze, additionalImports);
                         processInterfaceMethods(interfaze, interfaze, writer);
                         createGenericActions(writer);
                         finish(writer);
@@ -86,6 +85,21 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         checkPreferenceKeys();
 
         return false;
+    }
+
+    private void determineAdditionalImports(Element interfaze) {
+        List<? extends Element> potentialMethods = interfaze.getEnclosedElements();
+        for (Element element : potentialMethods) {
+            if (element.getKind() == ElementKind.METHOD) {
+                ExecutableElement method = (ExecutableElement) element;
+                if (getter.isStringSet(method)) {
+                    additionalImports.add("java.util.Set");
+                }
+                if (getter.needsSerialization(method)) {
+                    additionalImports.add("de.devland.esperandro.Esperandro");
+                }
+            }
+        }
     }
 
     private void preProcessEnvironment(RoundEnvironment roundEnv) {
@@ -166,7 +180,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private JavaWriter initImplementation(Element interfaze) {
+    private JavaWriter initImplementation(Element interfaze, Set<String> additionalImports) {
         JavaWriter result;
         SharedPreferences prefAnnotation = interfaze.getAnnotation(SharedPreferences.class);
         String preferencesName = prefAnnotation.name();
@@ -177,6 +191,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         try {
             QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
             JavaFileObject jfo = filer.createSourceFile(qualifiedNameable.getQualifiedName() + SUFFIX);
+            boolean preferenceNamePresent = preferencesName != null && !preferencesName.equals("");
             Writer writer = jfo.openWriter();
             result = new JavaWriter(writer);
             String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
@@ -190,7 +205,12 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             }
 
             result.emitPackage(packageName);
+            if (!preferenceNamePresent){
+               additionalImports.add("android.preference.PreferenceManager");
+            }
             result.emitImports(neededImports);
+            result.emitImports(additionalImports);
+
             result.emitEmptyLine();
             result.beginType(typeName + SUFFIX, "class", modPublic, null, qualifiedNameable.getQualifiedName()
                     .toString(), SharedPreferenceActions.class.getName());
@@ -201,7 +221,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             result.emitEmptyLine();
             result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + SUFFIX, modPublic, "Context",
                     "context");
-            if (preferencesName != null && !preferencesName.equals("")) {
+            if (preferenceNamePresent) {
                 result.emitStatement("this.preferences = context.getSharedPreferences(\"%s\", %s)", preferencesName,
                         mode.getSharedPreferenceModeStatement());
             } else {
