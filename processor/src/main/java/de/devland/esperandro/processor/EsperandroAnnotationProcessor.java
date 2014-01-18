@@ -67,16 +67,20 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 Set<? extends Element> interfaces = roundEnv.getElementsAnnotatedWith(SharedPreferences.class);
 
                 for (Element interfaze : interfaces) {
-                    assert (interfaze.getKind() == ElementKind.INTERFACE);
-                    additionalImports.clear();
-                    try {
-                        determineAdditionalImports(interfaze);
-                        JavaWriter writer = initImplementation(interfaze, additionalImports);
-                        processInterfaceMethods(interfaze, interfaze, writer);
-                        createGenericActions(writer);
-                        finish(writer);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    // fix some weird behaviour where getElementsAnnotatedWith returns more elements than expected
+                    if (interfaze.getKind() == ElementKind.INTERFACE && interfaze.getAnnotation(SharedPreferences
+                            .class) != null) {
+                        try {
+                            determineAdditionalImports(interfaze);
+                            JavaWriter writer = initImplementation(interfaze, additionalImports);
+                            processInterfaceMethods(interfaze, interfaze, writer);
+                            createGenericActions(writer);
+                            finish(writer);
+                            putter.getPreferenceKeys().clear();
+                            getter.getPreferenceKeys().clear();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
@@ -273,6 +277,16 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitAnnotation(Override.class);
         writer.beginMethod("void", "clear", modPublic);
         writer.emitStatement("preferences.edit().clear().apply()");
+        writer.endMethod();
+        writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.beginMethod("void", "initDefaults", modPublic);
+        for (String preferenceKey : getter.getPreferenceKeys().keySet()) {
+            if (putter.getPreferenceKeys().containsKey(preferenceKey)) {
+                writer.emitStatement("this.%s(this.%s())", preferenceKey, preferenceKey);
+            }
+        }
         writer.endMethod();
         writer.emitEmptyLine();
     }
