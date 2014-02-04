@@ -36,3 +36,7 @@ For everybody that just thinks "give me the stuff":
         <version>1.0</version>
         <scope>provided</scope>
     </dependency>
+    
+Current Travis status
+
+[![Build Status](https://api.travis-ci.org/dkunzler/esperandro.png?branch=master)](https://travis-ci.org/dkunzler/esperandro)
