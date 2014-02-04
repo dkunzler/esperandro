@@ -64,12 +64,12 @@ public class Getter {
         return isGetter;
     }
 
-    public boolean isStringSet(ExecutableElement method){
+    public boolean isStringSet(ExecutableElement method) {
         PreferenceType typeFromMethod = getPreferenceTypeFromMethod(method);
         return PreferenceType.STRINGSET.equals(typeFromMethod);
     }
 
-    public boolean needsSerialization(ExecutableElement method){
+    public boolean needsSerialization(ExecutableElement method) {
         PreferenceType typeFromMethod = getPreferenceTypeFromMethod(method);
         return PreferenceType.OBJECT.equals(typeFromMethod);
     }
@@ -97,7 +97,7 @@ public class Getter {
         createGetter(defaultAnnotation, topLevelInterface, writer, valueName, preferenceType);
     }
 
-    private PreferenceType getPreferenceTypeFromMethod(ExecutableElement method){
+    private PreferenceType getPreferenceTypeFromMethod(ExecutableElement method) {
         TypeMirror returnType = method.getReturnType();
         return PreferenceType.toPreferenceType(returnType);
     }
@@ -174,6 +174,8 @@ public class Getter {
                 statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
                         statementPattern, preferenceType.getTypeName().replaceFirst("<.*>", ""));
                 break;
+            case NONE:
+                break;
         }
 
         writer.beginMethod(preferenceType.getTypeName(), valueName, EsperandroAnnotationProcessor.modPublic);
@@ -190,9 +192,7 @@ public class Getter {
 
 
     private boolean hasAllDefaults(Default defaultAnnotation) {
-        boolean hasAllDefaults = true;
-
-        hasAllDefaults = defaultAnnotation.ofBoolean() == Default.booleanDefault;
+        boolean hasAllDefaults = defaultAnnotation.ofBoolean() == Default.booleanDefault;
         hasAllDefaults &= defaultAnnotation.ofInt() == Default.intDefault;
         hasAllDefaults &= defaultAnnotation.ofFloat() == Default.floatDefault;
         hasAllDefaults &= defaultAnnotation.ofLong() == Default.longDefault;

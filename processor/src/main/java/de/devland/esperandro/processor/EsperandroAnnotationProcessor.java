@@ -18,6 +18,7 @@
 package de.devland.esperandro.processor;
 
 import com.squareup.javawriter.JavaWriter;
+
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.SharedPreferences;
@@ -27,6 +28,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Method;
@@ -38,7 +40,8 @@ import java.util.*;
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     public static final String SUFFIX = "$$Impl";
-    public static final String[] neededImports = new String[]{"android.content.Context", "android.content.SharedPreferences"};
+    public static final String[] neededImports = new String[]{"android.os.Build", "android.content.Context",
+            "android.content.SharedPreferences", "android.annotation.SuppressLint"};
     public static final String sharedPreferencesAnnotationName = "de.devland.esperandro.annotations.SharedPreferences";
 
     protected static final Set<Modifier> modPrivate = new HashSet<Modifier>(Arrays.asList(Modifier.PRIVATE));
@@ -209,8 +212,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             }
 
             result.emitPackage(packageName);
-            if (!preferenceNamePresent){
-               additionalImports.add("android.preference.PreferenceManager");
+            if (!preferenceNamePresent) {
+                additionalImports.add("android.preference.PreferenceManager");
             }
             result.emitImports(neededImports);
             result.emitImports(additionalImports);
@@ -256,7 +259,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         writer.emitAnnotation(Override.class);
         writer.beginMethod("void", "remove", modPublic, String.class.getName(), "key");
-        writer.emitStatement("preferences.edit().remove(key).apply()");
+        StringBuilder statementPatter = new StringBuilder().append("preferences.edit().remove(key).%s");
+        PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
+                PreferenceEditorCommitStyle.APPLY, statementPatter);
         writer.endMethod();
         writer.emitEmptyLine();
 
@@ -276,7 +281,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         writer.emitAnnotation(Override.class);
         writer.beginMethod("void", "clear", modPublic);
-        writer.emitStatement("preferences.edit().clear().apply()");
+        statementPatter = new StringBuilder().append("preferences.edit().clear().%s");
+        PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
+                PreferenceEditorCommitStyle.APPLY, statementPatter);
         writer.endMethod();
         writer.emitEmptyLine();
 

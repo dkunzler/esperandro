@@ -1,59 +1,64 @@
 /*
- * Copyright 2013 David Kunzler
- *
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
+ * Copyright 2013 David Kunzler Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may obtain a copy of the License
+ * at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
+ * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 package de.devland.esperandro.processor;
 
-import com.squareup.javawriter.JavaWriter;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.*;
+
+import android.annotation.SuppressLint;
+
+import com.squareup.javawriter.JavaWriter;
 
 public class Putter {
 
     private Map<String, Element> preferenceKeys;
 
-    private Set<TypeKind> validPutterReturnTypes = new HashSet<TypeKind>(
-            Arrays.asList(TypeKind.VOID, TypeKind.BOOLEAN));
+    private Set<TypeKind> validPutterReturnTypes = new HashSet<TypeKind>(Arrays.asList(TypeKind.VOID,
+            TypeKind.BOOLEAN));
+
 
     public Putter() {
         preferenceKeys = new HashMap<String, Element>();
     }
+
 
     public boolean isPutter(ExecutableElement method) {
         boolean isPutter = false;
         List<? extends VariableElement> parameters = method.getParameters();
         TypeMirror returnType = method.getReturnType();
         TypeKind returnTypeKind = returnType.getKind();
-        if (parameters != null && parameters.size() == 1 && validPutterReturnTypes.contains(returnTypeKind) && PreferenceType
-                .toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
+        if (parameters != null && parameters.size() == 1 && validPutterReturnTypes.contains(returnTypeKind) &&
+                PreferenceType.toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
             isPutter = true;
         }
         return isPutter;
     }
 
+
     public boolean isPutter(Method method) {
         boolean isPutter = false;
         Type[] parameterTypes = method.getGenericParameterTypes();
-        if (parameterTypes != null && parameterTypes.length == 1 && (method.getReturnType().toString().equals("void") || method.getReturnType().toString().equals("boolean"))) {
+        if (parameterTypes != null && parameterTypes.length == 1 && (method.getReturnType().toString().equals("void")
+                || method.getReturnType().toString().equals("boolean"))) {
             if (PreferenceType.toPreferenceType(parameterTypes[0]) != PreferenceType.NONE) {
                 isPutter = true;
             }
@@ -61,6 +66,7 @@ public class Putter {
 
         return isPutter;
     }
+
 
     public void createPutterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         String valueName = method.getSimpleName().toString();
@@ -71,6 +77,7 @@ public class Putter {
 
         createPutter(writer, valueName, valueName, preferenceType, returnType.toString());
     }
+
 
     public void createPutterFromReflection(Method method, Element topLevelInterface,
                                            JavaWriter writer) throws IOException {
@@ -83,20 +90,22 @@ public class Putter {
         createPutter(writer, valueName, valueName, preferenceType, returnType.toString());
     }
 
-    private void createPutter(JavaWriter writer, String valueName, String value,
-                              PreferenceType preferenceType, String returnType) throws IOException {
+
+    private void createPutter(JavaWriter writer, String valueName, String value, PreferenceType preferenceType,
+                              String returnType) throws IOException {
         writer.emitAnnotation(Override.class);
-
+        writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
         boolean shouldReturnValue = returnType.equalsIgnoreCase(Boolean.class.getSimpleName());
-        String editorCommitStyle = "apply()";
-        StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s).%s");
+        PreferenceEditorCommitStyle commitStyle = PreferenceEditorCommitStyle.APPLY;
+        StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s)");
+        //    .%s");
 
-        writer.beginMethod(returnType, valueName, EsperandroAnnotationProcessor.modPublic, preferenceType.getTypeName(),
-                valueName);
+        writer.beginMethod(returnType, valueName, EsperandroAnnotationProcessor.modPublic,
+                preferenceType.getTypeName(), valueName);
 
         if (shouldReturnValue) {
             statementPattern.insert(0, "return ");
-            editorCommitStyle = "commit()";
+            commitStyle = PreferenceEditorCommitStyle.COMMIT;
         }
 
         String methodSuffix = "";
@@ -123,17 +132,20 @@ public class Putter {
                 methodSuffix = "String";
                 value = String.format("Esperandro.getSerializer().serialize(%s)", valueName);
                 break;
+            case NONE:
+                break;
         }
-
-        String statement = String.format(statementPattern.toString(), methodSuffix, valueName, value, editorCommitStyle);
-        writer.emitStatement(statement);
+        // only use apply on API >= 9
+        StringBuilder baseStatement = new StringBuilder().append(String.format(statementPattern.toString(),
+                methodSuffix, valueName, value)).append(".%s");
+        PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer, commitStyle, baseStatement);
         writer.endMethod();
         writer.emitEmptyLine();
     }
 
+
     public Map<String, Element> getPreferenceKeys() {
         return preferenceKeys;
     }
-
 
 }
