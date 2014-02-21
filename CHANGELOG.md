@@ -1,9 +1,11 @@
 Changelog
 =========
 
-next release
+1.1.1
 ------------
- * ...
+ * fix #16
+ * add prefix for esperandro compiler messages
+ * update dependencies
 
 1.1
 ---
