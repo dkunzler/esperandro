@@ -17,8 +17,8 @@
 
 package de.devland.esperandro.processor;
 
+import android.annotation.SuppressLint;
 import com.squareup.javawriter.JavaWriter;
-
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.SharedPreferences;
@@ -28,7 +28,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Method;
@@ -258,6 +257,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
+        writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
         writer.beginMethod("void", "remove", modPublic, String.class.getName(), "key");
         StringBuilder statementPatter = new StringBuilder().append("preferences.edit().remove(key).%s");
         PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
@@ -280,6 +280,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
+        writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
         writer.beginMethod("void", "clear", modPublic);
         statementPatter = new StringBuilder().append("preferences.edit().clear().%s");
         PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
