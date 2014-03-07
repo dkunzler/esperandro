@@ -25,17 +25,33 @@ More information about integration and deeper explanation of usage can be found 
 
 For everybody that just thinks "give me the stuff":
 
-    <dependency>
-        <groupId>de.devland.esperandro</groupId>
-        <artifactId>esperandro-api</artifactId>
-        <version>1.0</version>
-    </dependency>
-    <dependency>
-        <groupId>de.devland.esperandro</groupId>
-        <artifactId>esperandro</artifactId>
-        <version>1.0</version>
-        <scope>provided</scope>
-    </dependency>
+    buildscript {
+        repositories {
+          mavenCentral()
+        }
+        dependencies {
+            // Android plugin
+            classpath 'com.android.tools.build:gradle:0.8.+'
+            // the latest version of the android-apt plugin from https://bitbucket.org/hvisser/android-apt
+            classpath 'com.neenbedankt.gradle.plugins:android-apt:1.2'
+        }
+    }
+
+    apply plugin: 'android'
+    apply plugin: 'android-apt'
+
+
+    repositories {
+         mavenCentral();
+    }
+
+    dependencies {
+        compile 'de.devland.esperandro:esperandro-api:1.1.2'
+        apt 'de.devland.esperandro:esperandro:1.1.2'
+
+        // optional, if we want to use object serialization but don't provide our own Serializer
+        // compile 'de.devland.esperandro:esperandro-gson-addon:1.1.1'
+    }
     
 Current Travis status
 
