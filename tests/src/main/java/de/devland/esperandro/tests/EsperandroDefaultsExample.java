@@ -15,48 +15,39 @@
  */
 package de.devland.esperandro.tests;
 
-import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.Default;
 import de.devland.esperandro.annotations.SharedPreferences;
+import de.devland.esperandro.tests.model.Container;
 
 import java.util.Set;
 
-@SharedPreferences(name = "simple", mode = SharedPreferenceMode.PRIVATE)
-public interface EsperandroSimpleExample extends SharedPreferenceActions {
+@SharedPreferences(name = "defaults", mode = SharedPreferenceMode.PRIVATE)
+public interface EsperandroDefaultsExample {
 
     @Default(ofInt = 42)
     int integerPref();
 
-    void integerPref(int pref);
-
     @Default(ofLong = 42l)
     long longPref();
-
-    void longPref(long longPref);
 
     @Default(ofFloat = 4.2f)
     float floatPref();
 
-    void floatPref(float pref);
-
     @Default(ofBoolean = true)
     boolean boolPref();
 
-    void boolPref(boolean pref);
+    boolean boolPref$Default(boolean defaultValue);
 
     @Default(ofString = "The truth is out there...")
     String stringPref();
 
-    void stringPref(String pref);
-
     Set<String> stringSetPref();
 
-    void stringSetPref(Set<String> pref);
+    Set<String> stringSetPref$Default(Set<String> defaultValue);
 
-    @Default(ofString = "check the return value...")
-    String stringPrefWithBooleanPutter();
+    Container complexPref();
 
-    boolean stringPrefWithBooleanPutter(String value);
+    Container complexPref$Default(Container defaultValue);
 
 }
