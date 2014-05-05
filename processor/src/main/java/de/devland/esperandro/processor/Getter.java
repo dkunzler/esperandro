@@ -31,6 +31,8 @@ import java.util.Map;
 
 public class Getter {
 
+    private static final String DEFAULT_SUFFIX = "$Default";
+
     private Warner warner;
 
     private Map<String, Element> preferenceKeys;
@@ -45,7 +47,22 @@ public class Getter {
         List<? extends VariableElement> parameters = method.getParameters();
         PreferenceType preferenceType = getPreferenceTypeFromMethod(method);
 
-        if ((parameters == null || parameters.size() == 0) && preferenceType != PreferenceType.NONE) {
+        boolean hasParameters = parameters != null && parameters.size() > 0;
+        boolean hasValidReturnType = preferenceType != PreferenceType.NONE;
+        boolean hasRuntimeDefault = false;
+
+        if (hasParameters && parameters.size() == 1) { // getter with default can have at most 1 parameter
+            VariableElement parameter = parameters.get(0);
+            TypeMirror parameterType = parameter.asType();
+
+            boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
+            boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(DEFAULT_SUFFIX);
+            if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
+                hasRuntimeDefault = true;
+            }
+        }
+
+        if (hasValidReturnType && (!hasParameters || hasRuntimeDefault)) {
             isGetter = true;
         }
         return isGetter;
@@ -57,7 +74,21 @@ public class Getter {
         Type returnType = method.getGenericReturnType();
         PreferenceType preferenceType = PreferenceType.toPreferenceType(returnType);
 
-        if ((parameters == null || parameters.length == 0) && preferenceType != PreferenceType.NONE) {
+        boolean hasParameters = parameters != null && parameters.length > 0;
+        boolean hasValidReturnType = preferenceType != PreferenceType.NONE;
+        boolean hasRuntimeDefault = false;
+
+        if (hasParameters && parameters.length == 1) { // getter with default can have at most 1 parameter
+            Class<?> parameterType = parameters[0];
+
+            boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
+            boolean nameEndsWithDefaultSuffix = method.getName().endsWith(DEFAULT_SUFFIX);
+            if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
+                hasRuntimeDefault = true;
+            }
+        }
+
+        if (hasValidReturnType && (!hasParameters || hasRuntimeDefault)) {
             isGetter = true;
         }
 
