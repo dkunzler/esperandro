@@ -27,11 +27,11 @@ import java.util.Map;
  * Manager to give access to the generated Esperandro-SharedPreference implementations.
  */
 public class Esperandro {
-    private static Esperandro instance;
-
     private static final String SUFFIX = "$$Impl";
-
     private static final String TAG = "Esperandro";
+    private static Esperandro instance;
+    private final Map<String, Object> preferenceInstances = new HashMap<String, Object>();
+    private Serializer serializer;
 
     private Esperandro() {
     }
@@ -46,10 +46,6 @@ public class Esperandro {
         }
         return instance;
     }
-
-    private Serializer serializer;
-
-    private final Map<String, Object> preferenceInstances = new HashMap<String, Object>();
 
     /**
      * Returns an instance of the pre-generated class of the given SharedPreferences-annotated interface.
@@ -70,37 +66,20 @@ public class Esperandro {
         return implementation;
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> T createInstance(Class<T> preferenceClass, Context context) {
-        T implementation;
-        try {
-            Class<? extends T> implementationClass = (Class<? extends T>) Class.forName(preferenceClass
-                    .getCanonicalName() + SUFFIX);
-            Constructor<? extends T> constructor = implementationClass.getConstructor(Context.class);
-            implementation = constructor.newInstance(context);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Couldn't load generated class. Please check esperandro processor " +
-                    "configuration in your project.", e);
-        }
-        return implementation;
-    }
-
-    public static void setSerializer(Serializer serializer) {
-        Esperandro.getInstance().serializer = serializer;
-    }
-
     public static Serializer getSerializer() {
         Esperandro esperandro = Esperandro.getInstance();
         if (esperandro.serializer == null) {
             esperandro.serializer = getDefaultSerializer();
             if (esperandro.serializer == null) {
-                throw new IllegalStateException("Tried to save a serialized Object into preferences but no serializer" +
-                        " is " +
-                        "" + "present");
+                throw new IllegalStateException("Tried to use a serialized Object in preferences but no serializer" +
+                        " is present");
             }
         }
         return esperandro.serializer;
+    }
+
+    public static void setSerializer(Serializer serializer) {
+        Esperandro.getInstance().serializer = serializer;
     }
 
     @SuppressWarnings("unchecked")
@@ -115,6 +94,22 @@ public class Esperandro {
         }
 
         return defaultSerializer;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T createInstance(Class<T> preferenceClass, Context context) {
+        T implementation;
+        try {
+            Class<? extends T> implementationClass = (Class<? extends T>) Class.forName(preferenceClass
+                    .getCanonicalName() + SUFFIX);
+            Constructor<? extends T> constructor = implementationClass.getConstructor(Context.class);
+            implementation = constructor.newInstance(context);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Couldn't load generated class. Please check esperandro processor " +
+                    "configuration in your project.", e);
+        }
+        return implementation;
     }
 
 }
