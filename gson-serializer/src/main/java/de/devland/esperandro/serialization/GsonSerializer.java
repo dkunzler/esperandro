@@ -26,7 +26,7 @@ public class GsonSerializer implements Serializer {
 
 
     @Override
-    public String serialize(Serializable object) {
+    public String serialize(Object object) {
         return gson.toJson(object);
     }
 

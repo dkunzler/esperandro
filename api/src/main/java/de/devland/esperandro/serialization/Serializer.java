@@ -15,11 +15,9 @@
  */
 package de.devland.esperandro.serialization;
 
-import java.io.Serializable;
-
 public interface Serializer {
 
-    String serialize(Serializable object);
+    String serialize(Object object);
 
     <T> T deserialize(String serializedObject, Class<T> clazz);
 }
