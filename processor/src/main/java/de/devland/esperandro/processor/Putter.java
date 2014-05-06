@@ -8,25 +8,18 @@
  */
 package de.devland.esperandro.processor;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import android.annotation.SuppressLint;
+import com.squareup.javawriter.JavaWriter;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-
-import android.annotation.SuppressLint;
-
-import com.squareup.javawriter.JavaWriter;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.*;
 
 public class Putter {
 
@@ -46,8 +39,24 @@ public class Putter {
         List<? extends VariableElement> parameters = method.getParameters();
         TypeMirror returnType = method.getReturnType();
         TypeKind returnTypeKind = returnType.getKind();
-        if (parameters != null && parameters.size() == 1 && validPutterReturnTypes.contains(returnTypeKind) &&
-                PreferenceType.toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE) {
+
+        boolean hasParameter = parameters != null && parameters.size() == 1;
+        boolean hasValidReturnType = validPutterReturnTypes.contains(returnTypeKind);
+        boolean hasValidPreferenceType = hasParameter ? PreferenceType.toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE : false;
+        boolean hasRuntimeDefault = false;
+
+        if (hasParameter) {
+            VariableElement parameter = parameters.get(0);
+            TypeMirror parameterType = parameter.asType();
+
+            boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
+            boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Getter.DEFAULT_SUFFIX);
+            if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
+                hasRuntimeDefault = true;
+            }
+        }
+
+        if (hasParameter && hasValidReturnType && hasValidPreferenceType && !hasRuntimeDefault) {
             isPutter = true;
         }
         return isPutter;
@@ -57,13 +66,26 @@ public class Putter {
     public boolean isPutter(Method method) {
         boolean isPutter = false;
         Type[] parameterTypes = method.getGenericParameterTypes();
-        if (parameterTypes != null && parameterTypes.length == 1 && (method.getReturnType().toString().equals("void")
-                || method.getReturnType().toString().equals("boolean"))) {
-            if (PreferenceType.toPreferenceType(parameterTypes[0]) != PreferenceType.NONE) {
-                isPutter = true;
+
+        boolean hasParameter = parameterTypes != null && parameterTypes.length == 1;
+        boolean hasValidReturnType = method.getReturnType().toString().equals("void")
+                || method.getReturnType().toString().equals("boolean");
+        boolean hasValidPreferenceType = hasParameter ? PreferenceType.toPreferenceType(parameterTypes[0]) != PreferenceType.NONE : false;
+        boolean hasRuntimeDefault = false;
+
+        if (hasParameter) {
+            Class<?> parameterType = method.getParameterTypes()[0];
+
+            boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
+            boolean nameEndsWithDefaultSuffix = method.getName().endsWith(Getter.DEFAULT_SUFFIX);
+            if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
+                hasRuntimeDefault = true;
             }
         }
 
+        if (hasParameter && hasValidReturnType && hasValidPreferenceType && !hasRuntimeDefault) {
+            isPutter = true;
+        }
         return isPutter;
     }
 
