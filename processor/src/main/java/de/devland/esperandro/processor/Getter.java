@@ -230,7 +230,7 @@ public class Getter {
         }
         if (runtimeDefault) {
             writer.beginMethod(preferenceType.getTypeName(), valueName + DEFAULT_SUFFIX, EsperandroAnnotationProcessor.modPublic, preferenceType.getTypeName(), "defaultValue");
-            writer.beginControlFlow("if (this.contains(\"" + valueName + "\"))");
+            writer.beginControlFlow("if (preferences.contains(\"" + valueName + "\"))");
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
             writer.emitStatement("return %s", statement);
             writer.nextControlFlow("else");
