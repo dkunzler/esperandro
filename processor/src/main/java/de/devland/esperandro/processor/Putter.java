@@ -43,20 +43,9 @@ public class Putter {
         boolean hasParameter = parameters != null && parameters.size() == 1;
         boolean hasValidReturnType = validPutterReturnTypes.contains(returnTypeKind);
         boolean hasValidPreferenceType = hasParameter ? PreferenceType.toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE : false;
-        boolean hasRuntimeDefault = false;
+        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Getter.DEFAULT_SUFFIX);
 
-        if (hasParameter) {
-            VariableElement parameter = parameters.get(0);
-            TypeMirror parameterType = parameter.asType();
-
-            boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
-            boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Getter.DEFAULT_SUFFIX);
-            if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
-                hasRuntimeDefault = true;
-            }
-        }
-
-        if (hasParameter && hasValidReturnType && hasValidPreferenceType && !hasRuntimeDefault) {
+        if (hasParameter && hasValidReturnType && hasValidPreferenceType && !nameEndsWithDefaultSuffix) {
             isPutter = true;
         }
         return isPutter;

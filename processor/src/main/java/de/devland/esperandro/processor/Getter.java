@@ -50,21 +50,24 @@ public class Getter {
         boolean hasParameters = parameters != null && parameters.size() > 0;
         boolean hasValidReturnType = preferenceType != PreferenceType.NONE;
         boolean hasRuntimeDefault = false;
+        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(DEFAULT_SUFFIX);
 
         if (hasParameters && parameters.size() == 1) { // getter with default can have at most 1 parameter
             VariableElement parameter = parameters.get(0);
             TypeMirror parameterType = parameter.asType();
 
             boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
-            boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(DEFAULT_SUFFIX);
             if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
                 hasRuntimeDefault = true;
             }
         }
 
-        if (hasValidReturnType && (!hasParameters || hasRuntimeDefault)) {
+        if (hasValidReturnType && hasRuntimeDefault) {
+            isGetter = true;
+        } else if (hasValidReturnType && !nameEndsWithDefaultSuffix && !hasParameters) {
             isGetter = true;
         }
+
         return isGetter;
     }
 
