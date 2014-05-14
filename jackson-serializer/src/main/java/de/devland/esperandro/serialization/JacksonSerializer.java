@@ -34,7 +34,7 @@ public class JacksonSerializer implements Serializer {
     }
 
     @Override
-    public String serialize(Serializable object) {
+    public String serialize(Object object) {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
