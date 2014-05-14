@@ -68,6 +68,12 @@ public class Getter {
             isGetter = true;
         }
 
+        if (nameEndsWithDefaultSuffix && !hasParameters) {
+            String reservedSuffixMessage = String.format("Preferences cannot end with \"%s\" as this " +
+                    "suffix is reserved for getters with a runtime default.", DEFAULT_SUFFIX);
+            warner.emitError(reservedSuffixMessage, method);
+        }
+
         return isGetter;
     }
 
