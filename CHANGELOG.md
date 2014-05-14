@@ -4,6 +4,7 @@ Changelog
 2.0
 ---
  * Allow getter with a runtime default by appending the `$Default` suffix
+ * Add Jackson Serializer plugin
 
 1.1.2
 -----

@@ -46,6 +46,7 @@
         <module>sample</module>
         <module>gson-serializer</module>
         <module>tests</module>
+        <module>jackson-serializer</module>
     </modules>
 
     <properties>
@@ -55,6 +56,7 @@
         <android.version>4.1.1.4</android.version>
         <javaWriter.version>2.4.0</javaWriter.version>
         <gson.version>2.2.4</gson.version>
+        <jackson.version>2.3.3</jackson.version>
         <annotations.version>4.1.1.4</annotations.version>
     </properties>
 
@@ -107,6 +109,11 @@
                 <version>${gson.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>de.devland.esperandro</groupId>
                 <artifactId>esperandro-api</artifactId>
                 <version>${project.version}</version>
@@ -119,6 +126,11 @@
             <dependency>
                 <groupId>de.devland.esperandro</groupId>
                 <artifactId>esperandro-gson-addon</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.devland.esperandro</groupId>
+                <artifactId>esperandro-jackson-addon</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
