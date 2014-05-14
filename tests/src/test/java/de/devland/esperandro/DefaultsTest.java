@@ -19,14 +19,12 @@ package de.devland.esperandro;
 import de.devland.esperandro.tests.EsperandroDefaultsExample;
 import de.devland.esperandro.tests.model.Container;
 import junit.framework.Assert;
-import org.fest.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,7 +39,13 @@ public class DefaultsTest {
         Assert.assertNotNull(preferences);
 
         Assert.assertTrue(preferences.boolPref());
+        // check if we get the default value, if the pref isn't set yet
         Assert.assertTrue(preferences.boolPref$Default(true));
+        // set the pref to false
+        preferences.boolPref(false);
+        // verify we get the pref value, not the runtime default
+        Assert.assertFalse(preferences.boolPref$Default(true));
+
         Assert.assertFalse(preferences.boolPref$Default(false));
 
         Assert.assertEquals(42, preferences.integerPref());

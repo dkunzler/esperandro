@@ -22,8 +22,15 @@ import java.io.Serializable;
 
 public class GsonSerializer implements Serializer {
 
-    private Gson gson = new GsonBuilder().create();
+    private Gson gson;
 
+    public GsonSerializer() {
+        this.gson = new GsonBuilder().create();
+    }
+
+    public GsonSerializer(Gson gson) {
+        this.gson = gson;
+    }
 
     @Override
     public String serialize(Object object) {
