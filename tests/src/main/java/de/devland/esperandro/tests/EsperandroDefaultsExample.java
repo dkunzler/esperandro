@@ -39,6 +39,8 @@ public interface EsperandroDefaultsExample {
 
     boolean boolPref$Default(boolean defaultValue);
 
+    void boolPref(boolean value);
+
     @Default(ofString = "The truth is out there...")
     String stringPref();
 

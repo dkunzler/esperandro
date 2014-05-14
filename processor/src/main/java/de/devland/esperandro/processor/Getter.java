@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class Getter {
 
-    private static final String DEFAULT_SUFFIX = "$Default";
+    public static final String DEFAULT_SUFFIX = "$Default";
 
     private Warner warner;
 
@@ -50,21 +50,30 @@ public class Getter {
         boolean hasParameters = parameters != null && parameters.size() > 0;
         boolean hasValidReturnType = preferenceType != PreferenceType.NONE;
         boolean hasRuntimeDefault = false;
+        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(DEFAULT_SUFFIX);
 
         if (hasParameters && parameters.size() == 1) { // getter with default can have at most 1 parameter
             VariableElement parameter = parameters.get(0);
             TypeMirror parameterType = parameter.asType();
 
             boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
-            boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(DEFAULT_SUFFIX);
             if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
                 hasRuntimeDefault = true;
             }
         }
 
-        if (hasValidReturnType && (!hasParameters || hasRuntimeDefault)) {
+        if (hasValidReturnType && hasRuntimeDefault) {
+            isGetter = true;
+        } else if (hasValidReturnType && !nameEndsWithDefaultSuffix && !hasParameters) {
             isGetter = true;
         }
+
+        if (nameEndsWithDefaultSuffix && !hasParameters) {
+            String reservedSuffixMessage = String.format("Preferences cannot end with \"%s\" as this " +
+                    "suffix is reserved for getters with a runtime default.", DEFAULT_SUFFIX);
+            warner.emitError(reservedSuffixMessage, method);
+        }
+
         return isGetter;
     }
 
@@ -108,24 +117,39 @@ public class Getter {
     public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
         String valueName = method.getSimpleName().toString();
+        boolean runtimeDefault = false;
+
+        if (valueName.endsWith(DEFAULT_SUFFIX)) {
+            runtimeDefault = true;
+            valueName = valueName.substring(0, valueName.indexOf(DEFAULT_SUFFIX));
+        }
+
         preferenceKeys.put(valueName, method);
 
         PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, method, writer, valueName, preferenceType);
+        createGetter(defaultAnnotation, method, writer, valueName, preferenceType, runtimeDefault);
     }
 
     public void createGetterFromReflection(Method method, Element topLevelInterface,
                                            JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
         String valueName = method.getName();
+
+        boolean runtimeDefault = false;
+
+        if (valueName.endsWith(DEFAULT_SUFFIX)) {
+            runtimeDefault = true;
+            valueName = valueName.substring(0, valueName.indexOf(DEFAULT_SUFFIX));
+        }
+
         preferenceKeys.put(valueName, topLevelInterface);
 
         PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getGenericReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, topLevelInterface, writer, valueName, preferenceType);
+        createGetter(defaultAnnotation, topLevelInterface, writer, valueName, preferenceType, runtimeDefault);
     }
 
     private PreferenceType getPreferenceTypeFromMethod(ExecutableElement method) {
@@ -135,8 +159,9 @@ public class Getter {
 
 
     private void createGetter(Default defaultAnnotation, Element element, JavaWriter writer, String valueName,
-                              PreferenceType preferenceType) throws IOException {
+                              PreferenceType preferenceType, boolean runtimeDefault) throws IOException {
         boolean hasDefaultAnnotation = defaultAnnotation != null;
+
 
         boolean allDefaults = false;
         if (hasDefaultAnnotation) {
@@ -209,10 +234,24 @@ public class Getter {
                 break;
         }
 
-        writer.beginMethod(preferenceType.getTypeName(), valueName, EsperandroAnnotationProcessor.modPublic);
+        if (hasDefaultAnnotation && runtimeDefault) {
+            warner.emitWarning("Pointless @Default Annotation", element);
+        }
+        if (runtimeDefault) {
+            writer.beginMethod(preferenceType.getTypeName(), valueName + DEFAULT_SUFFIX, EsperandroAnnotationProcessor.modPublic, preferenceType.getTypeName(), "defaultValue");
+            writer.beginControlFlow("if (preferences.contains(\"" + valueName + "\"))");
+            String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
+            writer.emitStatement("return %s", statement);
+            writer.nextControlFlow("else");
+            writer.emitStatement("return defaultValue");
+            writer.endControlFlow();
+        } else {
+            writer.beginMethod(preferenceType.getTypeName(), valueName, EsperandroAnnotationProcessor.modPublic);
+            String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
+            writer.emitStatement("return %s", statement);
+        }
 
-        String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-        writer.emitStatement("return %s", statement);
+
         writer.endMethod();
         writer.emitEmptyLine();
     }
