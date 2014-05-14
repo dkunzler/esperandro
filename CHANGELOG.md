@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2.0
+---
+ * Allow getter with a runtime default by appending the `$Default` suffix
+
 1.1.2
 -----
  * small follow-up bugfix regarding #16
