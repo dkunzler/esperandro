@@ -166,14 +166,20 @@ boolean superFancyPreference(boolean superFancyPreferenceValue); // boolean sett
     that will automatically be used to serialize objects if no other <code>Serializer</code> was set. This addon will
     serialize objects into a JSON string.
 </p>
+	If you are using Jackson in your project for JSON-Serialization there is the <a
+        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/1.1.2/esperandro-jackson-addon-1.1.2-jar-with-dependencies.jar">esperandro
+    jackson addon</a> that can be used.
+<p>
+
+</p>
 
 <p>
-    After setting our <code>Serializer</code> or adding the esperandro-gson-addon to the classpath we can use the
+    After setting our <code>Serializer</code> or adding one of the addons to the classpath we can use the
     following definition for object preferences:
 		 <pre>
 Container superFancyObjectPreference();
 void superFancyObjectPreference(Container superFancyObjectPreferenceValue);</pre>
-where <code>Container</code> ca be any class that implements the Java <code>Serializable</code> interface.
+where <code>Container</code> ca be any class that can be serialized by your <code>Serializer</code> implementation.
 </p>
 
 <h3>
@@ -380,6 +386,8 @@ dependencies {
 	
     // optional, if we want to use object serialization but don't provide our own Serializer
     // compile 'de.devland.esperandro:esperandro-gson-addon:1.1.2'
+	// or
+	// compile 'de.devland.esperandro:esperandro-jackson-addon:1.1.2'
 }
 </pre>
 </p>
@@ -401,6 +409,10 @@ dependencies {
     <li>
         <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/1.1.2/esperandro-gson-addon-1.1.2-jar-with-dependencies.jar">esperandro-gson-addon</a>
         - A gson-Serializer for object preferences. Include in the final package if necessary.
+    </li>
+	<li>
+        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/1.1.2/esperandro-jackson-addon-1.1.2-jar-with-dependencies.jar">esperandro-jackson-addon</a>
+        - A jackson-Serializer for object preferences. Include in the final package if necessary.
     </li>
 </ul>
 </p>
