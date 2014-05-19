@@ -217,6 +217,27 @@ in our interface.
 </p>
 
 <h3>
+    Runtime Defaults
+</h3>
+
+<p>
+    In addtition to the annotated compile-time defaults, it is possible to provide runtime-defaults. To use them the getter method for a preference has to be specifically defined.
+	Every getter that allows a runtime-default must not have the <code>@Default</code> annotation but instead end with <code>$Default</code> in the method name. The one and only parameter
+	has to be of the type of the preference and resembles the given value that should be used as default.
+</p>
+
+<p>
+	Example:
+	
+	<pre>
+String superFancyPreference(); // getter with implicit compile-time-default
+
+String superFancyPreference$Default(String defaultValue); // getter with runtime-default
+
+void superFancyPreference(String superFancyPreferenceValue); // putter</pre>
+</p>
+
+<h3>
     Obtain Instance
 </h3>
 
