@@ -31,7 +31,7 @@ For everybody that just thinks "give me the stuff":
         }
         dependencies {
             // Android plugin
-            classpath 'com.android.tools.build:gradle:0.8.+'
+            classpath 'com.android.tools.build:gradle:0.10.+'
             // the latest version of the android-apt plugin from https://bitbucket.org/hvisser/android-apt
             classpath 'com.neenbedankt.gradle.plugins:android-apt:1.2'
         }
@@ -46,11 +46,13 @@ For everybody that just thinks "give me the stuff":
     }
 
     dependencies {
-        compile 'de.devland.esperandro:esperandro-api:1.1.2'
-        apt 'de.devland.esperandro:esperandro:1.1.2'
+        compile 'de.devland.esperandro:esperandro-api:2.0.0'
+        apt 'de.devland.esperandro:esperandro:2.0.0'
 
         // optional, if we want to use object serialization but don't provide our own Serializer
-        // compile 'de.devland.esperandro:esperandro-gson-addon:1.1.1'
+        // compile 'de.devland.esperandro:esperandro-gson-addon:2.0.0'
+        // or
+        // compile 'de.devland.esperandro:esperandro-jackson-addon:2.0.0'
     }
     
 Current Travis status
