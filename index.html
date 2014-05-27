@@ -62,10 +62,10 @@
 
 <p>
     To work with esperandro we have to include the <a
-        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/1.1.2/esperandro-api-1.1.2.jar">esperandro-api</a>
+        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.0.0/esperandro-api-2.0.0.jar">esperandro-api</a>
     in our Android App.
     The <a
-        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/1.1.2/esperandro-1.1.2-jar-with-dependencies.jar">esperandro
+        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-2.0.0-jar-with-dependencies.jar">esperandro
     annotation processor</a> itself has to be in the classpath of the java compiler for annotation processing.
 </p>
 
@@ -161,19 +161,25 @@ boolean superFancyPreference(boolean superFancyPreferenceValue); // boolean sett
 
 <p>
     If we don't want to provide our own <code>Serializer</code> we can use the <a
-        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/1.1.2/esperandro-gson-addon-1.1.2-jar-with-dependencies.jar">esperandro
+        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-gson-addon-2.0.0-jar-with-dependencies.jar">esperandro
     gson addon</a>
     that will automatically be used to serialize objects if no other <code>Serializer</code> was set. This addon will
     serialize objects into a JSON string.
 </p>
+	If you are using Jackson in your project for JSON-Serialization there is the <a
+        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-jackson-addon-2.0.0-jar-with-dependencies.jar">esperandro
+    jackson addon</a> that can be used.
+<p>
+
+</p>
 
 <p>
-    After setting our <code>Serializer</code> or adding the esperandro-gson-addon to the classpath we can use the
+    After setting our <code>Serializer</code> or adding one of the addons to the classpath we can use the
     following definition for object preferences:
 		 <pre>
 Container superFancyObjectPreference();
 void superFancyObjectPreference(Container superFancyObjectPreferenceValue);</pre>
-where <code>Container</code> ca be any class that implements the Java <code>Serializable</code> interface.
+where <code>Container</code> ca be any class that can be serialized by your <code>Serializer</code> implementation.
 </p>
 
 <h3>
@@ -186,7 +192,7 @@ where <code>Container</code> ca be any class that implements the Java <code>Seri
     <br/>
     <code>int</code> - <code>-1</code><br/>
     <code>long</code> - <code>-1l</code><br/>
-    <code>float</code> - <code>-1.1.2f</code><br/>
+    <code>float</code> - <code>-2.0.0f</code><br/>
     <code>boolean</code> - <code>false</code><br/>
     <code>String</code> - <code>""</code> (empty String)<br/>
     <code>Set&lt;String&gt;</code> - <code>null</code>
@@ -208,6 +214,27 @@ where <code>Container</code> ca be any class that implements the Java <code>Seri
 String superFancyPreference();
 void superFancyPreference(String superFancyPreferenceValue);</pre>
 in our interface.
+</p>
+
+<h3>
+    Runtime Defaults
+</h3>
+
+<p>
+    In addtition to the annotated compile-time defaults, it is possible to provide runtime-defaults. To use them the getter method for a preference has to be specifically defined.
+	Every getter that allows a runtime-default must not have the <code>@Default</code> annotation but instead end with <code>$Default</code> in the method name. The one and only parameter
+	has to be of the type of the preference and resembles the given value that should be used as default.
+</p>
+
+<p>
+	Example:
+	
+	<pre>
+String superFancyPreference(); // getter with implicit compile-time-default
+
+String superFancyPreference$Default(String defaultValue); // getter with runtime-default
+
+void superFancyPreference(String superFancyPreferenceValue); // putter</pre>
 </p>
 
 <h3>
@@ -293,7 +320,7 @@ where <code>preferenceClass</code> is the Class of our interface.
 
 <p>
     When configuring the IDE by hand you should download the
-    <i><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/1.1.2/esperandro-1.1.2-jar-with-dependencies.jar">jar-with-dependencies</a></i>
+    <i><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-2.0.0-jar-with-dependencies.jar">jar-with-dependencies</a></i>
     bundle from <a href="http://search.maven.org/#search%7Cga%7C1%7Cesperandro">Maven central</a> and add this jar as
     annotation processor in your IDE.
 </p>
@@ -327,12 +354,12 @@ where <code>preferenceClass</code> is the Class of our interface.
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro-api&lt;/artifactId&gt;
-    &lt;version&gt;1.1.2&lt;/version&gt;
+    &lt;version&gt;2.0.0&lt;/version&gt;
 &lt;/dependency&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro&lt;/artifactId&gt;
-    &lt;version&gt;1.1.2&lt;/version&gt;
+    &lt;version&gt;2.0.0&lt;/version&gt;
     &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency></pre>
 </p>
@@ -343,7 +370,7 @@ where <code>preferenceClass</code> is the Class of our interface.
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro-gson-addon&lt;/artifactId&gt;
-    &lt;version&gt;1.1.2&lt;/version&gt;
+    &lt;version&gt;2.0.0&lt;/version&gt;
     &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency></pre>
 
@@ -352,7 +379,7 @@ where <code>preferenceClass</code> is the Class of our interface.
 </h2>
 
 <p>
-    The instructions below apply to the android gradle plugin version 0.8.+.
+    The instructions below apply to the android gradle plugin version 0.10.+.
          <pre>
 buildscript {
     repositories {
@@ -360,7 +387,7 @@ buildscript {
     }
     dependencies {
         // Android plugin
-        classpath 'com.android.tools.build:gradle:0.8.+'
+        classpath 'com.android.tools.build:gradle:0.10.+'
         // the latest version of the android-apt plugin from https://bitbucket.org/hvisser/android-apt
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.2'
     }
@@ -375,11 +402,13 @@ repositories {
 }
 
 dependencies {
-    compile 'de.devland.esperandro:esperandro-api:1.1.2'
-    apt 'de.devland.esperandro:esperandro:1.1.2'
+    compile 'de.devland.esperandro:esperandro-api:2.0.0'
+    apt 'de.devland.esperandro:esperandro:2.0.0'
 	
     // optional, if we want to use object serialization but don't provide our own Serializer
-    // compile 'de.devland.esperandro:esperandro-gson-addon:1.1.2'
+    // compile 'de.devland.esperandro:esperandro-gson-addon:2.0.0'
+	// or
+	// compile 'de.devland.esperandro:esperandro-jackson-addon:2.0.0'
 }
 </pre>
 </p>
@@ -391,16 +420,20 @@ dependencies {
 <p>
 <ul>
     <li>
-        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/1.1.2/esperandro-1.1.2-jar-with-dependencies.jar">esperandro</a>
+        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-2.0.0-jar-with-dependencies.jar">esperandro</a>
         - The annotation processor itself. Do not include in final packaged application, just use at compile time.
     </li>
     <li>
-        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/1.1.2/esperandro-api-1.1.2.jar">esperandro-api</a>
+        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.0.0/esperandro-api-2.0.0.jar">esperandro-api</a>
         - The annotations and interfaces needed at runtime. Include in the final package.
     </li>
     <li>
-        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/1.1.2/esperandro-gson-addon-1.1.2-jar-with-dependencies.jar">esperandro-gson-addon</a>
+        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.0.0/esperandro-gson-addon-2.0.0-jar-with-dependencies.jar">esperandro-gson-addon</a>
         - A gson-Serializer for object preferences. Include in the final package if necessary.
+    </li>
+	<li>
+        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.0.0/esperandro-jackson-addon-2.0.0-jar-with-dependencies.jar">esperandro-jackson-addon</a>
+        - A jackson-Serializer for object preferences. Include in the final package if necessary.
     </li>
 </ul>
 </p>
