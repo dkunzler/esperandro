@@ -46,7 +46,11 @@ public class JacksonSerializer implements Serializer {
     @Override
     public <T> T deserialize(String serializedObject, Class<T> clazz) {
         try {
-            return objectMapper.readValue(serializedObject, clazz);
+            if (serializedObject == null) {
+                return null;
+            } else {
+                return objectMapper.readValue(serializedObject, clazz);
+            }
         } catch (IOException e) {
             String message = String.format("Saved preference \"%s\" could not be parsed from JSON.", serializedObject);
             throw new IllegalArgumentException(message, e);
