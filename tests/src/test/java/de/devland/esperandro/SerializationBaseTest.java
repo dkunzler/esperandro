@@ -18,6 +18,7 @@ package de.devland.esperandro;
 import de.devland.esperandro.serialization.JacksonSerializer;
 import de.devland.esperandro.tests.EsperandroSerializationExample;
 import de.devland.esperandro.tests.model.Container;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,15 +31,23 @@ import java.util.ArrayList;
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner.class)
-public class SerializationTest {
+public abstract class SerializationBaseTest {
 
     EsperandroSerializationExample esperandroPreferences;
 
     @Before
     public void setup() {
         esperandroPreferences = Esperandro.getPreferences(EsperandroSerializationExample.class, Robolectric.application);
+        setSerializer();
         //Esperandro.setSerializer(new JacksonSerializer());
     }
+
+    @After
+    public void tearDown() {
+        esperandroPreferences.clear();
+    }
+
+    protected abstract void setSerializer();
 
     @Test
     public void simpleSerialization() {

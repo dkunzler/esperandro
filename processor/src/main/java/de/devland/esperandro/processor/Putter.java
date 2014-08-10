@@ -141,7 +141,14 @@ public class Putter {
                 break;
             case OBJECT:
                 methodSuffix = "String";
-                value = String.format("Esperandro.getSerializer().serialize(%s)", valueName);
+                if (preferenceType.isGeneric()) {
+                    String genericClassName = createClassNameForPreference(valueName);
+                    writer.emitStatement("%s $$container = new %s()", genericClassName, genericClassName);
+                    writer.emitStatement("$$container.value = %s", valueName);
+                    value = "Esperandro.getSerializer().serialize($$container)";
+                } else {
+                    value = String.format("Esperandro.getSerializer().serialize(%s)", valueName);
+                }
                 break;
             case NONE:
                 break;
@@ -154,6 +161,10 @@ public class Putter {
         writer.emitEmptyLine();
     }
 
+    // TODO util or common baseclass
+    private String createClassNameForPreference(String valueName) {
+        return valueName.substring(0, 1).toUpperCase() + valueName.substring(1);
+    }
 
     public Map<String, Element> getPreferenceKeys() {
         return preferenceKeys;

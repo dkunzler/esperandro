@@ -117,7 +117,6 @@ public class Getter {
     }
 
     public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
-        writer.emitAnnotation(Override.class);
         String valueName = method.getSimpleName().toString();
         boolean runtimeDefault = false;
 
@@ -136,7 +135,6 @@ public class Getter {
 
     public void createGetterFromReflection(Method method, Element topLevelInterface,
                                            JavaWriter writer) throws IOException {
-        writer.emitAnnotation(Override.class);
         String valueName = method.getName();
 
         boolean runtimeDefault = false;
@@ -164,11 +162,19 @@ public class Getter {
                               PreferenceType preferenceType, boolean runtimeDefault) throws IOException {
         boolean hasDefaultAnnotation = defaultAnnotation != null;
 
-
         boolean allDefaults = false;
         if (hasDefaultAnnotation) {
             allDefaults = hasAllDefaults(defaultAnnotation);
         }
+
+        writer.emitAnnotation(Override.class);
+        if (runtimeDefault) {
+            writer.beginMethod(preferenceType.getTypeName(), valueName + DEFAULT_SUFFIX, EsperandroAnnotationProcessor.modPublic, preferenceType.getTypeName(), "defaultValue");
+            writer.beginControlFlow("if (preferences.contains(\"" + valueName + "\"))");
+        } else {
+            writer.beginMethod(preferenceType.getTypeName(), valueName, EsperandroAnnotationProcessor.modPublic);
+        }
+
         String statementPattern = "preferences.get%s(\"%s\", %s)";
         String methodSuffix = "";
         String defaultValue = "";
@@ -232,8 +238,13 @@ public class Getter {
                 if (preferenceType.isGeneric()) {
                     String genericClassName = createClassNameForPreference(valueName);
                     genericTypeNames.put(genericClassName, preferenceType.getTypeName());
-                    statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
-                            statementPattern, genericClassName);
+                    String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
+                    writer.emitStatement("%s $$container = Esperandro.getSerializer().deserialize(%s, %s.class)", genericClassName, statement, genericClassName);
+                    writer.emitStatement("%s $$value = null", preferenceType.getTypeName());
+                    writer.beginControlFlow("if ($$container != null)");
+                    writer.emitStatement("$$value = $$container.value");
+                    writer.endControlFlow();
+                    statementPattern = "$$value";
                 } else {
                     statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
                             statementPattern, preferenceType.getTypeName());
@@ -248,15 +259,12 @@ public class Getter {
             warner.emitWarning("Pointless @Default Annotation", element);
         }
         if (runtimeDefault) {
-            writer.beginMethod(preferenceType.getTypeName(), valueName + DEFAULT_SUFFIX, EsperandroAnnotationProcessor.modPublic, preferenceType.getTypeName(), "defaultValue");
-            writer.beginControlFlow("if (preferences.contains(\"" + valueName + "\"))");
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
             writer.emitStatement("return %s", statement);
             writer.nextControlFlow("else");
             writer.emitStatement("return defaultValue");
             writer.endControlFlow();
         } else {
-            writer.beginMethod(preferenceType.getTypeName(), valueName, EsperandroAnnotationProcessor.modPublic);
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
             writer.emitStatement("return %s", statement);
         }

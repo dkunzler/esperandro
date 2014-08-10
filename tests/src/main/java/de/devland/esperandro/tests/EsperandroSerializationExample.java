@@ -15,13 +15,14 @@
  */
 package de.devland.esperandro.tests;
 
+import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
 
 import java.util.ArrayList;
 
 @SharedPreferences
-public interface EsperandroSerializationExample {
+public interface EsperandroSerializationExample extends SharedPreferenceActions {
 
     void containerValue(Container container);
 
@@ -34,6 +35,8 @@ public interface EsperandroSerializationExample {
     void containerList(ArrayList<Container> containerList);
 
     ArrayList<Container> containerList();
+
+    ArrayList<Container> containerList$Default(ArrayList<Container> runtimeDefault);
 
     void containerListObject(ContainerListObject containerListObject);
 

@@ -45,14 +45,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     protected static final Set<Modifier> modPrivate = new HashSet<Modifier>(Arrays.asList(Modifier.PRIVATE));
     protected static final Set<Modifier> modPublic = new HashSet<Modifier>(Arrays.asList(Modifier.PUBLIC));
-
-    private Set<String> additionalImports = new HashSet<String>();
     Warner warner;
     Getter getter;
     Putter putter;
-
     Map<TypeMirror, Element> rootElements;
-
+    private Set<String> additionalImports = new HashSet<String>();
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -95,10 +92,13 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void createGenericClassImplementations(JavaWriter writer) throws IOException {
-        for (String genericTypeName : getter.getGenericTypeNames().keySet()) {
-            String genericInherits = getter.getGenericTypeNames().get(genericTypeName);
+        for (String preferenceName : getter.getGenericTypeNames().keySet()) {
+            String genericType = getter.getGenericTypeNames().get(preferenceName);
 
-            writer.beginType(genericTypeName, "class", modPublic, genericInherits);
+            Set<Modifier> modifiers = new HashSet<Modifier>(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC));
+
+            writer.beginType(preferenceName, "class", modifiers);
+            writer.emitField(genericType, "value", modPublic);
             writer.endType();
         }
     }
