@@ -77,6 +77,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             JavaWriter writer = initImplementation(interfaze, additionalImports);
                             processInterfaceMethods(interfaze, interfaze, writer);
                             createGenericActions(writer);
+                            createGenericClassImplementations(writer);
                             finish(writer);
                             putter.getPreferenceKeys().clear();
                             getter.getPreferenceKeys().clear();
@@ -91,6 +92,15 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         checkPreferenceKeys();
 
         return false;
+    }
+
+    private void createGenericClassImplementations(JavaWriter writer) throws IOException {
+        for (String genericTypeName : getter.getGenericTypeNames().keySet()) {
+            String genericInherits = getter.getGenericTypeNames().get(genericTypeName);
+
+            writer.beginType(genericTypeName, "class", modPublic, genericInherits);
+            writer.endType();
+        }
     }
 
     private void determineAdditionalImports(Element interfaze) {

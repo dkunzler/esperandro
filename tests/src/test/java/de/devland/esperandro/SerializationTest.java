@@ -15,7 +15,6 @@
  */
 package de.devland.esperandro;
 
-import com.google.gson.reflect.TypeToken;
 import de.devland.esperandro.serialization.JacksonSerializer;
 import de.devland.esperandro.tests.EsperandroSerializationExample;
 import de.devland.esperandro.tests.model.Container;
@@ -27,7 +26,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 @Config(manifest = Config.NONE)
@@ -85,15 +83,15 @@ public class SerializationTest {
         Container container = new Container();
         container.anotherValue = 5;
         container.value = "hello World";
-        EsperandroSerializationExample.ContainerList list = new EsperandroSerializationExample.ContainerList();
+        EsperandroSerializationExample.ContainerListObject list = new EsperandroSerializationExample.ContainerListObject();
         list.add(container);
 
         esperandroPreferences.containerListObject(list);
 
-        EsperandroSerializationExample.ContainerList savedContainerList = esperandroPreferences.containerListObject();
-        Assert.assertNotNull(savedContainerList);
-        Assert.assertEquals(1, savedContainerList.size());
-        Container savedContainer = savedContainerList.get(0);
+        EsperandroSerializationExample.ContainerListObject savedContainerListObject = esperandroPreferences.containerListObject();
+        Assert.assertNotNull(savedContainerListObject);
+        Assert.assertEquals(1, savedContainerListObject.size());
+        Container savedContainer = savedContainerListObject.get(0);
         Assert.assertEquals(container, savedContainer);
     }
 

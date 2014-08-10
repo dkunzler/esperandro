@@ -36,10 +36,12 @@ public class Getter {
     private Warner warner;
 
     private Map<String, Element> preferenceKeys;
+    private Map<String, String> genericTypeNames;
 
     public Getter(Warner warner) {
         this.warner = warner;
         preferenceKeys = new HashMap<String, Element>();
+        genericTypeNames = new HashMap<String, String>();
     }
 
     public boolean isGetter(ExecutableElement method) {
@@ -227,8 +229,16 @@ public class Getter {
                 }
                 methodSuffix = "String";
                 defaultValue = "null";
-                statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
-                        statementPattern, preferenceType.getTypeName().replaceFirst("<.*>", ""));
+                if (preferenceType.isGeneric()) {
+                    String genericClassName = createClassNameForPreference(valueName);
+                    genericTypeNames.put(genericClassName, preferenceType.getTypeName());
+                    statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
+                            statementPattern, genericClassName);
+                } else {
+                    statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
+                            statementPattern, preferenceType.getTypeName());
+                }
+
                 break;
             case NONE:
                 break;
@@ -256,8 +266,16 @@ public class Getter {
         writer.emitEmptyLine();
     }
 
+    private String createClassNameForPreference(String valueName) {
+        return valueName.substring(0, 1).toUpperCase() + valueName.substring(1);
+    }
+
     public Map<String, Element> getPreferenceKeys() {
         return preferenceKeys;
+    }
+
+    public Map<String, String> getGenericTypeNames() {
+        return genericTypeNames;
     }
 
 

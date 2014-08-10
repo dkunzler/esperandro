@@ -24,6 +24,7 @@ public enum PreferenceType {
     STRING(TypeKind.DECLARED, "java.lang.String"), STRINGSET(TypeKind.DECLARED, "java.util.Set<java.lang.String>"),
     OBJECT(TypeKind.DECLARED, null);
     private String declaredTypeName;
+    private boolean isGeneric = false;
 
     PreferenceType(TypeKind typeKind) {
         this.declaredTypeName = null;
@@ -57,7 +58,7 @@ public enum PreferenceType {
                 } else {
                     type = OBJECT;
                     type.declaredTypeName = typeMirror.toString();
-                    // TODO check for serializable interface
+                    type.isGeneric = isGeneric(type.declaredTypeName);
                 }
         }
 
@@ -83,8 +84,16 @@ public enum PreferenceType {
         } else if (typeString.startsWith("class ")) {
             preferenceType = OBJECT;
             preferenceType.declaredTypeName = typeString.substring(6);
+            preferenceType.isGeneric = false;
+        } else if (isGeneric(typeString)) {
+            preferenceType.declaredTypeName = typeString;
+            preferenceType.isGeneric = true;
         }
         return preferenceType;
+    }
+
+    private static boolean isGeneric(String typeName) {
+        return typeName.matches(".*<.*>");
     }
 
     public String getTypeName() {
@@ -103,6 +112,11 @@ public enum PreferenceType {
                 typeName = "boolean";
                 break;
         }
+
         return typeName;
+    }
+
+    public boolean isGeneric() {
+        return isGeneric;
     }
 }
