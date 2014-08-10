@@ -20,6 +20,10 @@
         </dependency>
         <dependency>
             <groupId>de.devland.esperandro</groupId>
+            <artifactId>esperandro-jackson-addon</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.devland.esperandro</groupId>
             <artifactId>bintest</artifactId>
             <version>1.1</version>
         </dependency>

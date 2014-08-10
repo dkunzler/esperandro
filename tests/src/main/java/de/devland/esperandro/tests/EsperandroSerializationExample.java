@@ -31,7 +31,19 @@ public interface EsperandroSerializationExample {
 
     ArrayList<String> stringList();
 
+    void containerList(ArrayList<Container> containerList);
+
+    ArrayList<Container> containerList();
+
+    void containerListObject(ContainerList containerList);
+
+    ContainerList containerListObject();
+
     boolean containerValueSync(Container container);
 
     Container containerValueSync();
+
+    public static class ContainerList extends ArrayList<Container> {
+    }
+
 }
