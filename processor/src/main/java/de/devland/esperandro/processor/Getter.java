@@ -45,10 +45,10 @@ public class Getter {
     public boolean isGetter(ExecutableElement method) {
         boolean isGetter = false;
         List<? extends VariableElement> parameters = method.getParameters();
-        PreferenceType preferenceType = getPreferenceTypeFromMethod(method);
+        PreferenceTypeInformation preferenceTypeInformation = getPreferenceTypeFromMethod(method);
 
         boolean hasParameters = parameters != null && parameters.size() > 0;
-        boolean hasValidReturnType = preferenceType != PreferenceType.NONE;
+        boolean hasValidReturnType = preferenceTypeInformation.getPreferenceType() != PreferenceType.UNKNOWN;
         boolean hasRuntimeDefault = false;
         boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
 
@@ -81,10 +81,10 @@ public class Getter {
         boolean isGetter = false;
         Class<?>[] parameters = method.getParameterTypes();
         Type returnType = method.getGenericReturnType();
-        PreferenceType preferenceType = PreferenceType.toPreferenceType(returnType);
+        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(returnType);
 
         boolean hasParameters = parameters != null && parameters.length > 0;
-        boolean hasValidReturnType = preferenceType != PreferenceType.NONE;
+        boolean hasValidReturnType = preferenceTypeInformation.getPreferenceType() != PreferenceType.UNKNOWN;
         boolean hasRuntimeDefault = false;
 
         if (hasParameters && parameters.length == 1) { // getter with default can have at most 1 parameter
@@ -105,13 +105,13 @@ public class Getter {
     }
 
     public boolean isStringSet(ExecutableElement method) {
-        PreferenceType typeFromMethod = getPreferenceTypeFromMethod(method);
-        return PreferenceType.STRINGSET.equals(typeFromMethod);
+        PreferenceTypeInformation typeFromMethod = getPreferenceTypeFromMethod(method);
+        return PreferenceType.STRINGSET.equals(typeFromMethod.getPreferenceType());
     }
 
     public boolean needsSerialization(ExecutableElement method) {
-        PreferenceType typeFromMethod = getPreferenceTypeFromMethod(method);
-        return PreferenceType.OBJECT.equals(typeFromMethod);
+        PreferenceTypeInformation typeFromMethod = getPreferenceTypeFromMethod(method);
+        return PreferenceType.OBJECT.equals(typeFromMethod.getPreferenceType());
     }
 
     public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
@@ -125,10 +125,10 @@ public class Getter {
 
         preferenceKeys.put(valueName, method);
 
-        PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getReturnType());
+        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, method, writer, valueName, preferenceType, runtimeDefault);
+        createGetter(defaultAnnotation, method, writer, valueName, preferenceTypeInformation, runtimeDefault);
     }
 
     public void createGetterFromReflection(Method method, Element topLevelInterface,
@@ -144,20 +144,20 @@ public class Getter {
 
         preferenceKeys.put(valueName, topLevelInterface);
 
-        PreferenceType preferenceType = PreferenceType.toPreferenceType(method.getGenericReturnType());
+        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getGenericReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, topLevelInterface, writer, valueName, preferenceType, runtimeDefault);
+        createGetter(defaultAnnotation, topLevelInterface, writer, valueName, preferenceTypeInformation, runtimeDefault);
     }
 
-    private PreferenceType getPreferenceTypeFromMethod(ExecutableElement method) {
+    private PreferenceTypeInformation getPreferenceTypeFromMethod(ExecutableElement method) {
         TypeMirror returnType = method.getReturnType();
-        return PreferenceType.toPreferenceType(returnType);
+        return PreferenceTypeInformation.from(returnType);
     }
 
 
     private void createGetter(Default defaultAnnotation, Element element, JavaWriter writer, String valueName,
-                              PreferenceType preferenceType, boolean runtimeDefault) throws IOException {
+                              PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault) throws IOException {
         boolean hasDefaultAnnotation = defaultAnnotation != null;
 
         boolean allDefaults = false;
@@ -167,16 +167,16 @@ public class Getter {
 
         writer.emitAnnotation(Override.class);
         if (runtimeDefault) {
-            writer.beginMethod(preferenceType.getTypeName(), valueName + Constants.RUNTIME_DEFAULT_SUFFIX, Constants.MODIFIER_PUBLIC, preferenceType.getTypeName(), "defaultValue");
+            writer.beginMethod(preferenceTypeInformation.getTypeName(), valueName + Constants.RUNTIME_DEFAULT_SUFFIX, Constants.MODIFIER_PUBLIC, preferenceTypeInformation.getTypeName(), "defaultValue");
             writer.beginControlFlow("if (preferences.contains(\"" + valueName + "\"))");
         } else {
-            writer.beginMethod(preferenceType.getTypeName(), valueName, Constants.MODIFIER_PUBLIC);
+            writer.beginMethod(preferenceTypeInformation.getTypeName(), valueName, Constants.MODIFIER_PUBLIC);
         }
 
         String statementPattern = "preferences.get%s(\"%s\", %s)";
         String methodSuffix = "";
         String defaultValue = "";
-        switch (preferenceType) {
+        switch (preferenceTypeInformation.getPreferenceType()) {
             case INT:
                 methodSuffix = "Int";
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofInt() == Default.intDefault) {
@@ -234,23 +234,23 @@ public class Getter {
                 }
                 methodSuffix = "String";
                 defaultValue = "null";
-                if (preferenceType.isGeneric()) {
+                if (preferenceTypeInformation.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
-                    genericTypeNames.put(genericClassName, preferenceType.getTypeName());
+                    genericTypeNames.put(genericClassName, preferenceTypeInformation.getTypeName());
                     String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
                     writer.emitStatement("%s $$container = Esperandro.getSerializer().deserialize(%s, %s.class)", genericClassName, statement, genericClassName);
-                    writer.emitStatement("%s $$value = null", preferenceType.getTypeName());
+                    writer.emitStatement("%s $$value = null", preferenceTypeInformation.getTypeName());
                     writer.beginControlFlow("if ($$container != null)");
                     writer.emitStatement("$$value = $$container.value");
                     writer.endControlFlow();
                     statementPattern = "$$value";
                 } else {
                     statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
-                            statementPattern, preferenceType.getTypeName());
+                            statementPattern, preferenceTypeInformation.getTypeName());
                 }
 
                 break;
-            case NONE:
+            case UNKNOWN:
                 break;
         }
 

@@ -6,4 +6,7 @@ public class Utils {
         return valueName.substring(0, 1).toUpperCase() + valueName.substring(1);
     }
 
+    static boolean isGeneric(String typeName) {
+        return typeName.matches(".*<.*>");
+    }
 }

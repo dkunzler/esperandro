@@ -43,7 +43,7 @@ public class Putter {
 
         boolean hasParameter = parameters != null && parameters.size() == 1;
         boolean hasValidReturnType = validPutterReturnTypes.contains(returnTypeKind);
-        boolean hasValidPreferenceType = hasParameter ? PreferenceType.toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE : false;
+        boolean hasValidPreferenceType = hasParameter ? PreferenceTypeInformation.from(parameters.get(0).asType()).getPreferenceType() != PreferenceType.UNKNOWN : false;
         boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
 
         if (hasParameter && hasValidReturnType && hasValidPreferenceType && !nameEndsWithDefaultSuffix) {
@@ -60,7 +60,7 @@ public class Putter {
         boolean hasParameter = parameterTypes != null && parameterTypes.length == 1;
         boolean hasValidReturnType = method.getReturnType().toString().equals("void")
                 || method.getReturnType().toString().equals("boolean");
-        boolean hasValidPreferenceType = hasParameter ? PreferenceType.toPreferenceType(parameterTypes[0]) != PreferenceType.NONE : false;
+        boolean hasValidPreferenceType = hasParameter ? PreferenceTypeInformation.from(parameterTypes[0]).getPreferenceType() != PreferenceType.UNKNOWN : false;
         boolean hasRuntimeDefault = false;
 
         if (hasParameter) {
@@ -84,10 +84,10 @@ public class Putter {
         String valueName = method.getSimpleName().toString();
         preferenceKeys.put(valueName, method);
         TypeMirror parameterType = method.getParameters().get(0).asType();
-        PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
+        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
         TypeMirror returnType = method.getReturnType();
 
-        createPutter(writer, valueName, valueName, preferenceType, returnType.toString());
+        createPutter(writer, valueName, valueName, preferenceTypeInformation, returnType.toString());
     }
 
 
@@ -96,24 +96,23 @@ public class Putter {
         String valueName = method.getName();
         preferenceKeys.put(valueName, topLevelInterface);
         Type parameterType = method.getGenericParameterTypes()[0];
-        PreferenceType preferenceType = PreferenceType.toPreferenceType(parameterType);
+        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
         Class<?> returnType = method.getReturnType();
 
-        createPutter(writer, valueName, valueName, preferenceType, returnType.toString());
+        createPutter(writer, valueName, valueName, preferenceTypeInformation, returnType.toString());
     }
 
 
-    private void createPutter(JavaWriter writer, String valueName, String value, PreferenceType preferenceType,
+    private void createPutter(JavaWriter writer, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
                               String returnType) throws IOException {
         writer.emitAnnotation(Override.class);
         writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
         boolean shouldReturnValue = returnType.equalsIgnoreCase(Boolean.class.getSimpleName());
         PreferenceEditorCommitStyle commitStyle = PreferenceEditorCommitStyle.APPLY;
         StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s)");
-        //    .%s");
 
         writer.beginMethod(returnType, valueName, Constants.MODIFIER_PUBLIC,
-                preferenceType.getTypeName(), valueName);
+                preferenceTypeInformation.getTypeName(), valueName);
 
         if (shouldReturnValue) {
             statementPattern.insert(0, "return ");
@@ -121,7 +120,7 @@ public class Putter {
         }
 
         String methodSuffix = "";
-        switch (preferenceType) {
+        switch (preferenceTypeInformation.getPreferenceType()) {
             case INT:
                 methodSuffix = "Int";
                 break;
@@ -142,7 +141,7 @@ public class Putter {
                 break;
             case OBJECT:
                 methodSuffix = "String";
-                if (preferenceType.isGeneric()) {
+                if (preferenceTypeInformation.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
                     writer.emitStatement("%s $$container = new %s()", genericClassName, genericClassName);
                     writer.emitStatement("$$container.value = %s", valueName);
@@ -151,7 +150,7 @@ public class Putter {
                     value = String.format("Esperandro.getSerializer().serialize(%s)", valueName);
                 }
                 break;
-            case NONE:
+            case UNKNOWN:
                 break;
         }
         // only use apply on API >= 9
