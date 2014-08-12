@@ -5,6 +5,7 @@ Changelog
 -----
  * fix for issue #23 by wrapping generics into a container
  * bumped dependency versions (this fixes #25)
+ * new SharedPreferenceActions action to clear only values that were explicitly defined in the interface
 
 2.0.0
 -----

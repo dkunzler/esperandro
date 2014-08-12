@@ -47,8 +47,6 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         warner = new Warner(processingEnv);
-        getter = new Getter(warner);
-        putter = new Putter();
         rootElements = new HashMap<TypeMirror, Element>();
 
         preProcessEnvironment(roundEnv);
@@ -63,14 +61,16 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     if (interfaze.getKind() == ElementKind.INTERFACE && interfaze.getAnnotation(SharedPreferences
                             .class) != null) {
                         try {
+                            // reinitialize getter and putter to start fresh for each interface
+                            getter = new Getter(warner);
+                            putter = new Putter();
                             determineAdditionalImports(interfaze);
                             JavaWriter writer = initImplementation(interfaze, additionalImports);
                             processInterfaceMethods(interfaze, interfaze, writer);
                             createGenericActions(writer);
                             createGenericClassImplementations(writer);
                             finish(writer);
-                            putter.getPreferenceKeys().clear();
-                            getter.getPreferenceKeys().clear();
+                            checkPreferenceKeys();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -79,7 +79,6 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             }
         }
 
-        checkPreferenceKeys();
 
         return false;
     }
@@ -262,9 +261,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitAnnotation(Override.class);
         writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
         writer.beginMethod("void", "remove", Constants.MODIFIER_PUBLIC, String.class.getName(), "key");
-        StringBuilder statementPatter = new StringBuilder().append("preferences.edit().remove(key).%s");
+        StringBuilder statementPattern = new StringBuilder().append("preferences.edit().remove(key).%s");
         PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
-                PreferenceEditorCommitStyle.APPLY, statementPatter);
+                PreferenceEditorCommitStyle.APPLY, statementPattern);
         writer.endMethod();
         writer.emitEmptyLine();
 
@@ -285,9 +284,24 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitAnnotation(Override.class);
         writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
         writer.beginMethod("void", "clear", Constants.MODIFIER_PUBLIC);
-        statementPatter = new StringBuilder().append("preferences.edit().clear().%s");
+        statementPattern = new StringBuilder().append("preferences.edit().clear().%s");
         PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
-                PreferenceEditorCommitStyle.APPLY, statementPatter);
+                PreferenceEditorCommitStyle.APPLY, statementPattern);
+        writer.endMethod();
+        writer.emitEmptyLine();
+
+        writer.emitAnnotation(Override.class);
+        writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
+        writer.beginMethod("void", "clearDefined", Constants.MODIFIER_PUBLIC);
+        Set<String> preferenceNames = new LinkedHashSet<String>();
+        preferenceNames.addAll(putter.getPreferenceKeys().keySet());
+        preferenceNames.addAll(getter.getPreferenceKeys().keySet());
+        writer.emitStatement("SharedPreferences.Editor editor = preferences.edit()");
+        for (String preferenceName : preferenceNames) {
+            writer.emitStatement("editor.remove(\"%s\")", preferenceName);
+        }
+        PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
+                PreferenceEditorCommitStyle.APPLY, new StringBuilder("editor.%s"));
         writer.endMethod();
         writer.emitEmptyLine();
 
