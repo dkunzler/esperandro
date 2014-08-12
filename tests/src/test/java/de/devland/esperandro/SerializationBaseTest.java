@@ -15,9 +15,9 @@
  */
 package de.devland.esperandro;
 
-import de.devland.esperandro.serialization.JacksonSerializer;
 import de.devland.esperandro.tests.EsperandroSerializationExample;
 import de.devland.esperandro.tests.model.Container;
+import de.devland.esperandro.tests.model.ContainerListObject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -92,12 +92,12 @@ public abstract class SerializationBaseTest {
         Container container = new Container();
         container.anotherValue = 5;
         container.value = "hello World";
-        EsperandroSerializationExample.ContainerListObject list = new EsperandroSerializationExample.ContainerListObject();
+        ContainerListObject list = new ContainerListObject();
         list.add(container);
 
         esperandroPreferences.containerListObject(list);
 
-        EsperandroSerializationExample.ContainerListObject savedContainerListObject = esperandroPreferences.containerListObject();
+        ContainerListObject savedContainerListObject = esperandroPreferences.containerListObject();
         Assert.assertNotNull(savedContainerListObject);
         Assert.assertEquals(1, savedContainerListObject.size());
         Container savedContainer = savedContainerListObject.get(0);

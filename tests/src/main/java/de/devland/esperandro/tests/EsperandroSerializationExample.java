@@ -18,6 +18,7 @@ package de.devland.esperandro.tests;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
+import de.devland.esperandro.tests.model.ContainerListObject;
 
 import java.util.ArrayList;
 
@@ -45,9 +46,5 @@ public interface EsperandroSerializationExample extends SharedPreferenceActions 
     boolean containerValueSync(Container container);
 
     Container containerValueSync();
-
-    public static class ContainerListObject extends ArrayList<Container> {
-        public ContainerListObject() {}
-    }
 
 }
