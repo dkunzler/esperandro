@@ -63,10 +63,6 @@ public abstract class SerializationBaseTest {
         Assert.assertEquals(container, savedContainer);
     }
 
-    @Test
-    public void test() {
-        System.out.println(ArrayList.class.getGenericSuperclass());
-    }
 
     @Test
     public void serializedList() {
