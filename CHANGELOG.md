@@ -1,8 +1,13 @@
 Changelog
 =========
 
-2.0
----
+2.1.0
+-----
+ * fix for issue #23 by wrapping generics into a container
+ * bumped dependency versions (this fixes #25)
+
+2.0.0
+-----
  * Allow getter with a runtime default by appending the `$Default` suffix
  * Add Jackson Serializer plugin
 
