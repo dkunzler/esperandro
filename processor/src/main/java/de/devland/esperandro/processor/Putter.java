@@ -34,6 +34,7 @@ public class Putter {
     }
 
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     public boolean isPutter(ExecutableElement method) {
         boolean isPutter = false;
         List<? extends VariableElement> parameters = method.getParameters();
@@ -43,7 +44,7 @@ public class Putter {
         boolean hasParameter = parameters != null && parameters.size() == 1;
         boolean hasValidReturnType = validPutterReturnTypes.contains(returnTypeKind);
         boolean hasValidPreferenceType = hasParameter ? PreferenceType.toPreferenceType(parameters.get(0).asType()) != PreferenceType.NONE : false;
-        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Getter.DEFAULT_SUFFIX);
+        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
 
         if (hasParameter && hasValidReturnType && hasValidPreferenceType && !nameEndsWithDefaultSuffix) {
             isPutter = true;
@@ -66,7 +67,7 @@ public class Putter {
             Class<?> parameterType = method.getParameterTypes()[0];
 
             boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
-            boolean nameEndsWithDefaultSuffix = method.getName().endsWith(Getter.DEFAULT_SUFFIX);
+            boolean nameEndsWithDefaultSuffix = method.getName().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
             if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
                 hasRuntimeDefault = true;
             }
@@ -111,7 +112,7 @@ public class Putter {
         StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s)");
         //    .%s");
 
-        writer.beginMethod(returnType, valueName, EsperandroAnnotationProcessor.modPublic,
+        writer.beginMethod(returnType, valueName, Constants.MODIFIER_PUBLIC,
                 preferenceType.getTypeName(), valueName);
 
         if (shouldReturnValue) {
@@ -142,7 +143,7 @@ public class Putter {
             case OBJECT:
                 methodSuffix = "String";
                 if (preferenceType.isGeneric()) {
-                    String genericClassName = createClassNameForPreference(valueName);
+                    String genericClassName = Utils.createClassNameForPreference(valueName);
                     writer.emitStatement("%s $$container = new %s()", genericClassName, genericClassName);
                     writer.emitStatement("$$container.value = %s", valueName);
                     value = "Esperandro.getSerializer().serialize($$container)";
@@ -159,11 +160,6 @@ public class Putter {
         PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer, commitStyle, baseStatement);
         writer.endMethod();
         writer.emitEmptyLine();
-    }
-
-    // TODO util or common baseclass
-    private String createClassNameForPreference(String valueName) {
-        return valueName.substring(0, 1).toUpperCase() + valueName.substring(1);
     }
 
     public Map<String, Element> getPreferenceKeys() {

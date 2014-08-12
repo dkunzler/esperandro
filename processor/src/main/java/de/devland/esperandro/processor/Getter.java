@@ -31,8 +31,6 @@ import java.util.Map;
 
 public class Getter {
 
-    public static final String DEFAULT_SUFFIX = "$Default";
-
     private Warner warner;
 
     private Map<String, Element> preferenceKeys;
@@ -52,7 +50,7 @@ public class Getter {
         boolean hasParameters = parameters != null && parameters.size() > 0;
         boolean hasValidReturnType = preferenceType != PreferenceType.NONE;
         boolean hasRuntimeDefault = false;
-        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(DEFAULT_SUFFIX);
+        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
 
         if (hasParameters && parameters.size() == 1) { // getter with default can have at most 1 parameter
             VariableElement parameter = parameters.get(0);
@@ -72,7 +70,7 @@ public class Getter {
 
         if (nameEndsWithDefaultSuffix && !hasParameters) {
             String reservedSuffixMessage = String.format("Preferences cannot end with \"%s\" as this " +
-                    "suffix is reserved for getters with a runtime default.", DEFAULT_SUFFIX);
+                    "suffix is reserved for getters with a runtime default.", Constants.RUNTIME_DEFAULT_SUFFIX);
             warner.emitError(reservedSuffixMessage, method);
         }
 
@@ -93,7 +91,7 @@ public class Getter {
             Class<?> parameterType = parameters[0];
 
             boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
-            boolean nameEndsWithDefaultSuffix = method.getName().endsWith(DEFAULT_SUFFIX);
+            boolean nameEndsWithDefaultSuffix = method.getName().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
             if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
                 hasRuntimeDefault = true;
             }
@@ -120,9 +118,9 @@ public class Getter {
         String valueName = method.getSimpleName().toString();
         boolean runtimeDefault = false;
 
-        if (valueName.endsWith(DEFAULT_SUFFIX)) {
+        if (valueName.endsWith(Constants.RUNTIME_DEFAULT_SUFFIX)) {
             runtimeDefault = true;
-            valueName = valueName.substring(0, valueName.indexOf(DEFAULT_SUFFIX));
+            valueName = valueName.substring(0, valueName.indexOf(Constants.RUNTIME_DEFAULT_SUFFIX));
         }
 
         preferenceKeys.put(valueName, method);
@@ -139,9 +137,9 @@ public class Getter {
 
         boolean runtimeDefault = false;
 
-        if (valueName.endsWith(DEFAULT_SUFFIX)) {
+        if (valueName.endsWith(Constants.RUNTIME_DEFAULT_SUFFIX)) {
             runtimeDefault = true;
-            valueName = valueName.substring(0, valueName.indexOf(DEFAULT_SUFFIX));
+            valueName = valueName.substring(0, valueName.indexOf(Constants.RUNTIME_DEFAULT_SUFFIX));
         }
 
         preferenceKeys.put(valueName, topLevelInterface);
@@ -169,10 +167,10 @@ public class Getter {
 
         writer.emitAnnotation(Override.class);
         if (runtimeDefault) {
-            writer.beginMethod(preferenceType.getTypeName(), valueName + DEFAULT_SUFFIX, EsperandroAnnotationProcessor.modPublic, preferenceType.getTypeName(), "defaultValue");
+            writer.beginMethod(preferenceType.getTypeName(), valueName + Constants.RUNTIME_DEFAULT_SUFFIX, Constants.MODIFIER_PUBLIC, preferenceType.getTypeName(), "defaultValue");
             writer.beginControlFlow("if (preferences.contains(\"" + valueName + "\"))");
         } else {
-            writer.beginMethod(preferenceType.getTypeName(), valueName, EsperandroAnnotationProcessor.modPublic);
+            writer.beginMethod(preferenceType.getTypeName(), valueName, Constants.MODIFIER_PUBLIC);
         }
 
         String statementPattern = "preferences.get%s(\"%s\", %s)";
@@ -207,6 +205,7 @@ public class Getter {
                 break;
             case BOOLEAN:
                 methodSuffix = "Boolean";
+                //noinspection PointlessBooleanExpression
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
                     warner.emitMissingDefaultWarning("boolean", element);
                 }
@@ -236,7 +235,7 @@ public class Getter {
                 methodSuffix = "String";
                 defaultValue = "null";
                 if (preferenceType.isGeneric()) {
-                    String genericClassName = createClassNameForPreference(valueName);
+                    String genericClassName = Utils.createClassNameForPreference(valueName);
                     genericTypeNames.put(genericClassName, preferenceType.getTypeName());
                     String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
                     writer.emitStatement("%s $$container = Esperandro.getSerializer().deserialize(%s, %s.class)", genericClassName, statement, genericClassName);
@@ -274,10 +273,6 @@ public class Getter {
         writer.emitEmptyLine();
     }
 
-    private String createClassNameForPreference(String valueName) {
-        return valueName.substring(0, 1).toUpperCase() + valueName.substring(1);
-    }
-
     public Map<String, Element> getPreferenceKeys() {
         return preferenceKeys;
     }
@@ -288,6 +283,7 @@ public class Getter {
 
 
     private boolean hasAllDefaults(Default defaultAnnotation) {
+        //noinspection PointlessBooleanExpression
         boolean hasAllDefaults = defaultAnnotation.ofBoolean() == Default.booleanDefault;
         hasAllDefaults &= defaultAnnotation.ofInt() == Default.intDefault;
         hasAllDefaults &= defaultAnnotation.ofFloat() == Default.floatDefault;

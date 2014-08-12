@@ -38,17 +38,10 @@ import java.util.*;
 @SupportedAnnotationTypes("de.devland.esperandro.annotations.SharedPreferences")
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
-    public static final String SUFFIX = "$$Impl";
-    public static final String[] neededImports = new String[]{"android.os.Build", "android.content.Context",
-            "android.content.SharedPreferences", "android.annotation.SuppressLint"};
-    public static final String sharedPreferencesAnnotationName = "de.devland.esperandro.annotations.SharedPreferences";
-
-    protected static final Set<Modifier> modPrivate = new HashSet<Modifier>(Arrays.asList(Modifier.PRIVATE));
-    protected static final Set<Modifier> modPublic = new HashSet<Modifier>(Arrays.asList(Modifier.PUBLIC));
-    Warner warner;
-    Getter getter;
-    Putter putter;
-    Map<TypeMirror, Element> rootElements;
+    private Warner warner;
+    private Getter getter;
+    private Putter putter;
+    private Map<TypeMirror, Element> rootElements;
     private Set<String> additionalImports = new HashSet<String>();
 
     @Override
@@ -62,7 +55,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
 
         for (TypeElement typeElement : annotations) {
-            if (typeElement.getQualifiedName().toString().equals(sharedPreferencesAnnotationName)) {
+            if (typeElement.getQualifiedName().toString().equals(Constants.SHARED_PREFERENCES_ANNOTATION_NAME)) {
                 Set<? extends Element> interfaces = roundEnv.getElementsAnnotatedWith(SharedPreferences.class);
 
                 for (Element interfaze : interfaces) {
@@ -98,7 +91,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             Set<Modifier> modifiers = new HashSet<Modifier>(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC));
 
             writer.beginType(preferenceName, "class", modifiers);
-            writer.emitField(genericType, "value", modPublic);
+            writer.emitField(genericType, "value", Constants.MODIFIER_PUBLIC);
             writer.endType();
         }
     }
@@ -206,7 +199,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         try {
             QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
-            JavaFileObject jfo = filer.createSourceFile(qualifiedNameable.getQualifiedName() + SUFFIX);
+            JavaFileObject jfo = filer.createSourceFile(qualifiedNameable.getQualifiedName() + Constants.IMPLEMENTATION_SUFFIX);
             boolean preferenceNamePresent = preferencesName != null && !preferencesName.equals("");
             Writer writer = jfo.openWriter();
             result = new JavaWriter(writer);
@@ -224,18 +217,18 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             if (!preferenceNamePresent) {
                 additionalImports.add("android.preference.PreferenceManager");
             }
-            result.emitImports(neededImports);
+            result.emitImports(Constants.STANDARD_IMPORTS);
             result.emitImports(additionalImports);
 
             result.emitEmptyLine();
-            result.beginType(typeName + SUFFIX, "class", modPublic, null, qualifiedNameable.getQualifiedName()
+            result.beginType(typeName + Constants.IMPLEMENTATION_SUFFIX, "class", Constants.MODIFIER_PUBLIC, null, qualifiedNameable.getQualifiedName()
                     .toString(), SharedPreferenceActions.class.getName());
             result.emitEmptyLine();
-            result.emitField("android.content.SharedPreferences", "preferences", modPrivate);
+            result.emitField("android.content.SharedPreferences", "preferences", Constants.MODIFIER_PRIVATE);
 
 
             result.emitEmptyLine();
-            result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + SUFFIX, modPublic, "Context",
+            result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + Constants.IMPLEMENTATION_SUFFIX, Constants.MODIFIER_PUBLIC, "Context",
                     "context");
             if (preferenceNamePresent) {
                 result.emitStatement("this.preferences = context.getSharedPreferences(\"%s\", %s)", preferencesName,
@@ -255,20 +248,20 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     private void createGenericActions(JavaWriter writer) throws IOException {
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("android.content.SharedPreferences", "get", modPublic);
+        writer.beginMethod("android.content.SharedPreferences", "get", Constants.MODIFIER_PUBLIC);
         writer.emitStatement("return preferences");
         writer.endMethod();
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("boolean", "contains", modPublic, String.class.getName(), "key");
+        writer.beginMethod("boolean", "contains", Constants.MODIFIER_PUBLIC, String.class.getName(), "key");
         writer.emitStatement("return preferences.contains(key)");
         writer.endMethod();
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
         writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
-        writer.beginMethod("void", "remove", modPublic, String.class.getName(), "key");
+        writer.beginMethod("void", "remove", Constants.MODIFIER_PUBLIC, String.class.getName(), "key");
         StringBuilder statementPatter = new StringBuilder().append("preferences.edit().remove(key).%s");
         PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
                 PreferenceEditorCommitStyle.APPLY, statementPatter);
@@ -276,14 +269,14 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "registerOnChangeListener", modPublic, "android.content.SharedPreferences" + "" +
+        writer.beginMethod("void", "registerOnChangeListener", Constants.MODIFIER_PUBLIC, "android.content.SharedPreferences" + "" +
                 ".OnSharedPreferenceChangeListener", "listener");
         writer.emitStatement("preferences.registerOnSharedPreferenceChangeListener(listener)");
         writer.endMethod();
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "unregisterOnChangeListener", modPublic, "android.content.SharedPreferences" + "" +
+        writer.beginMethod("void", "unregisterOnChangeListener", Constants.MODIFIER_PUBLIC, "android.content.SharedPreferences" + "" +
                 ".OnSharedPreferenceChangeListener", "listener");
         writer.emitStatement("preferences.unregisterOnSharedPreferenceChangeListener(listener)");
         writer.endMethod();
@@ -291,7 +284,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         writer.emitAnnotation(Override.class);
         writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
-        writer.beginMethod("void", "clear", modPublic);
+        writer.beginMethod("void", "clear", Constants.MODIFIER_PUBLIC);
         statementPatter = new StringBuilder().append("preferences.edit().clear().%s");
         PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
                 PreferenceEditorCommitStyle.APPLY, statementPatter);
@@ -299,7 +292,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "initDefaults", modPublic);
+        writer.beginMethod("void", "initDefaults", Constants.MODIFIER_PUBLIC);
         for (String preferenceKey : getter.getPreferenceKeys().keySet()) {
             if (putter.getPreferenceKeys().containsKey(preferenceKey)) {
                 writer.emitStatement("this.%s(this.%s())", preferenceKey, preferenceKey);
