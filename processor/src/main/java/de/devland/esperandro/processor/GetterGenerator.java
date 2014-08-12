@@ -29,14 +29,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Getter {
+public class GetterGenerator {
 
     private Warner warner;
 
     private Map<String, Element> preferenceKeys;
     private Map<String, String> genericTypeNames;
 
-    public Getter(Warner warner) {
+    public GetterGenerator(Warner warner) {
         this.warner = warner;
         preferenceKeys = new HashMap<String, Element>();
         genericTypeNames = new HashMap<String, String>();

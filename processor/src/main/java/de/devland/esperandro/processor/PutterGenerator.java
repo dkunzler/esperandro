@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 
-public class Putter {
+public class PutterGenerator {
 
     private Map<String, Element> preferenceKeys;
 
@@ -29,7 +29,7 @@ public class Putter {
             TypeKind.BOOLEAN));
 
 
-    public Putter() {
+    public PutterGenerator() {
         preferenceKeys = new HashMap<String, Element>();
     }
 
@@ -60,6 +60,7 @@ public class Putter {
         boolean hasParameter = parameterTypes != null && parameterTypes.length == 1;
         boolean hasValidReturnType = method.getReturnType().toString().equals("void")
                 || method.getReturnType().toString().equals("boolean");
+        //noinspection SimplifiableConditionalExpression
         boolean hasValidPreferenceType = hasParameter ? PreferenceTypeInformation.from(parameterTypes[0]).getPreferenceType() != PreferenceType.UNKNOWN : false;
         boolean hasRuntimeDefault = false;
 

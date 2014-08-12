@@ -39,8 +39,8 @@ import java.util.*;
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     private Warner warner;
-    private Getter getter;
-    private Putter putter;
+    private GetterGenerator getterGenerator;
+    private PutterGenerator putterGenerator;
     private Map<TypeMirror, Element> rootElements;
     private Set<String> additionalImports = new HashSet<String>();
 
@@ -61,9 +61,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     if (interfaze.getKind() == ElementKind.INTERFACE && interfaze.getAnnotation(SharedPreferences
                             .class) != null) {
                         try {
-                            // reinitialize getter and putter to start fresh for each interface
-                            getter = new Getter(warner);
-                            putter = new Putter();
+                            // reinitialize getterGenerator and putter to start fresh for each interface
+                            getterGenerator = new GetterGenerator(warner);
+                            putterGenerator = new PutterGenerator();
                             determineAdditionalImports(interfaze);
                             JavaWriter writer = initImplementation(interfaze, additionalImports);
                             processInterfaceMethods(interfaze, interfaze, writer);
@@ -84,8 +84,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void createGenericClassImplementations(JavaWriter writer) throws IOException {
-        for (String preferenceName : getter.getGenericTypeNames().keySet()) {
-            String genericType = getter.getGenericTypeNames().get(preferenceName);
+        for (String preferenceName : getterGenerator.getGenericTypeNames().keySet()) {
+            String genericType = getterGenerator.getGenericTypeNames().get(preferenceName);
 
             Set<Modifier> modifiers = new HashSet<Modifier>(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC));
 
@@ -100,10 +100,10 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         for (Element element : potentialMethods) {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) element;
-                if (getter.isStringSet(method)) {
+                if (getterGenerator.isStringSet(method)) {
                     additionalImports.add("java.util.Set");
                 }
-                if (getter.needsSerialization(method)) {
+                if (getterGenerator.needsSerialization(method)) {
                     additionalImports.add("de.devland.esperandro.Esperandro");
                 }
             }
@@ -122,10 +122,10 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         for (Element element : potentialMethods) {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) element;
-                if (putter.isPutter(method)) {
-                    putter.createPutterFromModel(method, writer);
-                } else if (getter.isGetter(method)) {
-                    getter.createGetterFromModel(method, writer);
+                if (putterGenerator.isPutter(method)) {
+                    putterGenerator.createPutterFromModel(method, writer);
+                } else if (getterGenerator.isGetter(method)) {
+                    getterGenerator.createGetterFromModel(method, writer);
                 } else {
                     warner.emitError("No valid getter or setter detected.", method);
                 }
@@ -156,10 +156,10 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                                              JavaWriter writer) throws IOException {
 
         for (Method method : interfaceClass.getDeclaredMethods()) {
-            if (putter.isPutter(method)) {
-                putter.createPutterFromReflection(method, topLevelInterface, writer);
-            } else if (getter.isGetter(method)) {
-                getter.createGetterFromReflection(method, topLevelInterface, writer);
+            if (putterGenerator.isPutter(method)) {
+                putterGenerator.createPutterFromReflection(method, topLevelInterface, writer);
+            } else if (getterGenerator.isGetter(method)) {
+                getterGenerator.createGetterFromReflection(method, topLevelInterface, writer);
             } else {
                 warner.emitError("No valid getter or setter detected in class '" + interfaceClass.getName() + "' for " +
                         "method: '" + method.getName() + "'.", topLevelInterface);
@@ -175,15 +175,15 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void checkPreferenceKeys() {
-        for (String key : getter.getPreferenceKeys().keySet()) {
-            if (!putter.getPreferenceKeys().containsKey(key)) {
-                warner.emitWarning("No putter found for getter '" + key + "'", getter.getPreferenceKeys().get(key));
+        for (String key : getterGenerator.getPreferenceKeys().keySet()) {
+            if (!putterGenerator.getPreferenceKeys().containsKey(key)) {
+                warner.emitWarning("No putter found for getter '" + key + "'", getterGenerator.getPreferenceKeys().get(key));
             }
         }
 
-        for (String key : putter.getPreferenceKeys().keySet()) {
-            if (!getter.getPreferenceKeys().containsKey(key)) {
-                warner.emitWarning("No getter found for putter '" + key + "'", putter.getPreferenceKeys().get(key));
+        for (String key : putterGenerator.getPreferenceKeys().keySet()) {
+            if (!getterGenerator.getPreferenceKeys().containsKey(key)) {
+                warner.emitWarning("No getterGenerator found for putter '" + key + "'", putterGenerator.getPreferenceKeys().get(key));
             }
         }
     }
@@ -294,8 +294,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
         writer.beginMethod("void", "clearDefined", Constants.MODIFIER_PUBLIC);
         Set<String> preferenceNames = new LinkedHashSet<String>();
-        preferenceNames.addAll(putter.getPreferenceKeys().keySet());
-        preferenceNames.addAll(getter.getPreferenceKeys().keySet());
+        preferenceNames.addAll(putterGenerator.getPreferenceKeys().keySet());
+        preferenceNames.addAll(getterGenerator.getPreferenceKeys().keySet());
         writer.emitStatement("SharedPreferences.Editor editor = preferences.edit()");
         for (String preferenceName : preferenceNames) {
             writer.emitStatement("editor.remove(\"%s\")", preferenceName);
@@ -307,8 +307,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         writer.emitAnnotation(Override.class);
         writer.beginMethod("void", "initDefaults", Constants.MODIFIER_PUBLIC);
-        for (String preferenceKey : getter.getPreferenceKeys().keySet()) {
-            if (putter.getPreferenceKeys().containsKey(preferenceKey)) {
+        for (String preferenceKey : getterGenerator.getPreferenceKeys().keySet()) {
+            if (putterGenerator.getPreferenceKeys().containsKey(preferenceKey)) {
                 writer.emitStatement("this.%s(this.%s())", preferenceKey, preferenceKey);
             }
         }
