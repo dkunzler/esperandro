@@ -346,6 +346,29 @@ where <code>preferenceClass</code> is the Class of our interface.
 </p>
 
 <h2>
+	Proguard
+</h2>
+<pre>
+# esperandro
+-keepnames class de.devland.** { *; }
+-keep class **$$Impl { public *;}
+
+# keep the annotated things annotated
+-keepattributes *Annotation*, EnclosingMethod, Signature, InnerClasses
+
+# jackson
+#-dontwarn com.fasterxml.jackson.databind.**
+#-keepnames class com.fasterxml.jackson.** { *; }
+
+# for gson see their documentation at
+# https://code.google.com/p/google-gson/source/browse/trunk/examples/android-proguard-example/proguard.cfg
+</pre>
+
+<p>
+
+</p>
+
+<h2>
     Maven
 </h2>
 
