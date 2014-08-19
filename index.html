@@ -62,10 +62,10 @@
 
 <p>
     To work with esperandro we have to include the <a
-        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.0.0/esperandro-api-2.0.0.jar">esperandro-api</a>
+        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.1.0/esperandro-api-2.1.0.jar">esperandro-api</a>
     in our Android App.
     The <a
-        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-2.0.0-jar-with-dependencies.jar">esperandro
+        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.1.0/esperandro-2.1.0-jar-with-dependencies.jar">esperandro
     annotation processor</a> itself has to be in the classpath of the java compiler for annotation processing.
 </p>
 
@@ -161,13 +161,13 @@ boolean superFancyPreference(boolean superFancyPreferenceValue); // boolean sett
 
 <p>
     If we don't want to provide our own <code>Serializer</code> we can use the <a
-        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-gson-addon-2.0.0-jar-with-dependencies.jar">esperandro
+        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.1.0/esperandro-gson-addon-2.1.0-jar-with-dependencies.jar">esperandro
     gson addon</a>
     that will automatically be used to serialize objects if no other <code>Serializer</code> was set. This addon will
     serialize objects into a JSON string.
 </p>
 	If you are using Jackson in your project for JSON-Serialization there is the <a
-        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-jackson-addon-2.0.0-jar-with-dependencies.jar">esperandro
+        href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.1.0/esperandro-jackson-addon-2.1.0-jar-with-dependencies.jar">esperandro
     jackson addon</a> that can be used.
 <p>
 
@@ -320,7 +320,7 @@ where <code>preferenceClass</code> is the Class of our interface.
 
 <p>
     When configuring the IDE by hand you should download the
-    <i><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-2.0.0-jar-with-dependencies.jar">jar-with-dependencies</a></i>
+    <i><a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.1.0/esperandro-2.1.0-jar-with-dependencies.jar">jar-with-dependencies</a></i>
     bundle from <a href="http://search.maven.org/#search%7Cga%7C1%7Cesperandro">Maven central</a> and add this jar as
     annotation processor in your IDE.
 </p>
@@ -354,12 +354,12 @@ where <code>preferenceClass</code> is the Class of our interface.
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro-api&lt;/artifactId&gt;
-    &lt;version&gt;2.0.0&lt;/version&gt;
+    &lt;version&gt;2.1.0&lt;/version&gt;
 &lt;/dependency&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro&lt;/artifactId&gt;
-    &lt;version&gt;2.0.0&lt;/version&gt;
+    &lt;version&gt;2.1.0&lt;/version&gt;
     &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency></pre>
 </p>
@@ -370,7 +370,7 @@ where <code>preferenceClass</code> is the Class of our interface.
 &lt;dependency&gt;
     &lt;groupId&gt;de.devland.esperandro&lt;/groupId&gt;
     &lt;artifactId&gt;esperandro-gson-addon&lt;/artifactId&gt;
-    &lt;version&gt;2.0.0&lt;/version&gt;
+    &lt;version&gt;2.1.0&lt;/version&gt;
     &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency></pre>
 
@@ -402,13 +402,13 @@ repositories {
 }
 
 dependencies {
-    compile 'de.devland.esperandro:esperandro-api:2.0.0'
-    apt 'de.devland.esperandro:esperandro:2.0.0'
+    compile 'de.devland.esperandro:esperandro-api:2.1.0'
+    apt 'de.devland.esperandro:esperandro:2.1.0'
 	
     // optional, if we want to use object serialization but don't provide our own Serializer
-    // compile 'de.devland.esperandro:esperandro-gson-addon:2.0.0'
+    // compile 'de.devland.esperandro:esperandro-gson-addon:2.1.0'
 	// or
-	// compile 'de.devland.esperandro:esperandro-jackson-addon:2.0.0'
+	// compile 'de.devland.esperandro:esperandro-jackson-addon:2.1.0'
 }
 </pre>
 </p>
@@ -420,19 +420,19 @@ dependencies {
 <p>
 <ul>
     <li>
-        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.0.0/esperandro-2.0.0-jar-with-dependencies.jar">esperandro</a>
+        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.1.0/esperandro-2.1.0-jar-with-dependencies.jar">esperandro</a>
         - The annotation processor itself. Do not include in final packaged application, just use at compile time.
     </li>
     <li>
-        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.0.0/esperandro-api-2.0.0.jar">esperandro-api</a>
+        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.1.0/esperandro-api-2.1.0.jar">esperandro-api</a>
         - The annotations and interfaces needed at runtime. Include in the final package.
     </li>
     <li>
-        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.0.0/esperandro-gson-addon-2.0.0-jar-with-dependencies.jar">esperandro-gson-addon</a>
+        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.1.0/esperandro-gson-addon-2.1.0-jar-with-dependencies.jar">esperandro-gson-addon</a>
         - A gson-Serializer for object preferences. Include in the final package if necessary.
     </li>
 	<li>
-        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.0.0/esperandro-jackson-addon-2.0.0-jar-with-dependencies.jar">esperandro-jackson-addon</a>
+        <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.1.0/esperandro-jackson-addon-2.1.0-jar-with-dependencies.jar">esperandro-jackson-addon</a>
         - A jackson-Serializer for object preferences. Include in the final package if necessary.
     </li>
 </ul>
