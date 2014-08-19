@@ -356,6 +356,10 @@ where <code>preferenceClass</code> is the Class of our interface.
 # keep the annotated things annotated
 -keepattributes *Annotation*, EnclosingMethod, Signature, InnerClasses
 
+# for dagger also preserve the interfaces
+# assuming they reside in the sub-package 'preferences' and all end with 'Prefs'
+#-keep class preferences.**Prefs { public *;}
+
 # jackson
 #-dontwarn com.fasterxml.jackson.databind.**
 #-keepnames class com.fasterxml.jackson.** { *; }
