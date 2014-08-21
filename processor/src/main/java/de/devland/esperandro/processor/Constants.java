@@ -14,7 +14,9 @@ public class Constants {
     public static final String SHARED_PREFERENCES_ANNOTATION_NAME = "de.devland.esperandro.annotations.SharedPreferences";
 
     public static final Set<Modifier> MODIFIER_PRIVATE = new HashSet<Modifier>(Arrays.asList(Modifier.PRIVATE));
+    public static final Set<Modifier> MODIFIER_PRIVATE_FINAL = new HashSet<Modifier>(Arrays.asList(Modifier.PRIVATE, Modifier.FINAL));
     public static final Set<Modifier> MODIFIER_PUBLIC = new HashSet<Modifier>(Arrays.asList(Modifier.PUBLIC));
+
 
     public static final String DECLARED_TYPENAME_STRING = "java.lang.String";
     public static final String DECLARED_TYPENAME_STRINGSET = "java.util.Set<java.lang.String>";

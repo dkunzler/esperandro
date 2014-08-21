@@ -223,7 +223,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             result.beginType(typeName + Constants.IMPLEMENTATION_SUFFIX, "class", Constants.MODIFIER_PUBLIC, null, qualifiedNameable.getQualifiedName()
                     .toString(), SharedPreferenceActions.class.getName());
             result.emitEmptyLine();
-            result.emitField("android.content.SharedPreferences", "preferences", Constants.MODIFIER_PRIVATE);
+            result.emitField("android.content.SharedPreferences", "preferences", Constants.MODIFIER_PRIVATE_FINAL);
 
 
             result.emitEmptyLine();
