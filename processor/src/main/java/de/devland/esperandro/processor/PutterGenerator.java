@@ -107,7 +107,7 @@ public class PutterGenerator {
     private void createPutter(JavaWriter writer, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
                               String returnType) throws IOException {
         writer.emitAnnotation(Override.class);
-        writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
+        writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
         boolean shouldReturnValue = returnType.equalsIgnoreCase(Boolean.class.getSimpleName());
         PreferenceEditorCommitStyle commitStyle = PreferenceEditorCommitStyle.APPLY;
         StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s)");
