@@ -259,7 +259,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
+        writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
         writer.beginMethod("void", "remove", Constants.MODIFIER_PUBLIC, String.class.getName(), "key");
         StringBuilder statementPattern = new StringBuilder().append("preferences.edit().remove(key).%s");
         PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
@@ -282,7 +282,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
+        writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
         writer.beginMethod("void", "clear", Constants.MODIFIER_PUBLIC);
         statementPattern = new StringBuilder().append("preferences.edit().clear().%s");
         PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
@@ -291,7 +291,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitEmptyLine();
 
         writer.emitAnnotation(Override.class);
-        writer.emitAnnotation(SuppressLint.class, "\"NewApi\"");
+        writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
         writer.beginMethod("void", "clearDefined", Constants.MODIFIER_PUBLIC);
         Set<String> preferenceNames = new LinkedHashSet<String>();
         preferenceNames.addAll(putterGenerator.getPreferenceKeys().keySet());
