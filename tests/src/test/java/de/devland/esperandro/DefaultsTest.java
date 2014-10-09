@@ -68,5 +68,21 @@ public class DefaultsTest {
         Assert.assertEquals(exampleComplex, preferences.complexPref$Default(exampleComplex));
     }
 
+    @Test
+    public void initDefaults() {
+        EsperandroDefaultsExample preferences = Esperandro.getPreferences(EsperandroDefaultsExample.class,
+                Robolectric.application);
+        Assert.assertFalse(preferences.contains("boolPref"));
+        boolean defaultValue = preferences.boolPref();
+        preferences.initDefaults();
+        Assert.assertTrue(preferences.contains("boolPref"));
+        Assert.assertEquals(defaultValue, preferences.boolPref());
+        preferences.boolPref(!defaultValue);
+        Assert.assertEquals(!defaultValue, preferences.boolPref());
+        preferences.initDefaults();
+        // initDefaults should not override user-set value
+        Assert.assertEquals(!defaultValue, preferences.boolPref());
+    }
+
 
 }
