@@ -70,7 +70,8 @@ public class PreferenceTypeInformation {
             result.declaredTypeName = Constants.DECLARED_TYPENAME_STRING;
         } else if (typeString.startsWith("class ")) {
             result.preferenceType = PreferenceType.OBJECT;
-            result.declaredTypeName = typeString;
+			// cut off "class " from type name
+            result.declaredTypeName = typeString.substring(6);
         } else if (Utils.isGeneric(typeString)) {
             result.preferenceType = PreferenceType.OBJECT;
             result.declaredTypeName = typeString;

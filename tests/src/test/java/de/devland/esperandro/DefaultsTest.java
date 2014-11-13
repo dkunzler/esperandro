@@ -19,6 +19,8 @@ package de.devland.esperandro;
 import de.devland.esperandro.tests.EsperandroDefaultsExample;
 import de.devland.esperandro.tests.model.Container;
 import junit.framework.Assert;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -32,10 +34,21 @@ import java.util.Set;
 @RunWith(RobolectricTestRunner.class)
 public class DefaultsTest {
 
+    private EsperandroDefaultsExample preferences;
+
+    @Before
+    public void setup() {
+        preferences = Esperandro.getPreferences(EsperandroDefaultsExample.class,
+                Robolectric.application);
+    }
+
+    @After
+    public void tearDown() {
+        preferences.clear();
+    }
+
     @Test
     public void annotationDefaults() {
-        EsperandroDefaultsExample preferences = Esperandro.getPreferences(EsperandroDefaultsExample.class,
-                Robolectric.application);
         Assert.assertNotNull(preferences);
 
         Assert.assertTrue(preferences.boolPref());
@@ -66,6 +79,20 @@ public class DefaultsTest {
         exampleComplex.value = "test";
         exampleComplex.anotherValue = 23;
         Assert.assertEquals(exampleComplex, preferences.complexPref$Default(exampleComplex));
+    }
+
+    @Test
+    public void initDefaults() {
+        Assert.assertFalse(preferences.contains("boolPref"));
+        boolean defaultValue = preferences.boolPref();
+        preferences.initDefaults();
+        Assert.assertTrue(preferences.contains("boolPref"));
+        Assert.assertEquals(defaultValue, preferences.boolPref());
+        preferences.boolPref(!defaultValue);
+        Assert.assertEquals(!defaultValue, preferences.boolPref());
+        preferences.initDefaults();
+        // initDefaults should not override user-set value
+        Assert.assertEquals(!defaultValue, preferences.boolPref());
     }
 
 
