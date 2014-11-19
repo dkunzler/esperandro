@@ -21,7 +21,9 @@ import de.devland.esperandro.serialization.Serializer;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Manager to give access to the generated Esperandro-SharedPreference implementations.
@@ -31,12 +33,14 @@ public class Esperandro {
     private static final String TAG = "Esperandro";
     private static Esperandro instance;
     private final Map<String, Object> preferenceInstances = new HashMap<String, Object>();
+    private final Set<String> allPreferences = new LinkedHashSet<String>();
+
     private Serializer serializer;
 
     private Esperandro() {
     }
 
-    private static Esperandro getInstance() {
+    protected static Esperandro getInstance() {
         if (instance == null) {
             synchronized (Esperandro.class) {
                 if (instance == null) {
@@ -50,8 +54,11 @@ public class Esperandro {
     /**
      * Returns an instance of the pre-generated class of the given SharedPreferences-annotated interface.
      *
-     * @param preferenceClass The interface whose implementation should be returned.
-     * @param context         A context to be able to construct the android SharedPreference.
+     * @param preferenceClass
+     *         The interface whose implementation should be returned.
+     * @param context
+     *         A context to be able to construct the android SharedPreference.
+     *
      * @return An instance of the given interface.
      */
     @SuppressWarnings("unchecked")
@@ -76,6 +83,24 @@ public class Esperandro {
             }
         }
         return esperandro.serializer;
+    }
+
+    public static void registerPreference(String preferenceName) {
+        // FIXME find a way to make this public or protected (generate preferences in esperandro package???)
+        getInstance().allPreferences.add(preferenceName);
+    }
+
+    protected String[] getAllPreferences(Context context) {
+        String[] result = new String[allPreferences.size()];
+        int i = 0;
+        for (String preference : allPreferences) {
+            // empty String means default preferences
+            if ("".equals(preference)) {
+                preference = context.getPackageName() + "_preferences";
+            }
+            result[i++] = preference;
+        }
+        return result;
     }
 
     public static void setSerializer(Serializer serializer) {

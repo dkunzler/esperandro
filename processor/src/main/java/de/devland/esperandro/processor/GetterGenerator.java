@@ -109,11 +109,6 @@ public class GetterGenerator {
         return PreferenceType.STRINGSET.equals(typeFromMethod.getPreferenceType());
     }
 
-    public boolean needsSerialization(ExecutableElement method) {
-        PreferenceTypeInformation typeFromMethod = getPreferenceTypeFromMethod(method);
-        return PreferenceType.OBJECT.equals(typeFromMethod.getPreferenceType());
-    }
-
     public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
         String valueName = method.getSimpleName().toString();
         boolean runtimeDefault = false;

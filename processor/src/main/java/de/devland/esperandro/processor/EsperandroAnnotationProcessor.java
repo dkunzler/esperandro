@@ -103,9 +103,6 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 if (getterGenerator.isStringSet(method)) {
                     additionalImports.add("java.util.Set");
                 }
-                if (getterGenerator.needsSerialization(method)) {
-                    additionalImports.add("de.devland.esperandro.Esperandro");
-                }
             }
         }
     }
@@ -225,6 +222,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             result.emitEmptyLine();
             result.emitField("android.content.SharedPreferences", "preferences", Constants.MODIFIER_PRIVATE_FINAL);
 
+            initBackupRegistration(result, preferenceNamePresent, preferencesName);
 
             result.emitEmptyLine();
             result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + Constants.IMPLEMENTATION_SUFFIX, Constants.MODIFIER_PUBLIC, "Context",
@@ -242,6 +240,14 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             throw new RuntimeException(e);
         }
         return result;
+    }
+
+    private void initBackupRegistration(JavaWriter result, boolean preferenceNamePresent, String preferencesName)
+            throws IOException {
+        result.emitEmptyLine();
+        result.beginInitializer(true);
+        result.emitStatement("Esperandro.registerPreference(\"%s\")", preferenceNamePresent ? preferencesName : "");
+        result.endInitializer();
     }
 
 
