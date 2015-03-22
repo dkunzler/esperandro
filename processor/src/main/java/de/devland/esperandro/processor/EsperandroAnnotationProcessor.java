@@ -262,7 +262,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
         writer.beginMethod("void", "remove", Constants.MODIFIER_PUBLIC, String.class.getName(), "key");
         StringBuilder statementPattern = new StringBuilder().append("preferences.edit().remove(key).%s");
-        PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
+        PreferenceEditorCommitStyle.emitPreferenceCommitAction(writer,
                 PreferenceEditorCommitStyle.APPLY, statementPattern);
         writer.endMethod();
         writer.emitEmptyLine();
@@ -285,7 +285,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
         writer.beginMethod("void", "clear", Constants.MODIFIER_PUBLIC);
         statementPattern = new StringBuilder().append("preferences.edit().clear().%s");
-        PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
+        PreferenceEditorCommitStyle.emitPreferenceCommitAction(writer,
                 PreferenceEditorCommitStyle.APPLY, statementPattern);
         writer.endMethod();
         writer.emitEmptyLine();
@@ -300,7 +300,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         for (String preferenceName : preferenceNames) {
             writer.emitStatement("editor.remove(\"%s\")", preferenceName);
         }
-        PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer,
+        PreferenceEditorCommitStyle.emitPreferenceCommitAction(writer,
                 PreferenceEditorCommitStyle.APPLY, new StringBuilder("editor.%s"));
         writer.endMethod();
         writer.emitEmptyLine();
