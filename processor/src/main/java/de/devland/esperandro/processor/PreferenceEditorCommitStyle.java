@@ -18,20 +18,11 @@ public enum PreferenceEditorCommitStyle {
         return statementPart;
     }
 
-    public static void emitPreferenceCommitActionWithVersionCheck(JavaWriter writer,
-                                                                  PreferenceEditorCommitStyle commitStyle,
-                                                                  StringBuilder statementPattern) throws IOException {
-        if (commitStyle.equals(PreferenceEditorCommitStyle.APPLY)) {
-            writer.beginControlFlow("if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD)");
-            String statement = String.format(statementPattern.toString(), PreferenceEditorCommitStyle.COMMIT
-                    .getStatementPart());
-            writer.emitStatement(statement);
-            writer.nextControlFlow("else");
-        }
+    public static void emitPreferenceCommitAction(JavaWriter writer,
+                                                  PreferenceEditorCommitStyle commitStyle,
+                                                  StringBuilder statementPattern) throws IOException {
+
         String statement = String.format(statementPattern.toString(), commitStyle.getStatementPart());
         writer.emitStatement(statement);
-        if (commitStyle.equals(PreferenceEditorCommitStyle.APPLY)) {
-            writer.endControlFlow();
-        }
     }
 }

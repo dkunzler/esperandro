@@ -157,7 +157,7 @@ public class PutterGenerator {
         // only use apply on API >= 9
         StringBuilder baseStatement = new StringBuilder().append(String.format(statementPattern.toString(),
                 methodSuffix, valueName, value)).append(".%s");
-        PreferenceEditorCommitStyle.emitPreferenceCommitActionWithVersionCheck(writer, commitStyle, baseStatement);
+        PreferenceEditorCommitStyle.emitPreferenceCommitAction(writer, commitStyle, baseStatement);
         writer.endMethod();
         writer.emitEmptyLine();
     }
