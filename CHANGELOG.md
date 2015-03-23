@@ -1,10 +1,15 @@
 Changelog
 =========
-2.2.0 (next release)
+
+2.2.1 (next version)
+ * tbd
+
+2.2.0
 -----
  * fix for issue #29: search JacksonSerializer automatically on classpath
  * do not generate API Level checks
  * dropped complete support for API < 9
+ * update dependencies
 
 2.1.0
 -----
