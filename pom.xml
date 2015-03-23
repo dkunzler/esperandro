@@ -54,9 +54,9 @@
         <java.version>1.6</java.version>
 
         <android.version>4.1.1.4</android.version>
-        <javaWriter.version>2.5.0</javaWriter.version>
-        <gson.version>2.3</gson.version>
-        <jackson.version>2.4.3</jackson.version>
+        <javaWriter.version>2.5.1</javaWriter.version>
+        <gson.version>2.3.1</gson.version>
+        <jackson.version>2.5.1</jackson.version>
         <annotations.version>4.1.1.4</annotations.version>
     </properties>
 
@@ -74,7 +74,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.4</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -147,7 +146,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
@@ -157,7 +155,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.4</version>
                 </plugin>
             </plugins>
         </pluginManagement>
