@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 /**
  * Allows to set a default for the primitive preferences as well as {@code String}. A {@code Set<String>} will always
  * have {@code null} as default value;
- * <p/>
+ * <p>
  * If no annotation is given or the proper default value is not set the used defaults are: {@code boolean}: false {@code
  * int}: -1 {@code long}: -1l {@code float}: -1.0f {@code String}: "" (empty String)
  */

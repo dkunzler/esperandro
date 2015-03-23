@@ -52,6 +52,7 @@ public class Esperandro {
      *
      * @param preferenceClass The interface whose implementation should be returned.
      * @param context         A context to be able to construct the android SharedPreference.
+     * @param <T>             The class of the preference to instantiate.
      * @return An instance of the given interface.
      */
     @SuppressWarnings("unchecked")
