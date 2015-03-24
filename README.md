@@ -46,13 +46,13 @@ For everybody that just thinks "give me the stuff":
     }
 
     dependencies {
-        compile 'de.devland.esperandro:esperandro-api:2.1.0'
-        apt 'de.devland.esperandro:esperandro:2.1.0'
+        compile 'de.devland.esperandro:esperandro-api:2.2.0'
+        apt 'de.devland.esperandro:esperandro:2.2.0'
 
         // optional, if we want to use object serialization but don't provide our own Serializer
-        // compile 'de.devland.esperandro:esperandro-gson-addon:2.1.0'
+        // compile 'de.devland.esperandro:esperandro-gson-addon:2.2.0'
         // or
-        // compile 'de.devland.esperandro:esperandro-jackson-addon:2.1.0'
+        // compile 'de.devland.esperandro:esperandro-jackson-addon:2.2.0'
     }
     
 Current Travis status
