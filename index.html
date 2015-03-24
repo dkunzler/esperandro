@@ -143,6 +143,13 @@ boolean superFancyPreference(boolean superFancyPreferenceValue); // boolean sett
 </p>
 
 <h3>
+	API Compatibility
+</h3>
+
+<p>
+    By default, Esparandro will use <a href="http://developer.android.com/reference/android/content/SharedPreferences.Editor.html#commit()">apply()</a> when changing a preference value. This method was added in API Level 9 (Gingerbread). If you app requires compatibility with earlier APIs, make sure your setters return a boolean as described above. This way you can guarantee that commit() is used.
+</p>
+<h3>
     Serialized object preferences
 </h3>
 
