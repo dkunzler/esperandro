@@ -106,7 +106,7 @@ public class GetterGenerator {
         return isGetter;
     }
 
-    public void createGetterFromModel(ExecutableElement method, TypeSpec.Builder writer) throws IOException {
+    public void createGetterFromModel(ExecutableElement method, TypeSpec.Builder type) throws IOException {
         String valueName = method.getSimpleName().toString();
         boolean runtimeDefault = false;
 
@@ -120,11 +120,11 @@ public class GetterGenerator {
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, method, writer, valueName, preferenceTypeInformation, runtimeDefault);
+        createGetter(defaultAnnotation, method, type, valueName, preferenceTypeInformation, runtimeDefault);
     }
 
     public void createGetterFromReflection(Method method, Element topLevelInterface,
-                                           TypeSpec.Builder writer) throws IOException {
+                                           TypeSpec.Builder type) throws IOException {
         String valueName = method.getName();
 
         boolean runtimeDefault = false;
@@ -139,7 +139,7 @@ public class GetterGenerator {
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getGenericReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, topLevelInterface, writer, valueName, preferenceTypeInformation, runtimeDefault);
+        createGetter(defaultAnnotation, topLevelInterface, type, valueName, preferenceTypeInformation, runtimeDefault);
     }
 
     private PreferenceTypeInformation getPreferenceTypeFromMethod(ExecutableElement method) {
