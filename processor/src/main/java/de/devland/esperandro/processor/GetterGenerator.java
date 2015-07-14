@@ -16,6 +16,7 @@
 package de.devland.esperandro.processor;
 
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import de.devland.esperandro.annotations.Default;
 
@@ -36,12 +37,12 @@ public class GetterGenerator {
     private Warner warner;
 
     private Map<String, Element> preferenceKeys;
-    private Map<String, Type> genericTypeNames;
+    private Map<String, TypeName> genericTypeNames;
 
     public GetterGenerator(Warner warner) {
         this.warner = warner;
         preferenceKeys = new HashMap<String, Element>();
-        genericTypeNames = new HashMap<String, Type>();
+        genericTypeNames = new HashMap<String, TypeName>();
     }
 
     public boolean isGetter(ExecutableElement method) {
@@ -161,7 +162,7 @@ public class GetterGenerator {
         if (runtimeDefault) {
             getterBuilder = MethodSpec.methodBuilder(valueName + Constants.RUNTIME_DEFAULT_SUFFIX)
                     .addParameter(preferenceTypeInformation.getType(), "defaultValue")
-                    .beginControlFlow("if (preferences.contains(\"%s\"))", valueName);
+                    .beginControlFlow("if (preferences.contains(%S))", valueName);
         } else {
             getterBuilder = MethodSpec.methodBuilder(valueName);
         }
@@ -234,8 +235,8 @@ public class GetterGenerator {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
                     genericTypeNames.put(genericClassName, preferenceTypeInformation.getType());
                     String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-                    getterBuilder.addStatement("%s $$container = Esperandro.getSerializer().deserialize(%s, %s.class)", genericClassName, statement, genericClassName);
-                    getterBuilder.addStatement("%s $$value = null", preferenceTypeInformation.getTypeName());
+                    getterBuilder.addStatement("%L $$container = Esperandro.getSerializer().deserialize(%L, %L.class)", genericClassName, statement, genericClassName);
+                    getterBuilder.addStatement("%L $$value = null", preferenceTypeInformation.getTypeName());
                     getterBuilder.beginControlFlow("if ($$container != null)");
                     getterBuilder.addStatement("$$value = $$container.value");
                     getterBuilder.endControlFlow();
@@ -255,13 +256,13 @@ public class GetterGenerator {
         }
         if (runtimeDefault) {
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-            getterBuilder.addStatement("return %s", statement)
+            getterBuilder.addStatement("return %L", statement)
                     .endControlFlow("else")
                     .addStatement("return defaultValue")
                     .endControlFlow();
         } else {
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-            getterBuilder.addStatement("return %s", statement);
+            getterBuilder.addStatement("return %L", statement);
         }
 
         type.addMethod(getterBuilder.build());
@@ -271,7 +272,7 @@ public class GetterGenerator {
         return preferenceKeys;
     }
 
-    public Map<String, Type> getGenericTypeNames() {
+    public Map<String, TypeName> getGenericTypeNames() {
         return genericTypeNames;
     }
 
