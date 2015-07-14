@@ -8,11 +8,12 @@
  */
 package de.devland.esperandro.processor;
 
-import android.annotation.SuppressLint;
+import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -106,18 +107,20 @@ public class PutterGenerator {
 
     private void createPutter(TypeSpec.Builder writer, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
                               String returnType) throws IOException {
-        writer.emitAnnotation(Override.class);
-        writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
+        MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(valueName)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(preferenceTypeInformation.getType(), valueName);
         boolean shouldReturnValue = returnType.equalsIgnoreCase(Boolean.class.getSimpleName());
         PreferenceEditorCommitStyle commitStyle = PreferenceEditorCommitStyle.APPLY;
         StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s)");
 
-        writer.beginMethod(returnType, valueName, Constants.MODIFIER_PUBLIC,
-                preferenceTypeInformation.getTypeName(), valueName);
-
         if (shouldReturnValue) {
+            putterBuilder.returns(boolean.class);
             statementPattern.insert(0, "return ");
             commitStyle = PreferenceEditorCommitStyle.COMMIT;
+        } else {
+            putterBuilder.returns(void.class);
         }
 
         String methodSuffix = "";
@@ -144,8 +147,8 @@ public class PutterGenerator {
                 methodSuffix = "String";
                 if (preferenceTypeInformation.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
-                    writer.emitStatement("%s $$container = new %s()", genericClassName, genericClassName);
-                    writer.emitStatement("$$container.value = %s", valueName);
+                    putterBuilder.addStatement("%s $$container = new %s()", genericClassName, genericClassName);
+                    putterBuilder.addStatement("$$container.value = %s", valueName);
                     value = "Esperandro.getSerializer().serialize($$container)";
                 } else {
                     value = String.format("Esperandro.getSerializer().serialize(%s)", valueName);
@@ -155,11 +158,10 @@ public class PutterGenerator {
                 break;
         }
         // only use apply on API >= 9
-        StringBuilder baseStatement = new StringBuilder().append(String.format(statementPattern.toString(),
-                methodSuffix, valueName, value)).append(".%s");
-        PreferenceEditorCommitStyle.emitPreferenceCommitAction(writer, commitStyle, baseStatement);
-        writer.endMethod();
-        writer.emitEmptyLine();
+        putterBuilder.addStatement(String.format(statementPattern.toString(),
+                methodSuffix, valueName, value) + ".%s", commitStyle.getStatementPart());
+
+        writer.addMethod(putterBuilder.build());
     }
 
     public Map<String, Element> getPreferenceKeys() {
