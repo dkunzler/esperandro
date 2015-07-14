@@ -18,6 +18,7 @@
 package de.devland.esperandro.processor;
 
 import android.content.Context;
+import android.preference.PreferenceManager;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
@@ -188,20 +189,16 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     .addSuperinterface(TypeName.get(interfaze.asType()))
                     .addField(TypeName.get(android.content.SharedPreferences.class), "preferences", Modifier.PRIVATE, Modifier.FINAL);
 
-            String preferenceStatement;
+            MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
+                    .addParameter(Context.class, "context");
             if (preferenceNamePresent) {
-                preferenceStatement = String.format("this.preferences = context.getSharedPreferences(\"%s\", %s)", preferencesName,
+                constructor.addStatement("this.preferences = context.getSharedPreferences($S, $L)", preferencesName,
                         mode.getSharedPreferenceModeStatement());
             } else {
-                preferenceStatement = "this.preferences = PreferenceManager.getDefaultSharedPreferences(context)";
+                constructor.addStatement("this.preferences = $T.getDefaultSharedPreferences(context)", PreferenceManager.class);
             }
 
-            MethodSpec constructor = MethodSpec.constructorBuilder()
-                    .addParameter(Context.class, "context")
-                    .addStatement(preferenceStatement)
-                    .build();
-
-            result.addMethod(constructor);
+            result.addMethod(constructor.build());
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -232,7 +229,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
                 .addParameter(String.class, "key")
-                .addStatement("preferences.edit().remove(key).%L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
+                .addStatement("preferences.edit().remove(key).$L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
                 .build();
 
         MethodSpec registerListener = MethodSpec.methodBuilder("registerOnChangeListener")
@@ -255,7 +252,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
-                .addStatement("preferences.edit().clear().%L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
+                .addStatement("preferences.edit().clear().$L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
                 .build();
 
         MethodSpec.Builder clearDefinedBuilder = MethodSpec.methodBuilder("clearDefined")
@@ -269,11 +266,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         preferenceNames.addAll(putterGenerator.getPreferenceKeys().keySet());
         preferenceNames.addAll(getterGenerator.getPreferenceKeys().keySet());
         for (String preferenceName : preferenceNames) {
-            clearDefinedBuilder.addStatement("editor.remove(%S)", preferenceName);
+            clearDefinedBuilder.addStatement("editor.remove($S)", preferenceName);
         }
 
         MethodSpec clearDefined = clearDefinedBuilder
-                .addStatement("editor.%L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
+                .addStatement("editor.$L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
                 .build();
 
         MethodSpec.Builder initDefaultsBuilder = MethodSpec.methodBuilder("initDefaults")
@@ -284,7 +281,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         for (String preferenceKey : getterGenerator.getPreferenceKeys().keySet()) {
             if (putterGenerator.getPreferenceKeys().containsKey(preferenceKey)) {
-                clearDefinedBuilder.addStatement("this.%L(this.%L())", preferenceKey, preferenceKey);
+                clearDefinedBuilder.addStatement("this.$L(this.$L())", preferenceKey, preferenceKey);
             }
         }
 

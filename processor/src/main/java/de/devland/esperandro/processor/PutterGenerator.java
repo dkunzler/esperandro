@@ -147,8 +147,8 @@ public class PutterGenerator {
                 methodSuffix = "String";
                 if (preferenceTypeInformation.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
-                    putterBuilder.addStatement("%L $$container = new %L()", genericClassName, genericClassName);
-                    putterBuilder.addStatement("$$container.value = %L", valueName);
+                    putterBuilder.addStatement("$L $$container = new $L()", genericClassName, genericClassName);
+                    putterBuilder.addStatement("$$container.value = $L", valueName);
                     value = "Esperandro.getSerializer().serialize($$container)";
                 } else {
                     value = String.format("Esperandro.getSerializer().serialize(%s)", valueName);
@@ -159,7 +159,7 @@ public class PutterGenerator {
         }
         // only use apply on API >= 9
         putterBuilder.addStatement(String.format(statementPattern.toString(),
-                methodSuffix, valueName, value) + ".%L", commitStyle.getStatementPart());
+                methodSuffix, valueName, value) + ".$L", commitStyle.getStatementPart());
 
         type.addMethod(putterBuilder.build());
     }
