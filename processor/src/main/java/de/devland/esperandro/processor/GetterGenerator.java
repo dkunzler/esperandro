@@ -15,11 +15,13 @@
  */
 package de.devland.esperandro.processor;
 
+import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import de.devland.esperandro.annotations.Default;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
@@ -104,16 +106,6 @@ public class GetterGenerator {
         return isGetter;
     }
 
-    public boolean isStringSet(ExecutableElement method) {
-        PreferenceTypeInformation typeFromMethod = getPreferenceTypeFromMethod(method);
-        return PreferenceType.STRINGSET.equals(typeFromMethod.getPreferenceType());
-    }
-
-    public boolean needsSerialization(ExecutableElement method) {
-        PreferenceTypeInformation typeFromMethod = getPreferenceTypeFromMethod(method);
-        return PreferenceType.OBJECT.equals(typeFromMethod.getPreferenceType());
-    }
-
     public void createGetterFromModel(ExecutableElement method, TypeSpec.Builder writer) throws IOException {
         String valueName = method.getSimpleName().toString();
         boolean runtimeDefault = false;
@@ -156,7 +148,7 @@ public class GetterGenerator {
     }
 
 
-    private void createGetter(Default defaultAnnotation, Element element, TypeSpec.Builder writer, String valueName,
+    private void createGetter(Default defaultAnnotation, Element element, TypeSpec.Builder type, String valueName,
                               PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault) throws IOException {
         boolean hasDefaultAnnotation = defaultAnnotation != null;
 
@@ -165,13 +157,17 @@ public class GetterGenerator {
             allDefaults = hasAllDefaults(defaultAnnotation);
         }
 
-        writer.emitAnnotation(Override.class);
+        MethodSpec.Builder getterBuilder;
         if (runtimeDefault) {
-            writer.beginMethod(preferenceTypeInformation.getTypeName(), valueName + Constants.RUNTIME_DEFAULT_SUFFIX, Constants.MODIFIER_PUBLIC, preferenceTypeInformation.getTypeName(), "defaultValue");
-            writer.beginControlFlow("if (preferences.contains(\"" + valueName + "\"))");
+            getterBuilder = MethodSpec.methodBuilder(valueName + Constants.RUNTIME_DEFAULT_SUFFIX)
+                    .addParameter(preferenceTypeInformation.getType(), "defaultValue")
+                    .beginControlFlow("if (preferences.contains(\"%s\"))", valueName);
         } else {
-            writer.beginMethod(preferenceTypeInformation.getTypeName(), valueName, Constants.MODIFIER_PUBLIC);
+            getterBuilder = MethodSpec.methodBuilder(valueName);
         }
+        getterBuilder.addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(preferenceTypeInformation.getType());
 
         String statementPattern = "preferences.get%s(\"%s\", %s)";
         String methodSuffix = "";
@@ -238,11 +234,11 @@ public class GetterGenerator {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
                     genericTypeNames.put(genericClassName, preferenceTypeInformation.getType());
                     String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-                    writer.emitStatement("%s $$container = Esperandro.getSerializer().deserialize(%s, %s.class)", genericClassName, statement, genericClassName);
-                    writer.emitStatement("%s $$value = null", preferenceTypeInformation.getTypeName());
-                    writer.beginControlFlow("if ($$container != null)");
-                    writer.emitStatement("$$value = $$container.value");
-                    writer.endControlFlow();
+                    getterBuilder.addStatement("%s $$container = Esperandro.getSerializer().deserialize(%s, %s.class)", genericClassName, statement, genericClassName);
+                    getterBuilder.addStatement("%s $$value = null", preferenceTypeInformation.getTypeName());
+                    getterBuilder.beginControlFlow("if ($$container != null)");
+                    getterBuilder.addStatement("$$value = $$container.value");
+                    getterBuilder.endControlFlow();
                     statementPattern = "$$value";
                 } else {
                     statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
@@ -259,18 +255,16 @@ public class GetterGenerator {
         }
         if (runtimeDefault) {
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-            writer.emitStatement("return %s", statement);
-            writer.nextControlFlow("else");
-            writer.emitStatement("return defaultValue");
-            writer.endControlFlow();
+            getterBuilder.addStatement("return %s", statement)
+                    .endControlFlow("else")
+                    .addStatement("return defaultValue")
+                    .endControlFlow();
         } else {
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-            writer.emitStatement("return %s", statement);
+            getterBuilder.addStatement("return %s", statement);
         }
 
-
-        writer.endMethod();
-        writer.emitEmptyLine();
+        type.addMethod(getterBuilder.build());
     }
 
     public Map<String, Element> getPreferenceKeys() {
