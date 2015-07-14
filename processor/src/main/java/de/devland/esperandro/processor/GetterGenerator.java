@@ -15,7 +15,7 @@
  */
 package de.devland.esperandro.processor;
 
-import com.squareup.javawriter.JavaWriter;
+import com.squareup.javapoet.TypeSpec;
 import de.devland.esperandro.annotations.Default;
 
 import javax.lang.model.element.Element;
@@ -34,12 +34,12 @@ public class GetterGenerator {
     private Warner warner;
 
     private Map<String, Element> preferenceKeys;
-    private Map<String, String> genericTypeNames;
+    private Map<String, Type> genericTypeNames;
 
     public GetterGenerator(Warner warner) {
         this.warner = warner;
         preferenceKeys = new HashMap<String, Element>();
-        genericTypeNames = new HashMap<String, String>();
+        genericTypeNames = new HashMap<String, Type>();
     }
 
     public boolean isGetter(ExecutableElement method) {
@@ -114,7 +114,7 @@ public class GetterGenerator {
         return PreferenceType.OBJECT.equals(typeFromMethod.getPreferenceType());
     }
 
-    public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
+    public void createGetterFromModel(ExecutableElement method, TypeSpec.Builder writer) throws IOException {
         String valueName = method.getSimpleName().toString();
         boolean runtimeDefault = false;
 
@@ -132,7 +132,7 @@ public class GetterGenerator {
     }
 
     public void createGetterFromReflection(Method method, Element topLevelInterface,
-                                           JavaWriter writer) throws IOException {
+                                           TypeSpec.Builder writer) throws IOException {
         String valueName = method.getName();
 
         boolean runtimeDefault = false;
@@ -156,7 +156,7 @@ public class GetterGenerator {
     }
 
 
-    private void createGetter(Default defaultAnnotation, Element element, JavaWriter writer, String valueName,
+    private void createGetter(Default defaultAnnotation, Element element, TypeSpec.Builder writer, String valueName,
                               PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault) throws IOException {
         boolean hasDefaultAnnotation = defaultAnnotation != null;
 
@@ -236,7 +236,7 @@ public class GetterGenerator {
                 defaultValue = "null";
                 if (preferenceTypeInformation.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
-                    genericTypeNames.put(genericClassName, preferenceTypeInformation.getTypeName());
+                    genericTypeNames.put(genericClassName, preferenceTypeInformation.getType());
                     String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
                     writer.emitStatement("%s $$container = Esperandro.getSerializer().deserialize(%s, %s.class)", genericClassName, statement, genericClassName);
                     writer.emitStatement("%s $$value = null", preferenceTypeInformation.getTypeName());
@@ -277,7 +277,7 @@ public class GetterGenerator {
         return preferenceKeys;
     }
 
-    public Map<String, String> getGenericTypeNames() {
+    public Map<String, Type> getGenericTypeNames() {
         return genericTypeNames;
     }
 

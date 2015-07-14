@@ -17,8 +17,11 @@
 
 package de.devland.esperandro.processor;
 
-import android.annotation.SuppressLint;
-import com.squareup.javawriter.JavaWriter;
+import android.content.Context;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.SharedPreferences;
@@ -27,9 +30,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.io.Writer;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -42,7 +43,6 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     private GetterGenerator getterGenerator;
     private PutterGenerator putterGenerator;
     private Map<TypeMirror, Element> rootElements;
-    private Set<String> additionalImports = new HashSet<String>();
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -64,12 +64,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             // reinitialize getterGenerator and putter to start fresh for each interface
                             getterGenerator = new GetterGenerator(warner);
                             putterGenerator = new PutterGenerator();
-                            determineAdditionalImports(interfaze);
-                            JavaWriter writer = initImplementation(interfaze, additionalImports);
+                            TypeSpec.Builder writer = initImplementation(interfaze);
                             processInterfaceMethods(interfaze, interfaze, writer);
                             createGenericActions(writer);
                             createGenericClassImplementations(writer);
-                            finish(writer);
+                            finish(interfaze, writer);
                             checkPreferenceKeys();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -83,30 +82,14 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         return false;
     }
 
-    private void createGenericClassImplementations(JavaWriter writer) throws IOException {
+    private void createGenericClassImplementations(TypeSpec.Builder writer) throws IOException {
         for (String preferenceName : getterGenerator.getGenericTypeNames().keySet()) {
-            String genericType = getterGenerator.getGenericTypeNames().get(preferenceName);
+            TypeSpec innerGenericType = TypeSpec.classBuilder(preferenceName)
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                    .addField(getterGenerator.getGenericTypeNames().get(preferenceName), "value", Modifier.PUBLIC)
+                    .build();
 
-            Set<Modifier> modifiers = new HashSet<Modifier>(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC));
-
-            writer.beginType(preferenceName, "class", modifiers);
-            writer.emitField(genericType, "value", Constants.MODIFIER_PUBLIC);
-            writer.endType();
-        }
-    }
-
-    private void determineAdditionalImports(Element interfaze) {
-        List<? extends Element> potentialMethods = interfaze.getEnclosedElements();
-        for (Element element : potentialMethods) {
-            if (element.getKind() == ElementKind.METHOD) {
-                ExecutableElement method = (ExecutableElement) element;
-                if (getterGenerator.isStringSet(method)) {
-                    additionalImports.add("java.util.Set");
-                }
-                if (getterGenerator.needsSerialization(method)) {
-                    additionalImports.add("de.devland.esperandro.Esperandro");
-                }
-            }
+            writer.addType(innerGenericType);
         }
     }
 
@@ -117,7 +100,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void processInterfaceMethods(Element topLevelInterface, Element currentInterfaze,
-                                         JavaWriter writer) throws IOException {
+                                         TypeSpec.Builder writer) throws IOException {
         List<? extends Element> potentialMethods = currentInterfaze.getEnclosedElements();
         for (Element element : potentialMethods) {
             if (element.getKind() == ElementKind.METHOD) {
@@ -153,7 +136,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void processInterfacesReflection(Element topLevelInterface, Class<?> interfaceClass,
-                                             JavaWriter writer) throws IOException {
+                                             TypeSpec.Builder writer) throws IOException {
 
         for (Method method : interfaceClass.getDeclaredMethods()) {
             if (putterGenerator.isPutter(method)) {
@@ -188,55 +171,37 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private JavaWriter initImplementation(Element interfaze, Set<String> additionalImports) {
-        JavaWriter result;
+    private TypeSpec.Builder initImplementation(Element interfaze) {
+        TypeSpec.Builder result;
         SharedPreferences prefAnnotation = interfaze.getAnnotation(SharedPreferences.class);
         String preferencesName = prefAnnotation.name();
         SharedPreferenceMode mode = prefAnnotation.mode();
 
-        Filer filer = processingEnv.getFiler();
-
         try {
             QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
-            JavaFileObject jfo = filer.createSourceFile(qualifiedNameable.getQualifiedName() + Constants.IMPLEMENTATION_SUFFIX);
             boolean preferenceNamePresent = preferencesName != null && !preferencesName.equals("");
-            Writer writer = jfo.openWriter();
-            result = new JavaWriter(writer);
             String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
-            String packageName = "";
-            String typeName = split[split.length - 1];
-            for (int i = 0; i < split.length - 1; i++) {
-                packageName += split[i];
-                if (i < split.length - 2) {
-                    packageName += ".";
-                }
-            }
+            String typeName = split[split.length - 1] + Constants.IMPLEMENTATION_SUFFIX;
+            result = TypeSpec.classBuilder(typeName)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addSuperinterface(SharedPreferenceActions.class)
+                    .addSuperinterface(TypeName.get(interfaze.asType()))
+                    .addField(TypeName.get(android.content.SharedPreferences.class), "preferences", Modifier.PRIVATE, Modifier.FINAL);
 
-            result.emitPackage(packageName);
-            if (!preferenceNamePresent) {
-                additionalImports.add("android.preference.PreferenceManager");
-            }
-            result.emitImports(Constants.STANDARD_IMPORTS);
-            result.emitImports(additionalImports);
-
-            result.emitEmptyLine();
-            result.beginType(typeName + Constants.IMPLEMENTATION_SUFFIX, "class", Constants.MODIFIER_PUBLIC, null, qualifiedNameable.getQualifiedName()
-                    .toString(), SharedPreferenceActions.class.getName());
-            result.emitEmptyLine();
-            result.emitField("android.content.SharedPreferences", "preferences", Constants.MODIFIER_PRIVATE_FINAL);
-
-
-            result.emitEmptyLine();
-            result.beginMethod(null, qualifiedNameable.getQualifiedName().toString() + Constants.IMPLEMENTATION_SUFFIX, Constants.MODIFIER_PUBLIC, "Context",
-                    "context");
+            String preferenceStatement;
             if (preferenceNamePresent) {
-                result.emitStatement("this.preferences = context.getSharedPreferences(\"%s\", %s)", preferencesName,
+                preferenceStatement = String.format("this.preferences = context.getSharedPreferences(\"%s\", %s)", preferencesName,
                         mode.getSharedPreferenceModeStatement());
             } else {
-                result.emitStatement("this.preferences = PreferenceManager.getDefaultSharedPreferences(context)");
+                preferenceStatement = "this.preferences = PreferenceManager.getDefaultSharedPreferences(context)";
             }
-            result.endMethod();
-            result.emitEmptyLine();
+
+            MethodSpec constructor = MethodSpec.constructorBuilder()
+                    .addParameter(Context.class, "context")
+                    .addStatement(preferenceStatement)
+                    .build();
+
+            result.addMethod(constructor);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -245,81 +210,112 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
 
-    private void createGenericActions(JavaWriter writer) throws IOException {
-        writer.emitAnnotation(Override.class);
-        writer.beginMethod("android.content.SharedPreferences", "get", Constants.MODIFIER_PUBLIC);
-        writer.emitStatement("return preferences");
-        writer.endMethod();
-        writer.emitEmptyLine();
+    private void createGenericActions(TypeSpec.Builder type) throws IOException {
 
-        writer.emitAnnotation(Override.class);
-        writer.beginMethod("boolean", "contains", Constants.MODIFIER_PUBLIC, String.class.getName(), "key");
-        writer.emitStatement("return preferences.contains(key)");
-        writer.endMethod();
-        writer.emitEmptyLine();
+        MethodSpec get = MethodSpec.methodBuilder("get")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(android.content.SharedPreferences.class)
+                .addStatement("return preferences")
+                .build();
 
-        writer.emitAnnotation(Override.class);
-        writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
-        writer.beginMethod("void", "remove", Constants.MODIFIER_PUBLIC, String.class.getName(), "key");
-        StringBuilder statementPattern = new StringBuilder().append("preferences.edit().remove(key).%s");
-        PreferenceEditorCommitStyle.emitPreferenceCommitAction(writer,
-                PreferenceEditorCommitStyle.APPLY, statementPattern);
-        writer.endMethod();
-        writer.emitEmptyLine();
+        MethodSpec contains = MethodSpec.methodBuilder("contains")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(boolean.class)
+                .addParameter(String.class, "key")
+                .addStatement("return preferences.contains(key)")
+                .build();
 
-        writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "registerOnChangeListener", Constants.MODIFIER_PUBLIC, "android.content.SharedPreferences" + "" +
-                ".OnSharedPreferenceChangeListener", "listener");
-        writer.emitStatement("preferences.registerOnSharedPreferenceChangeListener(listener)");
-        writer.endMethod();
-        writer.emitEmptyLine();
+        MethodSpec remove = MethodSpec.methodBuilder("remove")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class)
+                .addParameter(String.class, "key")
+                .addStatement("preferences.edit().remove(key).%s", PreferenceEditorCommitStyle.APPLY.getStatementPart())
+                .build();
 
-        writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "unregisterOnChangeListener", Constants.MODIFIER_PUBLIC, "android.content.SharedPreferences" + "" +
-                ".OnSharedPreferenceChangeListener", "listener");
-        writer.emitStatement("preferences.unregisterOnSharedPreferenceChangeListener(listener)");
-        writer.endMethod();
-        writer.emitEmptyLine();
+        MethodSpec registerListener = MethodSpec.methodBuilder("registerOnChangeListener")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class)
+                .addParameter(android.content.SharedPreferences.OnSharedPreferenceChangeListener.class, "listener")
+                .addStatement("preferences.registerOnSharedPreferenceChangeListener(listener)")
+                .build();
 
-        writer.emitAnnotation(Override.class);
-        writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
-        writer.beginMethod("void", "clear", Constants.MODIFIER_PUBLIC);
-        statementPattern = new StringBuilder().append("preferences.edit().clear().%s");
-        PreferenceEditorCommitStyle.emitPreferenceCommitAction(writer,
-                PreferenceEditorCommitStyle.APPLY, statementPattern);
-        writer.endMethod();
-        writer.emitEmptyLine();
+        MethodSpec unregisterListener = MethodSpec.methodBuilder("unregisterOnChangeListener")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class)
+                .addParameter(android.content.SharedPreferences.OnSharedPreferenceChangeListener.class, "listener")
+                .addStatement("preferences.unregisterOnSharedPreferenceChangeListener(listener)")
+                .build();
 
-        writer.emitAnnotation(Override.class);
-        writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
-        writer.beginMethod("void", "clearDefined", Constants.MODIFIER_PUBLIC);
+        MethodSpec clear = MethodSpec.methodBuilder("clear")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class)
+                .addStatement("preferences.edit().clear().%s", PreferenceEditorCommitStyle.APPLY.getStatementPart())
+                .build();
+
+        MethodSpec.Builder clearDefinedBuilder = MethodSpec.methodBuilder("clearDefined")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class)
+                .addStatement("SharedPreferences.Editor editor = preferences.edit()");
+
+
         Set<String> preferenceNames = new LinkedHashSet<String>();
         preferenceNames.addAll(putterGenerator.getPreferenceKeys().keySet());
         preferenceNames.addAll(getterGenerator.getPreferenceKeys().keySet());
-        writer.emitStatement("SharedPreferences.Editor editor = preferences.edit()");
         for (String preferenceName : preferenceNames) {
-            writer.emitStatement("editor.remove(\"%s\")", preferenceName);
+            clearDefinedBuilder.addStatement("editor.remove(\"%s\")", preferenceName);
         }
-        PreferenceEditorCommitStyle.emitPreferenceCommitAction(writer,
-                PreferenceEditorCommitStyle.APPLY, new StringBuilder("editor.%s"));
-        writer.endMethod();
-        writer.emitEmptyLine();
 
-        writer.emitAnnotation(Override.class);
-        writer.beginMethod("void", "initDefaults", Constants.MODIFIER_PUBLIC);
+        MethodSpec clearDefined = clearDefinedBuilder
+                .addStatement("editor.%s", PreferenceEditorCommitStyle.APPLY.getStatementPart())
+                .build();
+
+        MethodSpec.Builder initDefaultsBuilder = MethodSpec.methodBuilder("initDefaults")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class);
+
+
         for (String preferenceKey : getterGenerator.getPreferenceKeys().keySet()) {
             if (putterGenerator.getPreferenceKeys().containsKey(preferenceKey)) {
-                writer.emitStatement("this.%s(this.%s())", preferenceKey, preferenceKey);
+                clearDefinedBuilder.addStatement("this.%s(this.%s())", preferenceKey, preferenceKey);
             }
         }
-        writer.endMethod();
-        writer.emitEmptyLine();
+
+        MethodSpec initDefaults = initDefaultsBuilder.build();
+
+        type.addMethod(get)
+                .addMethod(contains)
+                .addMethod(remove)
+                .addMethod(registerListener)
+                .addMethod(unregisterListener)
+                .addMethod(clear)
+                .addMethod(clearDefined)
+                .addMethod(initDefaults);
     }
 
 
-    private void finish(JavaWriter writer) throws IOException {
-        writer.endType();
-        writer.close();
+    private void finish(Element interfaze, TypeSpec.Builder writer) throws IOException {
+        QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
+        String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
+        String packageName = "";
+        for (int i = 0; i < split.length - 1; i++) {
+            packageName += split[i];
+            if (i < split.length - 2) {
+                packageName += ".";
+            }
+        }
+
+        JavaFile javaFile = JavaFile.builder(packageName, writer.build())
+                .build();
+        Filer filer = processingEnv.getFiler();
+        javaFile.writeTo(filer);
     }
 
 

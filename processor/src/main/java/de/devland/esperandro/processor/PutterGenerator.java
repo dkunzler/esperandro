@@ -9,7 +9,7 @@
 package de.devland.esperandro.processor;
 
 import android.annotation.SuppressLint;
-import com.squareup.javawriter.JavaWriter;
+import com.squareup.javapoet.TypeSpec;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -81,7 +81,7 @@ public class PutterGenerator {
     }
 
 
-    public void createPutterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
+    public void createPutterFromModel(ExecutableElement method, TypeSpec.Builder writer) throws IOException {
         String valueName = method.getSimpleName().toString();
         preferenceKeys.put(valueName, method);
         TypeMirror parameterType = method.getParameters().get(0).asType();
@@ -93,7 +93,7 @@ public class PutterGenerator {
 
 
     public void createPutterFromReflection(Method method, Element topLevelInterface,
-                                           JavaWriter writer) throws IOException {
+                                           TypeSpec.Builder writer) throws IOException {
         String valueName = method.getName();
         preferenceKeys.put(valueName, topLevelInterface);
         Type parameterType = method.getGenericParameterTypes()[0];
@@ -104,7 +104,7 @@ public class PutterGenerator {
     }
 
 
-    private void createPutter(JavaWriter writer, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
+    private void createPutter(TypeSpec.Builder writer, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
                               String returnType) throws IOException {
         writer.emitAnnotation(Override.class);
         writer.emitAnnotation(SuppressLint.class, "{\"NewApi\", \"CommitPrefEdits\"}");
