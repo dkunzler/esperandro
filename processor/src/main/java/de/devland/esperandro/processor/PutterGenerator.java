@@ -82,30 +82,30 @@ public class PutterGenerator {
     }
 
 
-    public void createPutterFromModel(ExecutableElement method, TypeSpec.Builder writer) throws IOException {
+    public void createPutterFromModel(ExecutableElement method, TypeSpec.Builder type) throws IOException {
         String valueName = method.getSimpleName().toString();
         preferenceKeys.put(valueName, method);
         TypeMirror parameterType = method.getParameters().get(0).asType();
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
         TypeMirror returnType = method.getReturnType();
 
-        createPutter(writer, valueName, valueName, preferenceTypeInformation, returnType.toString());
+        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString());
     }
 
 
     public void createPutterFromReflection(Method method, Element topLevelInterface,
-                                           TypeSpec.Builder writer) throws IOException {
+                                           TypeSpec.Builder type) throws IOException {
         String valueName = method.getName();
         preferenceKeys.put(valueName, topLevelInterface);
         Type parameterType = method.getGenericParameterTypes()[0];
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
         Class<?> returnType = method.getReturnType();
 
-        createPutter(writer, valueName, valueName, preferenceTypeInformation, returnType.toString());
+        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString());
     }
 
 
-    private void createPutter(TypeSpec.Builder writer, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
+    private void createPutter(TypeSpec.Builder type, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
                               String returnType) throws IOException {
         MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(valueName)
                 .addAnnotation(Override.class)
@@ -161,7 +161,7 @@ public class PutterGenerator {
         putterBuilder.addStatement(String.format(statementPattern.toString(),
                 methodSuffix, valueName, value) + ".%s", commitStyle.getStatementPart());
 
-        writer.addMethod(putterBuilder.build());
+        type.addMethod(putterBuilder.build());
     }
 
     public Map<String, Element> getPreferenceKeys() {
