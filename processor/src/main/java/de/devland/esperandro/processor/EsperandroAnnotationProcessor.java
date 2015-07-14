@@ -64,11 +64,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             // reinitialize getterGenerator and putter to start fresh for each interface
                             getterGenerator = new GetterGenerator(warner);
                             putterGenerator = new PutterGenerator();
-                            TypeSpec.Builder writer = initImplementation(interfaze);
-                            processInterfaceMethods(interfaze, interfaze, writer);
-                            createGenericActions(writer);
-                            createGenericClassImplementations(writer);
-                            finish(interfaze, writer);
+                            TypeSpec.Builder type = initImplementation(interfaze);
+                            processInterfaceMethods(interfaze, interfaze, type);
+                            createGenericActions(type);
+                            createGenericClassImplementations(type);
+                            finish(interfaze, type);
                             checkPreferenceKeys();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -82,14 +82,14 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         return false;
     }
 
-    private void createGenericClassImplementations(TypeSpec.Builder writer) throws IOException {
+    private void createGenericClassImplementations(TypeSpec.Builder type) throws IOException {
         for (String preferenceName : getterGenerator.getGenericTypeNames().keySet()) {
             TypeSpec innerGenericType = TypeSpec.classBuilder(preferenceName)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                     .addField(getterGenerator.getGenericTypeNames().get(preferenceName), "value", Modifier.PUBLIC)
                     .build();
 
-            writer.addType(innerGenericType);
+            type.addType(innerGenericType);
         }
     }
 
@@ -100,15 +100,15 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void processInterfaceMethods(Element topLevelInterface, Element currentInterfaze,
-                                         TypeSpec.Builder writer) throws IOException {
+                                         TypeSpec.Builder type) throws IOException {
         List<? extends Element> potentialMethods = currentInterfaze.getEnclosedElements();
         for (Element element : potentialMethods) {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) element;
                 if (putterGenerator.isPutter(method)) {
-                    putterGenerator.createPutterFromModel(method, writer);
+                    putterGenerator.createPutterFromModel(method, type);
                 } else if (getterGenerator.isGetter(method)) {
-                    getterGenerator.createGetterFromModel(method, writer);
+                    getterGenerator.createGetterFromModel(method, type);
                 } else {
                     warner.emitError("No valid getter or setter detected.", method);
                 }
@@ -121,11 +121,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             String subInterfaceTypeName = subInterfaceType.toString();
             if (!subInterfaceTypeName.equals(SharedPreferenceActions.class.getName())) {
                 if (subInterface != null) {
-                    processInterfaceMethods(topLevelInterface, subInterface, writer);
+                    processInterfaceMethods(topLevelInterface, subInterface, type);
                 } else {
                     try {
                         Class<?> subInterfaceClass = Class.forName(subInterfaceTypeName);
-                        processInterfacesReflection(topLevelInterface, subInterfaceClass, writer);
+                        processInterfacesReflection(topLevelInterface, subInterfaceClass, type);
                     } catch (ClassNotFoundException e) {
                         warner.emitError("Could not load Interface '" + subInterfaceTypeName + "' for generation.",
                                 topLevelInterface);
@@ -136,13 +136,13 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void processInterfacesReflection(Element topLevelInterface, Class<?> interfaceClass,
-                                             TypeSpec.Builder writer) throws IOException {
+                                             TypeSpec.Builder type) throws IOException {
 
         for (Method method : interfaceClass.getDeclaredMethods()) {
             if (putterGenerator.isPutter(method)) {
-                putterGenerator.createPutterFromReflection(method, topLevelInterface, writer);
+                putterGenerator.createPutterFromReflection(method, topLevelInterface, type);
             } else if (getterGenerator.isGetter(method)) {
-                getterGenerator.createGetterFromReflection(method, topLevelInterface, writer);
+                getterGenerator.createGetterFromReflection(method, topLevelInterface, type);
             } else {
                 warner.emitError("No valid getter or setter detected in class '" + interfaceClass.getName() + "' for " +
                         "method: '" + method.getName() + "'.", topLevelInterface);
@@ -152,7 +152,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         for (Class<?> subInterfaceClass : interfaceClass.getInterfaces()) {
             if (subInterfaceClass.getName() != null && !subInterfaceClass.getName().equals(SharedPreferenceActions
                     .class.getName())) {
-                processInterfacesReflection(topLevelInterface, subInterfaceClass, writer);
+                processInterfacesReflection(topLevelInterface, subInterfaceClass, type);
             }
         }
     }
@@ -301,7 +301,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
 
-    private void finish(Element interfaze, TypeSpec.Builder writer) throws IOException {
+    private void finish(Element interfaze, TypeSpec.Builder type) throws IOException {
         QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
         String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
         String packageName = "";
@@ -312,7 +312,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             }
         }
 
-        JavaFile javaFile = JavaFile.builder(packageName, writer.build())
+        JavaFile javaFile = JavaFile.builder(packageName, type.build())
                 .build();
         Filer filer = processingEnv.getFiler();
         javaFile.writeTo(filer);
