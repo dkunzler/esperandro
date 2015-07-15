@@ -30,15 +30,15 @@ For everybody that just thinks "give me the stuff":
           mavenCentral()
         }
         dependencies {
-            // Android plugin
-            classpath 'com.android.tools.build:gradle:0.12.+'
+            // replace with the current version of the Android plugin
+            classpath 'com.android.tools.build:gradle:1.2.3'
             // the latest version of the android-apt plugin from https://bitbucket.org/hvisser/android-apt
-            classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+            classpath 'com.neenbedankt.gradle.plugins:android-apt:1.5.1'
         }
     }
 
-    apply plugin: 'android'
-    apply plugin: 'android-apt'
+    apply plugin: 'com.android.application'
+    apply plugin: 'com.neenbedankt.android-apt'
 
 
     repositories {
