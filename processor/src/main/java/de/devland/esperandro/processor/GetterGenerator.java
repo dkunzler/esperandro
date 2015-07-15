@@ -15,11 +15,16 @@
  */
 package de.devland.esperandro.processor;
 
-import com.squareup.javawriter.JavaWriter;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
+import de.devland.esperandro.Esperandro;
 import de.devland.esperandro.annotations.Default;
+import de.devland.esperandro.serialization.Serializer;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
@@ -34,12 +39,12 @@ public class GetterGenerator {
     private Warner warner;
 
     private Map<String, Element> preferenceKeys;
-    private Map<String, String> genericTypeNames;
+    private Map<String, TypeName> genericTypeNames;
 
     public GetterGenerator(Warner warner) {
         this.warner = warner;
         preferenceKeys = new HashMap<String, Element>();
-        genericTypeNames = new HashMap<String, String>();
+        genericTypeNames = new HashMap<String, TypeName>();
     }
 
     public boolean isGetter(ExecutableElement method) {
@@ -104,17 +109,7 @@ public class GetterGenerator {
         return isGetter;
     }
 
-    public boolean isStringSet(ExecutableElement method) {
-        PreferenceTypeInformation typeFromMethod = getPreferenceTypeFromMethod(method);
-        return PreferenceType.STRINGSET.equals(typeFromMethod.getPreferenceType());
-    }
-
-    public boolean needsSerialization(ExecutableElement method) {
-        PreferenceTypeInformation typeFromMethod = getPreferenceTypeFromMethod(method);
-        return PreferenceType.OBJECT.equals(typeFromMethod.getPreferenceType());
-    }
-
-    public void createGetterFromModel(ExecutableElement method, JavaWriter writer) throws IOException {
+    public void createGetterFromModel(ExecutableElement method, TypeSpec.Builder type) throws IOException {
         String valueName = method.getSimpleName().toString();
         boolean runtimeDefault = false;
 
@@ -128,11 +123,11 @@ public class GetterGenerator {
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, method, writer, valueName, preferenceTypeInformation, runtimeDefault);
+        createGetter(defaultAnnotation, method, type, valueName, preferenceTypeInformation, runtimeDefault);
     }
 
     public void createGetterFromReflection(Method method, Element topLevelInterface,
-                                           JavaWriter writer) throws IOException {
+                                           TypeSpec.Builder type) throws IOException {
         String valueName = method.getName();
 
         boolean runtimeDefault = false;
@@ -147,7 +142,7 @@ public class GetterGenerator {
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getGenericReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, topLevelInterface, writer, valueName, preferenceTypeInformation, runtimeDefault);
+        createGetter(defaultAnnotation, topLevelInterface, type, valueName, preferenceTypeInformation, runtimeDefault);
     }
 
     private PreferenceTypeInformation getPreferenceTypeFromMethod(ExecutableElement method) {
@@ -156,7 +151,7 @@ public class GetterGenerator {
     }
 
 
-    private void createGetter(Default defaultAnnotation, Element element, JavaWriter writer, String valueName,
+    private void createGetter(Default defaultAnnotation, Element element, TypeSpec.Builder type, String valueName,
                               PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault) throws IOException {
         boolean hasDefaultAnnotation = defaultAnnotation != null;
 
@@ -165,13 +160,17 @@ public class GetterGenerator {
             allDefaults = hasAllDefaults(defaultAnnotation);
         }
 
-        writer.emitAnnotation(Override.class);
+        MethodSpec.Builder getterBuilder;
         if (runtimeDefault) {
-            writer.beginMethod(preferenceTypeInformation.getTypeName(), valueName + Constants.RUNTIME_DEFAULT_SUFFIX, Constants.MODIFIER_PUBLIC, preferenceTypeInformation.getTypeName(), "defaultValue");
-            writer.beginControlFlow("if (preferences.contains(\"" + valueName + "\"))");
+            getterBuilder = MethodSpec.methodBuilder(valueName + Constants.RUNTIME_DEFAULT_SUFFIX)
+                    .addParameter(preferenceTypeInformation.getType(), "defaultValue")
+                    .beginControlFlow("if (preferences.contains($S))", valueName);
         } else {
-            writer.beginMethod(preferenceTypeInformation.getTypeName(), valueName, Constants.MODIFIER_PUBLIC);
+            getterBuilder = MethodSpec.methodBuilder(valueName);
         }
+        getterBuilder.addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(preferenceTypeInformation.getType());
 
         String statementPattern = "preferences.get%s(\"%s\", %s)";
         String methodSuffix = "";
@@ -234,18 +233,19 @@ public class GetterGenerator {
                 }
                 methodSuffix = "String";
                 defaultValue = "null";
+                getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
                 if (preferenceTypeInformation.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
-                    genericTypeNames.put(genericClassName, preferenceTypeInformation.getTypeName());
+                    genericTypeNames.put(genericClassName, preferenceTypeInformation.getType());
                     String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-                    writer.emitStatement("%s $$container = Esperandro.getSerializer().deserialize(%s, %s.class)", genericClassName, statement, genericClassName);
-                    writer.emitStatement("%s $$value = null", preferenceTypeInformation.getTypeName());
-                    writer.beginControlFlow("if ($$container != null)");
-                    writer.emitStatement("$$value = $$container.value");
-                    writer.endControlFlow();
-                    statementPattern = "$$value";
+                    getterBuilder.addStatement("$L __container = __serializer.deserialize($L, $L.class)", genericClassName, statement, genericClassName);
+                    getterBuilder.addStatement("$L __value = null", preferenceTypeInformation.getTypeName());
+                    getterBuilder.beginControlFlow("if (__container != null)");
+                    getterBuilder.addStatement("__value = __container.value");
+                    getterBuilder.endControlFlow();
+                    statementPattern = "__value";
                 } else {
-                    statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
+                    statementPattern = String.format("__serializer.deserialize(%s, %s.class)",
                             statementPattern, preferenceTypeInformation.getTypeName());
                 }
 
@@ -259,25 +259,23 @@ public class GetterGenerator {
         }
         if (runtimeDefault) {
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-            writer.emitStatement("return %s", statement);
-            writer.nextControlFlow("else");
-            writer.emitStatement("return defaultValue");
-            writer.endControlFlow();
+            getterBuilder.addStatement("return $L", statement)
+                    .nextControlFlow("else")
+                    .addStatement("return defaultValue")
+                    .endControlFlow();
         } else {
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-            writer.emitStatement("return %s", statement);
+            getterBuilder.addStatement("return $L", statement);
         }
 
-
-        writer.endMethod();
-        writer.emitEmptyLine();
+        type.addMethod(getterBuilder.build());
     }
 
     public Map<String, Element> getPreferenceKeys() {
         return preferenceKeys;
     }
 
-    public Map<String, String> getGenericTypeNames() {
+    public Map<String, TypeName> getGenericTypeNames() {
         return genericTypeNames;
     }
 

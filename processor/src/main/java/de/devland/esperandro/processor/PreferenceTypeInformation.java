@@ -1,15 +1,21 @@
 package de.devland.esperandro.processor;
 
+import com.squareup.javapoet.TypeName;
+
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Type;
 
 public class PreferenceTypeInformation {
     private PreferenceType preferenceType = PreferenceType.UNKNOWN;
     private boolean isGeneric = false;
+    private boolean isType = false;
     private String declaredTypeName;
+    private Type type;
+    private TypeMirror typeMirror;
 
     public static PreferenceTypeInformation from(TypeMirror typeMirror) {
         PreferenceTypeInformation result = new PreferenceTypeInformation();
+        result.typeMirror = typeMirror;
 
         switch (typeMirror.getKind()) {
             case BOOLEAN:
@@ -47,6 +53,8 @@ public class PreferenceTypeInformation {
 
     public static PreferenceTypeInformation from(Type type) {
         PreferenceTypeInformation result = new PreferenceTypeInformation();
+        result.type = type;
+        result.isType = true;
 
         String typeString = type.toString();
 
@@ -92,4 +100,9 @@ public class PreferenceTypeInformation {
     public String getTypeName() {
         return declaredTypeName;
     }
+
+    public TypeName getType() {
+        return isType ? TypeName.get(type) : TypeName.get(typeMirror);
+    }
+
 }
