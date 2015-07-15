@@ -20,6 +20,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import de.devland.esperandro.Esperandro;
 import de.devland.esperandro.annotations.Default;
+import de.devland.esperandro.serialization.Serializer;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -232,18 +233,19 @@ public class GetterGenerator {
                 }
                 methodSuffix = "String";
                 defaultValue = "null";
+                getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
                 if (preferenceTypeInformation.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
                     genericTypeNames.put(genericClassName, preferenceTypeInformation.getType());
                     String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-                    getterBuilder.addStatement("$L $$container = $T.getSerializer().deserialize($L, $L.class)", genericClassName, Esperandro.class, statement, genericClassName);
-                    getterBuilder.addStatement("$L $$value = null", preferenceTypeInformation.getTypeName());
-                    getterBuilder.beginControlFlow("if ($$container != null)");
-                    getterBuilder.addStatement("$$value = $$container.value");
+                    getterBuilder.addStatement("$L __container = __serializer.deserialize($L, $L.class)", genericClassName, statement, genericClassName);
+                    getterBuilder.addStatement("$L __value = null", preferenceTypeInformation.getTypeName());
+                    getterBuilder.beginControlFlow("if (__container != null)");
+                    getterBuilder.addStatement("__value = __container.value");
                     getterBuilder.endControlFlow();
-                    statementPattern = "$$value";
+                    statementPattern = "__value";
                 } else {
-                    statementPattern = String.format("Esperandro.getSerializer().deserialize(%s, %s.class)",
+                    statementPattern = String.format("__serializer.deserialize(%s, %s.class)",
                             statementPattern, preferenceTypeInformation.getTypeName());
                 }
 
@@ -258,7 +260,7 @@ public class GetterGenerator {
         if (runtimeDefault) {
             String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
             getterBuilder.addStatement("return $L", statement)
-                    .endControlFlow("else")
+                    .nextControlFlow("else")
                     .addStatement("return defaultValue")
                     .endControlFlow();
         } else {

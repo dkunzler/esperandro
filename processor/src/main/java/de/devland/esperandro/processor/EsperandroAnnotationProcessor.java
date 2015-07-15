@@ -17,12 +17,7 @@
 
 package de.devland.esperandro.processor;
 
-import android.content.Context;
-import android.preference.PreferenceManager;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.SharedPreferences;
@@ -187,15 +182,16 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     .addModifiers(Modifier.PUBLIC)
                     .addSuperinterface(SharedPreferenceActions.class)
                     .addSuperinterface(TypeName.get(interfaze.asType()))
-                    .addField(TypeName.get(android.content.SharedPreferences.class), "preferences", Modifier.PRIVATE, Modifier.FINAL);
+                    .addField(ClassName.get("android.content", "SharedPreferences"), "preferences", Modifier.PRIVATE, Modifier.FINAL);
 
             MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
-                    .addParameter(Context.class, "context");
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(ClassName.get("android.content", "Context"), "context");
             if (preferenceNamePresent) {
                 constructor.addStatement("this.preferences = context.getSharedPreferences($S, $L)", preferencesName,
                         mode.getSharedPreferenceModeStatement());
             } else {
-                constructor.addStatement("this.preferences = $T.getDefaultSharedPreferences(context)", PreferenceManager.class);
+                constructor.addStatement("this.preferences = $T.getDefaultSharedPreferences(context)", ClassName.get("android.preference", "PreferenceManager"));
             }
 
             result.addMethod(constructor.build());
@@ -212,7 +208,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         MethodSpec get = MethodSpec.methodBuilder("get")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .returns(android.content.SharedPreferences.class)
+                .returns(ClassName.get("android.content", "SharedPreferences"))
                 .addStatement("return preferences")
                 .build();
 
@@ -236,7 +232,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
-                .addParameter(android.content.SharedPreferences.OnSharedPreferenceChangeListener.class, "listener")
+                .addParameter(ClassName.get("android.content", "SharedPreferences.OnSharedPreferenceChangeListener"), "listener")
                 .addStatement("preferences.registerOnSharedPreferenceChangeListener(listener)")
                 .build();
 
@@ -244,7 +240,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
-                .addParameter(android.content.SharedPreferences.OnSharedPreferenceChangeListener.class, "listener")
+                .addParameter(ClassName.get("android.content", "SharedPreferences.OnSharedPreferenceChangeListener"), "listener")
                 .addStatement("preferences.unregisterOnSharedPreferenceChangeListener(listener)")
                 .build();
 
@@ -281,7 +277,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         for (String preferenceKey : getterGenerator.getPreferenceKeys().keySet()) {
             if (putterGenerator.getPreferenceKeys().containsKey(preferenceKey)) {
-                clearDefinedBuilder.addStatement("this.$L(this.$L())", preferenceKey, preferenceKey);
+                initDefaultsBuilder.addStatement("this.$L(this.$L())", preferenceKey, preferenceKey);
             }
         }
 
