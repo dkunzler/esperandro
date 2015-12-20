@@ -109,7 +109,7 @@ public class GetterGenerator {
         return isGetter;
     }
 
-    public void createGetterFromModel(ExecutableElement method, TypeSpec.Builder type) throws IOException {
+    public void createGetterFromModel(ExecutableElement method, TypeSpec.Builder type, boolean caching) throws IOException {
         String valueName = method.getSimpleName().toString();
         boolean runtimeDefault = false;
 
@@ -123,11 +123,11 @@ public class GetterGenerator {
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, method, type, valueName, preferenceTypeInformation, runtimeDefault);
+        createGetter(defaultAnnotation, method, type, valueName, preferenceTypeInformation, runtimeDefault, caching);
     }
 
     public void createGetterFromReflection(Method method, Element topLevelInterface,
-                                           TypeSpec.Builder type) throws IOException {
+                                           TypeSpec.Builder type, boolean caching) throws IOException {
         String valueName = method.getName();
 
         boolean runtimeDefault = false;
@@ -142,7 +142,7 @@ public class GetterGenerator {
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getGenericReturnType());
         Default defaultAnnotation = method.getAnnotation(Default.class);
 
-        createGetter(defaultAnnotation, topLevelInterface, type, valueName, preferenceTypeInformation, runtimeDefault);
+        createGetter(defaultAnnotation, topLevelInterface, type, valueName, preferenceTypeInformation, runtimeDefault, caching);
     }
 
     private PreferenceTypeInformation getPreferenceTypeFromMethod(ExecutableElement method) {
@@ -152,32 +152,115 @@ public class GetterGenerator {
 
 
     private void createGetter(Default defaultAnnotation, Element element, TypeSpec.Builder type, String valueName,
-                              PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault) throws IOException {
-        boolean hasDefaultAnnotation = defaultAnnotation != null;
+                              PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault, boolean caching) throws IOException {
+        MethodSpec.Builder getterBuilder = initGetter(valueName, preferenceTypeInformation, runtimeDefault);
 
-        boolean allDefaults = false;
-        if (hasDefaultAnnotation) {
-            allDefaults = hasAllDefaults(defaultAnnotation);
+        if (caching) {
+            getterBuilder.addStatement("$T __result = ($T) cache.get($S)", preferenceTypeInformation.getType(), preferenceTypeInformation.getType(), valueName);
+            getterBuilder.beginControlFlow("if (__result == null)");
+        } else {
+            getterBuilder.addStatement("$T __result", preferenceTypeInformation.getType());
         }
 
+        if (runtimeDefault) {
+            getterBuilder.beginControlFlow("if (preferences.contains($S))", valueName);
+        }
+
+        String statementPattern = "preferences.get%s(\"%s\", %s)";
+        String methodSuffix = getMethodSuffix(preferenceTypeInformation.getPreferenceType());
+        String defaultValue = getDefaultValue(defaultAnnotation, preferenceTypeInformation.getPreferenceType(), element);
+        if (preferenceTypeInformation.getPreferenceType() == PreferenceType.OBJECT) {
+            getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
+            if (preferenceTypeInformation.isGeneric()) {
+                String genericClassName = Utils.createClassNameForPreference(valueName);
+                genericTypeNames.put(genericClassName, preferenceTypeInformation.getType());
+                String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
+                getterBuilder.addStatement("$L __container = __serializer.deserialize($L, $L.class)", genericClassName, statement, genericClassName);
+                getterBuilder.addStatement("$L __value = null", preferenceTypeInformation.getTypeName());
+                getterBuilder.beginControlFlow("if (__container != null)");
+                getterBuilder.addStatement("__value = __container.value");
+                getterBuilder.endControlFlow();
+                statementPattern = "__value";
+            } else {
+                statementPattern = String.format("__serializer.deserialize(%s, %s.class)",
+                        statementPattern, preferenceTypeInformation.getTypeName());
+            }
+        }
+
+        if (defaultAnnotation != null && runtimeDefault) {
+            warner.emitWarning("Pointless @Default Annotation", element);
+        }
+        String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
+        getterBuilder.addStatement("__result = $L", statement);
+        if (runtimeDefault) {
+            getterBuilder.nextControlFlow("else")
+                    .addStatement("__result = defaultValue")
+                    .endControlFlow();
+        }
+
+        if (caching) {
+            getterBuilder.addStatement("cache.put($S, __result);", valueName);
+            getterBuilder.endControlFlow();
+        }
+        getterBuilder.addStatement("return __result");
+        type.addMethod(getterBuilder.build());
+    }
+
+    private MethodSpec.Builder initGetter(String valueName, PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault) {
         MethodSpec.Builder getterBuilder;
         if (runtimeDefault) {
             getterBuilder = MethodSpec.methodBuilder(valueName + Constants.RUNTIME_DEFAULT_SUFFIX)
-                    .addParameter(preferenceTypeInformation.getType(), "defaultValue")
-                    .beginControlFlow("if (preferences.contains($S))", valueName);
+                    .addParameter(preferenceTypeInformation.getType(), "defaultValue");
         } else {
             getterBuilder = MethodSpec.methodBuilder(valueName);
         }
         getterBuilder.addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(preferenceTypeInformation.getType());
+        return getterBuilder;
+    }
 
-        String statementPattern = "preferences.get%s(\"%s\", %s)";
+    private String getMethodSuffix(PreferenceType preferenceType) {
         String methodSuffix = "";
-        String defaultValue = "";
-        switch (preferenceTypeInformation.getPreferenceType()) {
+        switch (preferenceType) {
             case INT:
                 methodSuffix = "Int";
+                break;
+            case LONG:
+                methodSuffix = "Long";
+                break;
+            case FLOAT:
+                methodSuffix = "Float";
+                break;
+            case BOOLEAN:
+                methodSuffix = "Boolean";
+                //noinspection PointlessBooleanExpression
+                break;
+            case STRING:
+                methodSuffix = "String";
+                break;
+            case STRINGSET:
+                methodSuffix = "StringSet";
+                break;
+            case OBJECT:
+                methodSuffix = "String";
+                break;
+            case UNKNOWN:
+                break;
+        }
+
+        return methodSuffix;
+    }
+
+    private String getDefaultValue(Default defaultAnnotation, PreferenceType preferenceType, Element element) {
+        boolean allDefaults = false;
+        boolean hasDefaultAnnotation = defaultAnnotation != null;
+        if (hasDefaultAnnotation) {
+            allDefaults = hasAllDefaults(defaultAnnotation);
+        }
+        String defaultValue = "";
+        switch (preferenceType) {
+            case INT:
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofInt() == Default.intDefault) {
                     warner.emitMissingDefaultWarning("int", element);
                 }
@@ -185,7 +268,6 @@ public class GetterGenerator {
                         (Default.intDefault);
                 break;
             case LONG:
-                methodSuffix = "Long";
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofLong() == Default.longDefault) {
                     warner.emitMissingDefaultWarning("long", element);
                 }
@@ -194,7 +276,6 @@ public class GetterGenerator {
                 defaultValue += "l";
                 break;
             case FLOAT:
-                methodSuffix = "Float";
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofFloat() == Default.floatDefault) {
                     warner.emitMissingDefaultWarning("float", element);
                 }
@@ -203,7 +284,6 @@ public class GetterGenerator {
                 defaultValue += "f";
                 break;
             case BOOLEAN:
-                methodSuffix = "Boolean";
                 //noinspection PointlessBooleanExpression
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
                     warner.emitMissingDefaultWarning("boolean", element);
@@ -216,7 +296,6 @@ public class GetterGenerator {
                         .stringDefault)) {
                     warner.emitMissingDefaultWarning("String", element);
                 }
-                methodSuffix = "String";
                 defaultValue = (hasDefaultAnnotation ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default
                         .stringDefault + "\""));
                 break;
@@ -224,51 +303,19 @@ public class GetterGenerator {
                 if (hasDefaultAnnotation) {
                     warner.emitWarning("No default for Set<String> preferences allowed.", element);
                 }
-                methodSuffix = "StringSet";
                 defaultValue = "null";
                 break;
             case OBJECT:
                 if (hasDefaultAnnotation) {
                     warner.emitWarning("No default for Object preferences allowed.", element);
                 }
-                methodSuffix = "String";
                 defaultValue = "null";
-                getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
-                if (preferenceTypeInformation.isGeneric()) {
-                    String genericClassName = Utils.createClassNameForPreference(valueName);
-                    genericTypeNames.put(genericClassName, preferenceTypeInformation.getType());
-                    String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-                    getterBuilder.addStatement("$L __container = __serializer.deserialize($L, $L.class)", genericClassName, statement, genericClassName);
-                    getterBuilder.addStatement("$L __value = null", preferenceTypeInformation.getTypeName());
-                    getterBuilder.beginControlFlow("if (__container != null)");
-                    getterBuilder.addStatement("__value = __container.value");
-                    getterBuilder.endControlFlow();
-                    statementPattern = "__value";
-                } else {
-                    statementPattern = String.format("__serializer.deserialize(%s, %s.class)",
-                            statementPattern, preferenceTypeInformation.getTypeName());
-                }
-
                 break;
             case UNKNOWN:
                 break;
         }
 
-        if (hasDefaultAnnotation && runtimeDefault) {
-            warner.emitWarning("Pointless @Default Annotation", element);
-        }
-        if (runtimeDefault) {
-            String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-            getterBuilder.addStatement("return $L", statement)
-                    .nextControlFlow("else")
-                    .addStatement("return defaultValue")
-                    .endControlFlow();
-        } else {
-            String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-            getterBuilder.addStatement("return $L", statement);
-        }
-
-        type.addMethod(getterBuilder.build());
+        return defaultValue;
     }
 
     public Map<String, Element> getPreferenceKeys() {

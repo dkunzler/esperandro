@@ -82,31 +82,31 @@ public class PutterGenerator {
     }
 
 
-    public void createPutterFromModel(ExecutableElement method, TypeSpec.Builder type) throws IOException {
+    public void createPutterFromModel(ExecutableElement method, TypeSpec.Builder type, boolean caching) throws IOException {
         String valueName = method.getSimpleName().toString();
         preferenceKeys.put(valueName, method);
         TypeMirror parameterType = method.getParameters().get(0).asType();
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
         TypeMirror returnType = method.getReturnType();
 
-        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString());
+        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString(), caching);
     }
 
 
     public void createPutterFromReflection(Method method, Element topLevelInterface,
-                                           TypeSpec.Builder type) throws IOException {
+                                           TypeSpec.Builder type, boolean caching) throws IOException {
         String valueName = method.getName();
         preferenceKeys.put(valueName, topLevelInterface);
         Type parameterType = method.getGenericParameterTypes()[0];
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
         Class<?> returnType = method.getReturnType();
 
-        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString());
+        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString(), caching);
     }
 
 
     private void createPutter(TypeSpec.Builder type, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
-                              String returnType) throws IOException {
+                              String returnType, boolean caching) throws IOException {
         MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(valueName)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)

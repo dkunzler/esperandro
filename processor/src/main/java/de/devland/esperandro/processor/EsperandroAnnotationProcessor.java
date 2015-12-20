@@ -20,6 +20,7 @@ package de.devland.esperandro.processor;
 import com.squareup.javapoet.*;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
+import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.annotations.SharedPreferences;
 
 import javax.annotation.processing.*;
@@ -60,9 +61,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             // reinitialize getterGenerator and putter to start fresh for each interface
                             getterGenerator = new GetterGenerator(warner);
                             putterGenerator = new PutterGenerator();
-                            TypeSpec.Builder type = initImplementation(interfaze);
-                            processInterfaceMethods(interfaze, interfaze, type);
-                            createGenericActions(type);
+                            Cached cacheAnnotation = interfaze.getAnnotation(Cached.class);
+                            boolean caching = cacheAnnotation != null;
+                            TypeSpec.Builder type = initImplementation(interfaze, cacheAnnotation);
+                            processInterfaceMethods(interfaze, interfaze, type, caching);
+                            createGenericActions(type, caching);
                             createGenericClassImplementations(type);
                             finish(interfaze, type);
                             checkPreferenceKeys();
@@ -95,33 +98,33 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void processInterfaceMethods(Element topLevelInterface, Element currentInterfaze,
-                                         TypeSpec.Builder type) throws IOException {
-        List<? extends Element> potentialMethods = currentInterfaze.getEnclosedElements();
+    private void processInterfaceMethods(Element topLevelInterface, Element currentInterface,
+                                         TypeSpec.Builder type, boolean caching) throws IOException {
+        List<? extends Element> potentialMethods = currentInterface.getEnclosedElements();
         for (Element element : potentialMethods) {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) element;
                 if (putterGenerator.isPutter(method)) {
-                    putterGenerator.createPutterFromModel(method, type);
+                    putterGenerator.createPutterFromModel(method, type, caching);
                 } else if (getterGenerator.isGetter(method)) {
-                    getterGenerator.createGetterFromModel(method, type);
+                    getterGenerator.createGetterFromModel(method, type, caching);
                 } else {
                     warner.emitError("No valid getter or setter detected.", method);
                 }
             }
         }
 
-        List<? extends TypeMirror> interfaces = ((TypeElement) currentInterfaze).getInterfaces();
+        List<? extends TypeMirror> interfaces = ((TypeElement) currentInterface).getInterfaces();
         for (TypeMirror subInterfaceType : interfaces) {
             Element subInterface = rootElements.get(subInterfaceType);
             String subInterfaceTypeName = subInterfaceType.toString();
             if (!subInterfaceTypeName.equals(SharedPreferenceActions.class.getName())) {
                 if (subInterface != null) {
-                    processInterfaceMethods(topLevelInterface, subInterface, type);
+                    processInterfaceMethods(topLevelInterface, subInterface, type, caching);
                 } else {
                     try {
                         Class<?> subInterfaceClass = Class.forName(subInterfaceTypeName);
-                        processInterfacesReflection(topLevelInterface, subInterfaceClass, type);
+                        processInterfacesReflection(topLevelInterface, subInterfaceClass, type, caching);
                     } catch (ClassNotFoundException e) {
                         warner.emitError("Could not load Interface '" + subInterfaceTypeName + "' for generation.",
                                 topLevelInterface);
@@ -132,13 +135,13 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void processInterfacesReflection(Element topLevelInterface, Class<?> interfaceClass,
-                                             TypeSpec.Builder type) throws IOException {
+                                             TypeSpec.Builder type, boolean caching) throws IOException {
 
         for (Method method : interfaceClass.getDeclaredMethods()) {
             if (putterGenerator.isPutter(method)) {
-                putterGenerator.createPutterFromReflection(method, topLevelInterface, type);
+                putterGenerator.createPutterFromReflection(method, topLevelInterface, type, caching);
             } else if (getterGenerator.isGetter(method)) {
-                getterGenerator.createGetterFromReflection(method, topLevelInterface, type);
+                getterGenerator.createGetterFromReflection(method, topLevelInterface, type, caching);
             } else {
                 warner.emitError("No valid getter or setter detected in class '" + interfaceClass.getName() + "' for " +
                         "method: '" + method.getName() + "'.", topLevelInterface);
@@ -148,7 +151,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         for (Class<?> subInterfaceClass : interfaceClass.getInterfaces()) {
             if (subInterfaceClass.getName() != null && !subInterfaceClass.getName().equals(SharedPreferenceActions
                     .class.getName())) {
-                processInterfacesReflection(topLevelInterface, subInterfaceClass, type);
+                processInterfacesReflection(topLevelInterface, subInterfaceClass, type, caching);
             }
         }
     }
@@ -167,7 +170,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private TypeSpec.Builder initImplementation(Element interfaze) {
+    private TypeSpec.Builder initImplementation(Element interfaze, Cached cacheAnnotation) {
         TypeSpec.Builder result;
         SharedPreferences prefAnnotation = interfaze.getAnnotation(SharedPreferences.class);
         String preferencesName = prefAnnotation.name();
@@ -194,6 +197,16 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 constructor.addStatement("this.preferences = $T.getDefaultSharedPreferences(context)", ClassName.get("android.preference", "PreferenceManager"));
             }
 
+            if (cacheAnnotation != null) {
+                ParameterizedTypeName lruCache = ParameterizedTypeName.get(
+                        ClassName.get("android.util", "LruCache"),
+                        ClassName.get(String.class),
+                        ClassName.get(Object.class));
+                result.addField(lruCache, "cache", Modifier.PRIVATE, Modifier.FINAL);
+
+                constructor.addStatement("cache = new LruCache<$T, $T>($L)", String.class, Object.class, cacheAnnotation.cacheSize());
+            }
+
             result.addMethod(constructor.build());
 
         } catch (Exception e) {
@@ -203,53 +216,47 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
 
-    private void createGenericActions(TypeSpec.Builder type) throws IOException {
+    private void createGenericActions(TypeSpec.Builder type, boolean caching) throws IOException {
 
-        MethodSpec get = MethodSpec.methodBuilder("get")
+        MethodSpec.Builder get = MethodSpec.methodBuilder("get")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ClassName.get("android.content", "SharedPreferences"))
-                .addStatement("return preferences")
-                .build();
+                .addStatement("return preferences");
 
-        MethodSpec contains = MethodSpec.methodBuilder("contains")
+        MethodSpec.Builder contains = MethodSpec.methodBuilder("contains")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(boolean.class)
                 .addParameter(String.class, "key")
-                .addStatement("return preferences.contains(key)")
-                .build();
+                .addStatement("return preferences.contains(key)");
 
-        MethodSpec remove = MethodSpec.methodBuilder("remove")
+        MethodSpec.Builder remove = MethodSpec.methodBuilder("remove")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
                 .addParameter(String.class, "key")
-                .addStatement("preferences.edit().remove(key).$L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
-                .build();
+                .addStatement("preferences.edit().remove(key).$L", PreferenceEditorCommitStyle.APPLY.getStatementPart());
 
-        MethodSpec registerListener = MethodSpec.methodBuilder("registerOnChangeListener")
+        MethodSpec.Builder registerListener = MethodSpec.methodBuilder("registerOnChangeListener")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
                 .addParameter(ClassName.get("android.content", "SharedPreferences.OnSharedPreferenceChangeListener"), "listener")
-                .addStatement("preferences.registerOnSharedPreferenceChangeListener(listener)")
-                .build();
+                .addStatement("preferences.registerOnSharedPreferenceChangeListener(listener)");
 
-        MethodSpec unregisterListener = MethodSpec.methodBuilder("unregisterOnChangeListener")
+        MethodSpec.Builder unregisterListener = MethodSpec.methodBuilder("unregisterOnChangeListener")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
                 .addParameter(ClassName.get("android.content", "SharedPreferences.OnSharedPreferenceChangeListener"), "listener")
-                .addStatement("preferences.unregisterOnSharedPreferenceChangeListener(listener)")
-                .build();
+                .addStatement("preferences.unregisterOnSharedPreferenceChangeListener(listener)");
 
-        MethodSpec clear = MethodSpec.methodBuilder("clear")
+        MethodSpec.Builder clear = MethodSpec.methodBuilder("clear")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
-                .addStatement("preferences.edit().clear().$L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
-                .build();
+                .addStatement("preferences.edit().clear().$L", PreferenceEditorCommitStyle.APPLY.getStatementPart());
 
         MethodSpec.Builder clearDefinedBuilder = MethodSpec.methodBuilder("clearDefined")
                 .addAnnotation(Override.class)
@@ -265,6 +272,14 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             clearDefinedBuilder.addStatement("editor.remove($S)", preferenceName);
         }
 
+        if (caching) {
+            remove.addStatement("cache.remove(key)");
+            clear.addStatement("cache.evictAll()");
+            for (String preferenceName : preferenceNames) {
+                clearDefinedBuilder.addStatement("cache.remove($S)", preferenceName);
+            }
+        }
+
         MethodSpec clearDefined = clearDefinedBuilder
                 .addStatement("editor.$L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
                 .build();
@@ -274,21 +289,21 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class);
 
-
         for (String preferenceKey : getterGenerator.getPreferenceKeys().keySet()) {
             if (putterGenerator.getPreferenceKeys().containsKey(preferenceKey)) {
                 initDefaultsBuilder.addStatement("this.$L(this.$L())", preferenceKey, preferenceKey);
             }
         }
 
+
         MethodSpec initDefaults = initDefaultsBuilder.build();
 
-        type.addMethod(get)
-                .addMethod(contains)
-                .addMethod(remove)
-                .addMethod(registerListener)
-                .addMethod(unregisterListener)
-                .addMethod(clear)
+        type.addMethod(get.build())
+                .addMethod(contains.build())
+                .addMethod(remove.build())
+                .addMethod(registerListener.build())
+                .addMethod(unregisterListener.build())
+                .addMethod(clear.build())
                 .addMethod(clearDefined)
                 .addMethod(initDefaults);
     }

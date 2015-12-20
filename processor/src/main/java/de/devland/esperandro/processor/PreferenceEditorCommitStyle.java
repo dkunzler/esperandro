@@ -5,7 +5,6 @@ public enum PreferenceEditorCommitStyle {
 
     private String statementPart;
 
-
     PreferenceEditorCommitStyle(String statementPart) {
         this.statementPart = statementPart;
     }
