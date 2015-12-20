@@ -28,6 +28,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -85,6 +86,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         for (String preferenceName : getterGenerator.getGenericTypeNames().keySet()) {
             TypeSpec innerGenericType = TypeSpec.classBuilder(preferenceName)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                    .addSuperinterface(Serializable.class)
                     .addField(getterGenerator.getGenericTypeNames().get(preferenceName), "value", Modifier.PUBLIC)
                     .build();
 
