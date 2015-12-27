@@ -65,7 +65,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             Cached cacheAnnotation = interfaze.getAnnotation(Cached.class);
                             boolean caching = cacheAnnotation != null;
                             TypeSpec.Builder type = initImplementation(interfaze, cacheAnnotation);
-                            processInterfaceMethods(interfaze, interfaze, type, caching);
+                            processInterfaceMethods(interfaze, interfaze, type, cacheAnnotation);
                             createGenericActions(type, caching);
                             createGenericClassImplementations(type);
                             finish(interfaze, type);
@@ -101,15 +101,15 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void processInterfaceMethods(Element topLevelInterface, Element currentInterface,
-                                         TypeSpec.Builder type, boolean caching) throws IOException {
+                                         TypeSpec.Builder type, Cached cachedAnnotation) throws IOException {
         List<? extends Element> potentialMethods = currentInterface.getEnclosedElements();
         for (Element element : potentialMethods) {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) element;
                 if (putterGenerator.isPutter(method)) {
-                    putterGenerator.createPutterFromModel(method, type, caching);
+                    putterGenerator.createPutterFromModel(method, type, cachedAnnotation);
                 } else if (getterGenerator.isGetter(method)) {
-                    getterGenerator.createGetterFromModel(method, type, caching);
+                    getterGenerator.createGetterFromModel(method, type, cachedAnnotation != null);
                 } else {
                     warner.emitError("No valid getter or setter detected.", method);
                 }
@@ -122,11 +122,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             String subInterfaceTypeName = subInterfaceType.toString();
             if (!subInterfaceTypeName.equals(SharedPreferenceActions.class.getName())) {
                 if (subInterface != null) {
-                    processInterfaceMethods(topLevelInterface, subInterface, type, caching);
+                    processInterfaceMethods(topLevelInterface, subInterface, type, cachedAnnotation);
                 } else {
                     try {
                         Class<?> subInterfaceClass = Class.forName(subInterfaceTypeName);
-                        processInterfacesReflection(topLevelInterface, subInterfaceClass, type, caching);
+                        processInterfacesReflection(topLevelInterface, subInterfaceClass, type, cachedAnnotation);
                     } catch (ClassNotFoundException e) {
                         warner.emitError("Could not load Interface '" + subInterfaceTypeName + "' for generation.",
                                 topLevelInterface);
@@ -137,13 +137,13 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     }
 
     private void processInterfacesReflection(Element topLevelInterface, Class<?> interfaceClass,
-                                             TypeSpec.Builder type, boolean caching) throws IOException {
+                                             TypeSpec.Builder type, Cached cachedAnnotation) throws IOException {
 
         for (Method method : interfaceClass.getDeclaredMethods()) {
             if (putterGenerator.isPutter(method)) {
-                putterGenerator.createPutterFromReflection(method, topLevelInterface, type, caching);
+                putterGenerator.createPutterFromReflection(method, topLevelInterface, type, cachedAnnotation);
             } else if (getterGenerator.isGetter(method)) {
-                getterGenerator.createGetterFromReflection(method, topLevelInterface, type, caching);
+                getterGenerator.createGetterFromReflection(method, topLevelInterface, type, cachedAnnotation != null);
             } else {
                 warner.emitError("No valid getter or setter detected in class '" + interfaceClass.getName() + "' for " +
                         "method: '" + method.getName() + "'.", topLevelInterface);
@@ -153,7 +153,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         for (Class<?> subInterfaceClass : interfaceClass.getInterfaces()) {
             if (subInterfaceClass.getName() != null && !subInterfaceClass.getName().equals(SharedPreferenceActions
                     .class.getName())) {
-                processInterfacesReflection(topLevelInterface, subInterfaceClass, type, caching);
+                processInterfacesReflection(topLevelInterface, subInterfaceClass, type, cachedAnnotation);
             }
         }
     }
@@ -200,8 +200,14 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             }
 
             if (cacheAnnotation != null) {
+                ClassName cacheClass;
+                if (cacheAnnotation.support()) {
+                    cacheClass = ClassName.get("android.support.v4.util", "LruCache");
+                } else {
+                    cacheClass = ClassName.get("android.util", "LruCache");
+                }
                 ParameterizedTypeName lruCache = ParameterizedTypeName.get(
-                        ClassName.get("android.util", "LruCache"),
+                        cacheClass,
                         ClassName.get(String.class),
                         ClassName.get(Object.class));
                 result.addField(lruCache, "cache", Modifier.PRIVATE, Modifier.FINAL);

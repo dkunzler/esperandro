@@ -9,6 +9,7 @@ public class PreferenceTypeInformation {
     private PreferenceType preferenceType = PreferenceType.UNKNOWN;
     private boolean isGeneric = false;
     private boolean isType = false;
+    private boolean isPrimitive = true;
     private String declaredTypeName;
     private Type type;
     private TypeMirror typeMirror;
@@ -35,6 +36,7 @@ public class PreferenceTypeInformation {
                 result.declaredTypeName = "float";
                 break;
             case DECLARED:
+                result.isPrimitive = false;
                 if (Constants.DECLARED_TYPENAME_STRING.equals(typeMirror.toString())) {
                     result.preferenceType = PreferenceType.STRING;
                     result.declaredTypeName = Constants.DECLARED_TYPENAME_STRING;
@@ -71,16 +73,20 @@ public class PreferenceTypeInformation {
             result.preferenceType = PreferenceType.BOOLEAN;
             result.declaredTypeName = typeString;
         } else if (typeString.equals("java.util.Set<java.lang.String>")) {
+            result.isPrimitive = false;
             result.preferenceType = PreferenceType.STRINGSET;
             result.declaredTypeName = Constants.DECLARED_TYPENAME_STRINGSET;
         } else if (typeString.equals("class java.lang.String")) {
+            result.isPrimitive = false;
             result.preferenceType = PreferenceType.STRING;
             result.declaredTypeName = Constants.DECLARED_TYPENAME_STRING;
         } else if (typeString.startsWith("class ")) {
+            result.isPrimitive = false;
             result.preferenceType = PreferenceType.OBJECT;
 			// cut off "class " from type name
             result.declaredTypeName = typeString.substring(6);
         } else if (Utils.isGeneric(typeString)) {
+            result.isPrimitive = false;
             result.preferenceType = PreferenceType.OBJECT;
             result.declaredTypeName = typeString;
             result.isGeneric = true;
@@ -103,6 +109,29 @@ public class PreferenceTypeInformation {
 
     public TypeName getType() {
         return isType ? TypeName.get(type) : TypeName.get(typeMirror);
+    }
+
+    public TypeName getObjectType() {
+        if (isPrimitive) {
+            TypeName result = null;
+            switch (preferenceType) {
+                case INT:
+                    result = TypeName.get(Integer.class);
+                    break;
+                case LONG:
+                    result = TypeName.get(Long.class);
+                    break;
+                case FLOAT:
+                    result = TypeName.get(Float.class);
+                    break;
+                case BOOLEAN:
+                    result = TypeName.get(Boolean.class);
+                    break;
+            }
+            return result;
+        } else {
+            return getType();
+        }
     }
 
 }

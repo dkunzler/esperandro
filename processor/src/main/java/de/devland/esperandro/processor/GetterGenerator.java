@@ -156,7 +156,7 @@ public class GetterGenerator {
         MethodSpec.Builder getterBuilder = initGetter(valueName, preferenceTypeInformation, runtimeDefault);
 
         if (caching) {
-            getterBuilder.addStatement("$T __result = ($T) cache.get($S)", preferenceTypeInformation.getType(), preferenceTypeInformation.getType(), valueName);
+            getterBuilder.addStatement("$T __result = ($T) cache.get($S)", preferenceTypeInformation.getObjectType(), preferenceTypeInformation.getObjectType(), valueName);
             getterBuilder.beginControlFlow("if (__result == null)");
         } else {
             getterBuilder.addStatement("$T __result", preferenceTypeInformation.getType());
@@ -167,7 +167,7 @@ public class GetterGenerator {
         }
 
         String statementPattern = "preferences.get%s(\"%s\", %s)";
-        String methodSuffix = getMethodSuffix(preferenceTypeInformation.getPreferenceType());
+        String methodSuffix = Utils.getMethodSuffix(preferenceTypeInformation.getPreferenceType());
         String defaultValue = getDefaultValue(defaultAnnotation, preferenceTypeInformation.getPreferenceType(), element);
         if (preferenceTypeInformation.getPreferenceType() == PreferenceType.OBJECT) {
             getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
@@ -218,38 +218,6 @@ public class GetterGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(preferenceTypeInformation.getType());
         return getterBuilder;
-    }
-
-    private String getMethodSuffix(PreferenceType preferenceType) {
-        String methodSuffix = "";
-        switch (preferenceType) {
-            case INT:
-                methodSuffix = "Int";
-                break;
-            case LONG:
-                methodSuffix = "Long";
-                break;
-            case FLOAT:
-                methodSuffix = "Float";
-                break;
-            case BOOLEAN:
-                methodSuffix = "Boolean";
-                //noinspection PointlessBooleanExpression
-                break;
-            case STRING:
-                methodSuffix = "String";
-                break;
-            case STRINGSET:
-                methodSuffix = "StringSet";
-                break;
-            case OBJECT:
-                methodSuffix = "String";
-                break;
-            case UNKNOWN:
-                break;
-        }
-
-        return methodSuffix;
     }
 
     private String getDefaultValue(Default defaultAnnotation, PreferenceType preferenceType, Element element) {

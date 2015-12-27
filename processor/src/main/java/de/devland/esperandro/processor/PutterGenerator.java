@@ -10,6 +10,7 @@ package de.devland.esperandro.processor;
 
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
+import de.devland.esperandro.annotations.Cached;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -82,31 +83,31 @@ public class PutterGenerator {
     }
 
 
-    public void createPutterFromModel(ExecutableElement method, TypeSpec.Builder type, boolean caching) throws IOException {
+    public void createPutterFromModel(ExecutableElement method, TypeSpec.Builder type, Cached cachedAnnotation) throws IOException {
         String valueName = method.getSimpleName().toString();
         preferenceKeys.put(valueName, method);
         TypeMirror parameterType = method.getParameters().get(0).asType();
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
         TypeMirror returnType = method.getReturnType();
 
-        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString(), caching);
+        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString(), cachedAnnotation);
     }
 
 
     public void createPutterFromReflection(Method method, Element topLevelInterface,
-                                           TypeSpec.Builder type, boolean caching) throws IOException {
+                                           TypeSpec.Builder type, Cached cachedAnnotation) throws IOException {
         String valueName = method.getName();
         preferenceKeys.put(valueName, topLevelInterface);
         Type parameterType = method.getGenericParameterTypes()[0];
         PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
         Class<?> returnType = method.getReturnType();
 
-        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString(), caching);
+        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString(), cachedAnnotation);
     }
 
 
     private void createPutter(TypeSpec.Builder type, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
-                              String returnType, boolean caching) throws IOException {
+                              String returnType, Cached cachedAnnotation) throws IOException {
         MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(valueName)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
@@ -123,28 +124,9 @@ public class PutterGenerator {
             putterBuilder.returns(void.class);
         }
 
-        String methodSuffix = "";
+        String methodSuffix = Utils.getMethodSuffix(preferenceTypeInformation.getPreferenceType());
         switch (preferenceTypeInformation.getPreferenceType()) {
-            case INT:
-                methodSuffix = "Int";
-                break;
-            case LONG:
-                methodSuffix = "Long";
-                break;
-            case FLOAT:
-                methodSuffix = "Float";
-                break;
-            case BOOLEAN:
-                methodSuffix = "Boolean";
-                break;
-            case STRING:
-                methodSuffix = "String";
-                break;
-            case STRINGSET:
-                methodSuffix = "StringSet";
-                break;
             case OBJECT:
-                methodSuffix = "String";
                 if (preferenceTypeInformation.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(valueName);
                     putterBuilder.addStatement("$L __container = new $L()", genericClassName, genericClassName);
@@ -160,6 +142,14 @@ public class PutterGenerator {
         // only use apply on API >= 9
         putterBuilder.addStatement(String.format(statementPattern.toString(),
                 methodSuffix, valueName, value) + ".$L", commitStyle.getStatementPart());
+
+        if (cachedAnnotation != null) {
+            if (cachedAnnotation.cacheOnPut()) {
+                putterBuilder.addStatement("cache.put($S, $L)", valueName, valueName);
+            } else {
+                putterBuilder.addStatement("cache.remove($S)", valueName);
+            }
+        }
 
         type.addMethod(putterBuilder.build());
     }

@@ -18,4 +18,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Cached {
     int cacheSize() default 20;
     boolean cacheOnPut() default false;
+    boolean support() default false;
 }
