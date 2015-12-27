@@ -20,8 +20,8 @@ import de.devland.esperandro.tests.EsperandroApplyReflectionExample;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /**
@@ -36,16 +36,16 @@ public class ReflectionTest {
     @Test
     public void testNotNull() {
         EsperandroApplyReflectionExample preferences = Esperandro.getPreferences(EsperandroApplyReflectionExample.class,
-                Robolectric.application);
+                RuntimeEnvironment.application);
         Assert.assertNotNull(preferences);
     }
 
     @Test
     public void testSameObject() {
         EsperandroApplyReflectionExample preferences1 = Esperandro.getPreferences(EsperandroApplyReflectionExample.class,
-                Robolectric.application);
+                RuntimeEnvironment.application);
         EsperandroApplyReflectionExample preferences2 = Esperandro.getPreferences(EsperandroApplyReflectionExample.class,
-                Robolectric.application);
+                RuntimeEnvironment.application);
         Assert.assertNotNull(preferences1);
         Assert.assertNotNull(preferences2);
         Assert.assertEquals(preferences1, preferences2);

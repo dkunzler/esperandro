@@ -23,8 +23,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public abstract class SerializationBaseTest {
 
     @Before
     public void setup() {
-        esperandroPreferences = Esperandro.getPreferences(EsperandroSerializationExample.class, Robolectric.application);
+        esperandroPreferences = Esperandro.getPreferences(EsperandroSerializationExample.class, RuntimeEnvironment.application);
         setSerializer();
         //Esperandro.setSerializer(new JacksonSerializer());
     }

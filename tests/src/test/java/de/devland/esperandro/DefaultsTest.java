@@ -23,8 +23,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.util.HashSet;
@@ -39,7 +39,7 @@ public class DefaultsTest {
     @Before
     public void setup() {
         preferences = Esperandro.getPreferences(EsperandroDefaultsExample.class,
-                Robolectric.application);
+                RuntimeEnvironment.application);
     }
 
     @After

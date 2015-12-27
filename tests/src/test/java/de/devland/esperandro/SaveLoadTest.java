@@ -21,8 +21,8 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.util.Arrays;
@@ -39,7 +39,7 @@ public class SaveLoadTest {
 
     @Before
     public void setup() {
-        esperandroPreferences = Esperandro.getPreferences(EsperandroSimpleExample.class, Robolectric.application);
+        esperandroPreferences = Esperandro.getPreferences(EsperandroSimpleExample.class, RuntimeEnvironment.application);
         androidPreferences = esperandroPreferences.get();
     }
 
