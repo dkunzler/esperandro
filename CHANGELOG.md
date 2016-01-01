@@ -1,8 +1,10 @@
 Changelog
 =========
 
-2.2.1 (next version)
- * tbd
+2.3.0
+-----
+ * generated container classes implement the Serializable interface
+ * caching via @Cached annotation
 
 2.2.0
 -----
