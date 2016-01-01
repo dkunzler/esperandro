@@ -139,9 +139,6 @@ public class PutterGenerator {
             case UNKNOWN:
                 break;
         }
-        // only use apply on API >= 9
-        putterBuilder.addStatement(String.format(statementPattern.toString(),
-                methodSuffix, valueName, value) + ".$L", commitStyle.getStatementPart());
 
         if (cachedAnnotation != null) {
             if (cachedAnnotation.cacheOnPut()) {
@@ -150,6 +147,10 @@ public class PutterGenerator {
                 putterBuilder.addStatement("cache.remove($S)", valueName);
             }
         }
+
+        // only use apply on API >= 9
+        putterBuilder.addStatement(String.format(statementPattern.toString(),
+                methodSuffix, valueName, value) + ".$L", commitStyle.getStatementPart());
 
         type.addMethod(putterBuilder.build());
     }

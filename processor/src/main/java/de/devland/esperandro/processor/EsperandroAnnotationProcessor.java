@@ -177,6 +177,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         SharedPreferences prefAnnotation = interfaze.getAnnotation(SharedPreferences.class);
         String preferencesName = prefAnnotation.name();
         SharedPreferenceMode mode = prefAnnotation.mode();
+        if (cacheAnnotation != null && preferencesName.equals("")) {
+            warner.emitError("Caching cannot be used on default SharedPreferences", interfaze);
+        }
 
         try {
             QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;

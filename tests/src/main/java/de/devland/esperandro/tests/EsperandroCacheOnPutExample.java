@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**
  * Created by deekay on 16.12.2015.
  */
-@SharedPreferences
+@SharedPreferences(name = "cacheOnPutExample")
 @Cached(cacheOnPut = true, cacheSize = 30)
 public interface EsperandroCacheOnPutExample extends SharedPreferenceActions {
     String cachedValue();
@@ -21,6 +21,8 @@ public interface EsperandroCacheOnPutExample extends SharedPreferenceActions {
     int primitive();
 
     void primitive(int primitive);
+
+    boolean primitiveCommit(int primitive);
 
     void containerList(ArrayList<Container> containerList);
 

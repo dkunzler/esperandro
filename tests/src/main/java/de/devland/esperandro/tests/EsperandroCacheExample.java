@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**
  * Created by deekay on 16.12.2015.
  */
-@SharedPreferences
+@SharedPreferences(name = "cacheExample")
 @Cached
 public interface EsperandroCacheExample extends SharedPreferenceActions{
     String cachedValue();
