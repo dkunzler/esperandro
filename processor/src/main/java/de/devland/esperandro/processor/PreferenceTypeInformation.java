@@ -103,6 +103,10 @@ public class PreferenceTypeInformation {
         return isGeneric;
     }
 
+    public boolean isPrimitive() {
+        return isPrimitive;
+    }
+
     public String getTypeName() {
         return declaredTypeName;
     }

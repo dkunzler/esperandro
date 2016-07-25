@@ -18,6 +18,7 @@
 package de.devland.esperandro.processor;
 
 import com.squareup.javapoet.*;
+import de.devland.esperandro.CacheActions;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.Cached;
@@ -120,7 +121,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         for (TypeMirror subInterfaceType : interfaces) {
             Element subInterface = rootElements.get(subInterfaceType);
             String subInterfaceTypeName = subInterfaceType.toString();
-            if (!subInterfaceTypeName.equals(SharedPreferenceActions.class.getName())) {
+            if (!subInterfaceTypeName.equals(SharedPreferenceActions.class.getName()) &&
+                    !subInterfaceTypeName.equals(CacheActions.class.getName())) {
                 if (subInterface != null) {
                     processInterfaceMethods(topLevelInterface, subInterface, type, cachedAnnotation);
                 } else {
@@ -191,7 +193,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     .addSuperinterface(SharedPreferenceActions.class)
                     .addSuperinterface(TypeName.get(interfaze.asType()))
                     .addField(ClassName.get("android.content", "SharedPreferences"), "preferences", Modifier.PRIVATE, Modifier.FINAL);
-
+            if (cacheAnnotation != null) {
+                result.addSuperinterface(CacheActions.class);
+            }
             MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(ClassName.get("android.content", "Context"), "context");
@@ -275,6 +279,12 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 .returns(void.class)
                 .addStatement("SharedPreferences.Editor editor = preferences.edit()");
 
+        MethodSpec.Builder resetCache = MethodSpec.methodBuilder("resetCache")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class)
+                .addStatement("cache.evictAll()");
+
 
         Set<String> preferenceNames = new LinkedHashSet<String>();
         preferenceNames.addAll(putterGenerator.getPreferenceKeys().keySet());
@@ -317,6 +327,10 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 .addMethod(clear.build())
                 .addMethod(clearDefined)
                 .addMethod(initDefaults);
+
+        if (caching) {
+            type.addMethod(resetCache.build());
+        }
     }
 
 

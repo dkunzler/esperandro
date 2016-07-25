@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.util.LruCache;
 import de.devland.esperandro.tests.EsperandroCacheExample;
 import de.devland.esperandro.tests.EsperandroCacheOnPutExample;
+import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -112,14 +113,34 @@ public class CacheTest {
         assertEquals(0, cache.size());
     }
 
+    @Test
+    public void resetCache() {
+        LruCache<String, Object> cache = getCache(cachePreferences);
+        SharedPreferences prefs = cachePreferences.get();
+        prefs.edit().putString("cachedValue", "foo").apply();
+        cachePreferences.cachedValue();
+        Assert.assertEquals("foo", cache.get("cachedValue"));
+        prefs.edit().putString("cachedValue", "bar").apply();
+        Assert.assertEquals("foo", cache.get("cachedValue"));
+        cachePreferences.resetCache();
+        Assert.assertNull(cache.get("cachedValue"));
+    }
+
+    @Test
+    public void putNull() {
+        // no exception should be thrown
+        cacheOnPutPreferences.cachedValue(null);
+
+        cachePreferences.cachedValue(null);
+        cachePreferences.cachedValue();
+    }
+
     private LruCache<String, Object> getCache(SharedPreferenceActions preferences) {
         try {
             Field cacheField = preferences.getClass().getDeclaredField("cache");
             cacheField.setAccessible(true);
             return (LruCache<String, Object>) cacheField.get(preferences);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
+        } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
         return null;

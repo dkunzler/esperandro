@@ -142,7 +142,15 @@ public class PutterGenerator {
 
         if (cachedAnnotation != null) {
             if (cachedAnnotation.cacheOnPut()) {
-                putterBuilder.addStatement("cache.put($S, $L)", valueName, valueName);
+                if (preferenceTypeInformation.isPrimitive()) {
+                    putterBuilder.addStatement("cache.put($S, $L)", valueName, valueName);
+                } else {
+                    putterBuilder.beginControlFlow("if ($L != null)", valueName)
+                            .addStatement("cache.put($S, $L)", valueName, valueName)
+                            .nextControlFlow("else")
+                            .addStatement("cache.remove($S)", valueName)
+                            .endControlFlow();
+                }
             } else {
                 putterBuilder.addStatement("cache.remove($S)", valueName);
             }

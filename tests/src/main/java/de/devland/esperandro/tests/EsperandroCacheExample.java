@@ -1,5 +1,6 @@
 package de.devland.esperandro.tests;
 
+import de.devland.esperandro.CacheActions;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.annotations.SharedPreferences;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
  */
 @SharedPreferences(name = "cacheExample")
 @Cached
-public interface EsperandroCacheExample extends SharedPreferenceActions{
+public interface EsperandroCacheExample extends SharedPreferenceActions, CacheActions {
     String cachedValue();
 
     void cachedValue(String cachedValue);
