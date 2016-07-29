@@ -10,11 +10,6 @@
 
     <artifactId>esperandro</artifactId>
 
-    <properties>
-        <source.version>1.7</source.version>
-        <target.version>1.7</target.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.squareup</groupId>
