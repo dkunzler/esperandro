@@ -398,8 +398,10 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             Set<String> allKeys = new LinkedHashSet<>();
             allKeys.addAll(getterGenerator.getPreferenceKeys().keySet());
             allKeys.addAll(putterGenerator.getPreferenceKeys().keySet());
-            allKeys.forEach(key -> resFile.append(
-                    "<string name=\"" + generateAnnotation.stringPrefix() + key + "\">" + key + "</string>\n"));
+            for (String key : allKeys) {
+                resFile.append("    <string translatable=\"false\" name=\"" + generateAnnotation.stringPrefix() + key + "\">"
+                        + key + "</string>\n");
+            }
             resFile.append("</resources>");
 
             Files.write(stringsPath, resFile.toString().getBytes(StandardCharsets.UTF_8));

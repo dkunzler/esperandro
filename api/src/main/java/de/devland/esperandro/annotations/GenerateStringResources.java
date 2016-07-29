@@ -5,5 +5,5 @@ package de.devland.esperandro.annotations;
  */
 public @interface GenerateStringResources {
     String stringPrefix() default "";
-    String filePrefix() default "Esperandro";
+    String filePrefix() default "esperandro";
 }

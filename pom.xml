@@ -43,7 +43,7 @@
     <modules>
         <module>api</module>
         <module>processor</module>
-        <module>sample</module>
+        <!--<module>sample</module>-->
         <module>gson-serializer</module>
         <module>tests</module>
         <module>jackson-serializer</module>
@@ -51,7 +51,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
+        <source.version>1.7</source.version>
+        <target.version>1.7</target.version>
 
         <android.version>4.1.1.4</android.version>
         <javaWriter.version>1.6.1</javaWriter.version>
@@ -166,10 +167,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.3</version>
                     <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
+                        <source>${source.version}</source>
+                        <target>${target.version}</target>
                         <showWarnings>true</showWarnings>
+                        <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -178,6 +181,14 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
