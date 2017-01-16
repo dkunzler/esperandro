@@ -199,7 +199,7 @@ public class GetterGenerator {
         }
 
         if (caching) {
-            getterBuilder.addStatement("cache.put($S, __result);", valueName);
+            getterBuilder.addStatement("cache.put($S, __result)", valueName);
             getterBuilder.endControlFlow();
         }
         getterBuilder.addStatement("return __result");
