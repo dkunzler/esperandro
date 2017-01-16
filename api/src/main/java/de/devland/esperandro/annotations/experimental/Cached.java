@@ -1,4 +1,4 @@
-package de.devland.esperandro.annotations;
+package de.devland.esperandro.annotations.experimental;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

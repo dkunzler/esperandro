@@ -10,7 +10,7 @@ package de.devland.esperandro.processor;
 
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
-import de.devland.esperandro.annotations.Cached;
+import de.devland.esperandro.annotations.experimental.Cached;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;

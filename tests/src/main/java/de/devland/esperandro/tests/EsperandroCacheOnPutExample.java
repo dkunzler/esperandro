@@ -1,7 +1,7 @@
 package de.devland.esperandro.tests;
 
 import de.devland.esperandro.SharedPreferenceActions;
-import de.devland.esperandro.annotations.Cached;
+import de.devland.esperandro.annotations.experimental.Cached;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
 import de.devland.esperandro.tests.model.ContainerListObject;

@@ -21,8 +21,8 @@ import com.squareup.javapoet.*;
 import de.devland.esperandro.CacheActions;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
-import de.devland.esperandro.annotations.Cached;
-import de.devland.esperandro.annotations.GenerateStringResources;
+import de.devland.esperandro.annotations.experimental.Cached;
+import de.devland.esperandro.annotations.experimental.GenerateStringResources;
 import de.devland.esperandro.annotations.SharedPreferences;
 
 import javax.annotation.processing.*;
