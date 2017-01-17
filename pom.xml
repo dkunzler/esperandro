@@ -55,9 +55,9 @@
         <target.version>1.7</target.version>
 
         <android.version>4.1.1.4</android.version>
-        <javaWriter.version>1.6.1</javaWriter.version>
-        <gson.version>2.5</gson.version>
-        <jackson.version>2.6.4</jackson.version>
+        <javaPoet.version>1.8.0</javaPoet.version>
+        <gson.version>2.8.0</gson.version>
+        <jackson.version>2.8.6</jackson.version>
         <annotations.version>4.1.1.4</annotations.version>
     </properties>
 
@@ -121,7 +121,7 @@
             <dependency>
                 <groupId>com.squareup</groupId>
                 <artifactId>javapoet</artifactId>
-                <version>${javaWriter.version}</version>
+                <version>${javaPoet.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
