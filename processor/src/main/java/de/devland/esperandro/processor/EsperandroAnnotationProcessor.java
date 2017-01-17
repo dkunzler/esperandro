@@ -187,7 +187,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         for (String key : putterGenerator.getPreferenceKeys().keySet()) {
             if (!getterGenerator.getPreferenceKeys().containsKey(key)) {
-                warner.emitWarning("No getterGenerator found for putter '" + key + "'", putterGenerator.getPreferenceKeys().get(key));
+                warner.emitWarning("No getter found for putter '" + key + "'", putterGenerator.getPreferenceKeys().get(key));
             }
         }
     }
