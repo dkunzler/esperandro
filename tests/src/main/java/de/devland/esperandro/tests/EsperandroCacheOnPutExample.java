@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * Created by deekay on 16.12.2015.
  */
 @SharedPreferences(name = "cacheOnPutExample")
-@Cached(cacheOnPut = true, cacheSize = 30)
+@Cached(cacheOnPut = true, autoSize = false, cacheSize = 30)
 public interface EsperandroCacheOnPutExample extends SharedPreferenceActions {
     String cachedValue();
 

@@ -69,6 +69,15 @@ public class CacheTest {
     }
 
     @Test
+    public void cacheSize() {
+        LruCache<String, Object> autoSizedCache = getCache(cachePreferences);
+        LruCache<String, Object> fixedSizedCache = getCache(cacheOnPutPreferences);
+
+        Assert.assertEquals(4, autoSizedCache.maxSize());
+        Assert.assertEquals(30, fixedSizedCache.maxSize());
+    }
+
+    @Test
     public void cachePutUpdate() {
         LruCache<String, Object> cache = getCache(cacheOnPutPreferences);
         SharedPreferences prefs = cacheOnPutPreferences.get();
