@@ -23,6 +23,13 @@ public @interface Cached {
     int cacheSize() default 20;
 
     /**
+     *
+     * If set to true the cacheSize will be automatically determined to hold all preferences of this cached Preference
+     * Interface. If set to false the value of cacheSize will be used.
+     */
+    boolean autoSize() default true;
+
+    /**
      * defines if values are updated when a put occurs (otherwise value in cache is deleted on put)
      */
     boolean cacheOnPut() default false;

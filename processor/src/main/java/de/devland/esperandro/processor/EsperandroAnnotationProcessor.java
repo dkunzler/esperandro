@@ -87,6 +87,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             processInterfaceMethods(interfaze, interfaze, type, cacheAnnotation);
                             createGenericActions(type, caching);
                             createGenericClassImplementations(type);
+                            createDefaultConstructor(type, cacheAnnotation);
                             finish(interfaze, type);
                             checkPreferenceKeys();
                         } catch (IOException e) {
@@ -225,6 +226,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             }
 
             if (cacheAnnotation != null) {
+                constructor.addParameter(TypeName.INT, "cacheSize");
                 ClassName cacheClass;
                 if (cacheAnnotation.support()) {
                     cacheClass = ClassName.get("android.support.v4.util", "LruCache");
@@ -237,7 +239,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                         ClassName.get(Object.class));
                 result.addField(lruCache, "cache", Modifier.PRIVATE, Modifier.FINAL);
 
-                constructor.addStatement("cache = new LruCache<$T, $T>($L)", String.class, Object.class, cacheAnnotation.cacheSize());
+                constructor.addStatement("cache = new LruCache<$T, $T>(cacheSize)", String.class, Object.class);
             }
 
             result.addMethod(constructor.build());
@@ -246,6 +248,23 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             throw new RuntimeException(e);
         }
         return result;
+    }
+
+    private void createDefaultConstructor(TypeSpec.Builder type, Cached cacheAnnotation) {
+        if (cacheAnnotation != null) {
+            MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(ClassName.get("android.content", "Context"), "context");
+            int cacheSize = cacheAnnotation.cacheSize();
+            if (cacheAnnotation.autoSize()) {
+                Set<String> allKeys = new HashSet<>();
+                allKeys.addAll(putterGenerator.getPreferenceKeys().keySet());
+                allKeys.addAll(getterGenerator.getPreferenceKeys().keySet());
+                cacheSize = allKeys.size();
+            }
+            constructor.addStatement("this(context, $L)", cacheSize);
+            type.addMethod(constructor.build());
+        }
     }
 
 
