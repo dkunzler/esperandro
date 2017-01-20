@@ -1,58 +1,63 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta content="text/html; charset=utf-8" http-equiv="content-type">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="description" content="Esperandro : Easy SharedPreference Engine foR ANDROid">
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
     <title>Esperandro</title>
-  </head>
-  <body>
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-      <header class="inner"> <a id="forkme_banner" href="https://github.com/dkunzler/esperandro">View
-          on GitHub</a>
+</head>
+<body>
+<!-- HEADER -->
+<div id="header_wrap" class="outer">
+    <header class="inner"><a id="forkme_banner" href="https://github.com/dkunzler/esperandro">View
+        on GitHub</a>
         <h1 id="project_title">Esperandro</h1>
         <h2 id="project_tagline">Easy SharedPreference Engine foR ANDROid</h2>
-        <section id="downloads"> <a class="zip_download_link" href="https://github.com/dkunzler/esperandro/zipball/master">Download
-            this project as a .zip file</a> <a class="tar_download_link" href="https://github.com/dkunzler/esperandro/tarball/master">Download
-            this project as a tar.gz file</a> </section>
-      </header>
-    </div>
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1> <a name="esperandro" class="anchor" href="#esperandro"><span class="octicon octicon-link"></span></a>esperandro</h1>
+        <section id="downloads"><a class="zip_download_link"
+                                   href="https://github.com/dkunzler/esperandro/zipball/master">Download
+            this project as a .zip file</a> <a class="tar_download_link"
+                                               href="https://github.com/dkunzler/esperandro/tarball/master">Download
+            this project as a tar.gz file</a></section>
+    </header>
+</div>
+<!-- MAIN CONTENT -->
+<div id="main_content_wrap" class="outer">
+    <section id="main_content" class="inner">
+        <h1><a name="esperandro" class="anchor" href="#esperandro"><span class="octicon octicon-link"></span></a>esperandro
+        </h1>
         <p>Easy SharedPreference Engine foR ANDROid</p>
         <h2>What Is It?</h2>
         <p> esperandro helps us Android developers using the <code>SharedPreferences</code>
-          of the Android system. Normally there is a lot of boilerplate code
-          when using them and we have to know everytime we are using a specific
-          preference of which type it is. Furthermore we could potentially
-          override existing preferences when using the same key twice.
+            of the Android system. Normally there is a lot of boilerplate code
+            when using them and we have to know everytime we are using a specific
+            preference of which type it is. Furthermore we could potentially
+            override existing preferences when using the same key twice.
         </p>
         <p> There comes esperandro to play. By defining which keys exist, along
-          with their type, for each used named <code>SharedPreference</code>
-          the usage of these preferences is both, typesafe and easy.<br>
-          For this purpose esperandro uses an Annotation Processor to generate a
-          class implementing the defined interface at compile time. When storing
-          and accessing preferences in the future, this generated class is used.
+            with their type, for each used named <code>SharedPreference</code>
+            the usage of these preferences is both, typesafe and easy.<br>
+            For this purpose esperandro uses an Annotation Processor to generate a
+            class implementing the defined interface at compile time. When storing
+            and accessing preferences in the future, this generated class is used.
         </p>
         <h2> Usage
         </h2>
-        <p> To work with esperandro we have to include the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.4.1/esperandro-api-2.4.1.jar">esperandro-api</a>
-          in our Android App. The <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-2.4.1-jar-with-dependencies.jar">esperandro
-            annotation processor</a> itself has to be in the classpath of the
-          java compiler for annotation processing.
+        <p> To work with esperandro we have to include the <a
+                href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.4.1/esperandro-api-2.4.1.jar">esperandro-api</a>
+            in our Android App. The <a
+                    href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-2.4.1-jar-with-dependencies.jar">esperandro
+                annotation processor</a> itself has to be in the classpath of the
+            java compiler for annotation processing.
         </p>
         <h3> Defining Preferences
         </h3>
         <p> When defining the preferences used by our App we start with an emtpy
-          interface and annotate it with <code>@SharedPreferences</code>. At
-          this point we have two possibilities, either we don't specify any
-          parameters at the annotation and end up with the default preferences,
-          or we give them a name (and optionally a mode) to access a <code>SharedPreference</code>
-          with the given name and mode.
+            interface and annotate it with <code>@SharedPreferences</code>. At
+            this point we have two possibilities, either we don't specify any
+            parameters at the annotation and end up with the default preferences,
+            or we give them a name (and optionally a mode) to access a <code>SharedPreference</code>
+            with the given name and mode.
         </p>
         <p> Something like </p>
         <pre>@SharedPreferences
@@ -65,7 +70,7 @@ public interface DefaultPreferences {</pre>
 public interface EventPreferences {</pre>
         <br>
         would mimic a call as <code>context.getSharedPreferences("eventPrefs",
-          Context.MODE_PRIVATE)</code>. <br>
+        Context.MODE_PRIVATE)</code>. <br>
         The <i>mode</i> given here equivalents to the possible <code>Context.MODE_*</code>
         attributes. If no mode is given
         explicitly,
@@ -74,17 +79,17 @@ public interface EventPreferences {</pre>
         <h3> Getters and Setters for Preference Values
         </h3>
         <p> For each preference value of a given name there should be two
-          methods in the interface. One getter and one setter. A getter returns
-          the desired type of the preference. It's method name is the name that
-          is used to retrieve the value from the <code>SharedPreference</code>
-          object. It takes no further parameters.<br>
-          A setter returns <code>void</code> and takes exactly one parameter.
-          This parameter but be the type that should be stored in the
-          preference. Again the name of the method is the key used to access the
-          underlying Android <code>SharedPreference</code> object.
+            methods in the interface. One getter and one setter. A getter returns
+            the desired type of the preference. It's method name is the name that
+            is used to retrieve the value from the <code>SharedPreference</code>
+            object. It takes no further parameters.<br>
+            A setter returns <code>void</code> and takes exactly one parameter.
+            This parameter but be the type that should be stored in the
+            preference. Again the name of the method is the key used to access the
+            underlying Android <code>SharedPreference</code> object.
         </p>
         <p> So for each value that should be stored in a specific <code>SharedPreference</code>
-          we end up defining a pair of methods like: </p>
+            we end up defining a pair of methods like: </p>
         <pre>String superFancyPreference();
 void superFancyPreference(String superFancyPreferenceValue);</pre>
         <br>
@@ -93,9 +98,10 @@ void superFancyPreference(String superFancyPreferenceValue);</pre>
         <code>String</code> and <code>Set&lt;String&gt;</code>.
         <p></p>
         <p> As an alternative there is support for setters with a boolean return
-          value. Esperandro will then return information about the success of
-          the commit operation like documented in the <a href="http://developer.android.com/reference/android/content/SharedPreferences.Editor.html#commit%28%29">official
-            docs</a>.
+            value. Esperandro will then return information about the success of
+            the commit operation like documented in the <a
+                    href="http://developer.android.com/reference/android/content/SharedPreferences.Editor.html#commit%28%29">official
+                docs</a>.
         </p>
         <p> This looks like so: </p>
         <pre>boolean superFancyPreference(); // boolean getter
@@ -103,39 +109,42 @@ boolean superFancyPreference(boolean superFancyPreferenceValue); // boolean sett
         <p></p>
         <h3> API Compatibility
         </h3>
-        <p> By default, Esparandro will use <a href="http://developer.android.com/reference/android/content/SharedPreferences.Editor.html#commit%28%29">apply()</a>
-          when changing a preference value. This method was added in API Level 9
-          (Gingerbread). If your app requires compatibility with earlier APIs,
-          make sure your setters return a boolean as described above. This way
-          you can guarantee that commit() is used.
+        <p> By default, Esparandro will use <a
+                href="http://developer.android.com/reference/android/content/SharedPreferences.Editor.html#commit%28%29">apply()</a>
+            when changing a preference value. This method was added in API Level 9
+            (Gingerbread). If your app requires compatibility with earlier APIs,
+            make sure your setters return a boolean as described above. This way
+            you can guarantee that commit() is used.
         </p>
         <h3> Serialized object preferences
         </h3>
         <p> Sometimes it can be useful to not only be able to store primitive or
-          <code>String</code> preferences but also objects.<br>
-          Esperandro provides an API for this use-case, too. There exists a <code>Serializer</code>
-          interface that cat be implemented to be able to serialize and
-          deserialize objects into a String preference.
+            <code>String</code> preferences but also objects.<br>
+            Esperandro provides an API for this use-case, too. There exists a <code>Serializer</code>
+            interface that cat be implemented to be able to serialize and
+            deserialize objects into a String preference.
         </p>
         <p> A <code>Serializer</code> can be set by calling <code>Esperandro.setSerializer(Serializer
             serializer)</code>. After this call all objects that are not
-          compatible with Android's <code>SharedPreference</code> structure
-          will be stored into a String preference using the previously set <code>Serializer</code>.
+            compatible with Android's <code>SharedPreference</code> structure
+            will be stored into a String preference using the previously set <code>Serializer</code>.
         </p>
         <p> If we don't want to provide our own <code>Serializer</code> we can
-          use the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-gson-addon-2.4.1-jar-with-dependencies.jar">esperandro
-            gson addon</a> that will automatically be used to serialize objects
-          if no other <code>Serializer</code> was set. This addon will
-          serialize objects into a JSON string.
+            use the <a
+                    href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-gson-addon-2.4.1-jar-with-dependencies.jar">esperandro
+                gson addon</a> that will automatically be used to serialize objects
+            if no other <code>Serializer</code> was set. This addon will
+            serialize objects into a JSON string.
         </p>
         If you are using Jackson in your project for JSON-Serialization there is
-        the <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-jackson-addon-2.4.1-jar-with-dependencies.jar">esperandro
-          jackson addon</a> that can be used.
+        the <a
+            href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-jackson-addon-2.4.1-jar-with-dependencies.jar">esperandro
+        jackson addon</a> that can be used.
         <p>
         </p>
         <p> After setting our <code>Serializer</code> or adding one of the
-          addons to the classpath we can use the following definition for object
-          preferences: </p>
+            addons to the classpath we can use the following definition for object
+            preferences: </p>
         <pre>Container superFancyObjectPreference();
 void superFancyObjectPreference(Container superFancyObjectPreferenceValue);</pre>
         where <code>Container</code> ca be any class that can be serialized by
@@ -144,20 +153,20 @@ void superFancyObjectPreference(Container superFancyObjectPreferenceValue);</pre
         <h3> Defaults
         </h3>
         <p> With no further configuration the following defaults apply when
-          retrieving preference values that were not set before: <br>
-          <code>int</code> - <code>-1</code><br>
-          <code>long</code> - <code>-1l</code><br>
-          <code>float</code> - <code>-1.0f</code><br>
-          <code>boolean</code> - <code>false</code><br>
-          <code>String</code> - <code>""</code> (empty String)<br>
-          <code>Set&lt;String&gt;</code> - <code>null</code>
+            retrieving preference values that were not set before: <br>
+            <code>int</code> - <code>-1</code><br>
+            <code>long</code> - <code>-1l</code><br>
+            <code>float</code> - <code>-1.0f</code><br>
+            <code>boolean</code> - <code>false</code><br>
+            <code>String</code> - <code>""</code> (empty String)<br>
+            <code>Set&lt;String&gt;</code> - <code>null</code>
         </p>
         <p> For all types except <code>Set&lt;String&gt;</code> other defaults
-          can be given using the <code>@Default</code> annotation. To make use
-          of this mechanism the getter of a preference value has to be annotated
-          with this annotation. The desired default can then be configured using
-          the respective <code>of*</code> property of the annotation where *
-          expands to the type of the getter.
+            can be given using the <code>@Default</code> annotation. To make use
+            of this mechanism the getter of a preference value has to be annotated
+            with this annotation. The desired default can then be configured using
+            the respective <code>of*</code> property of the annotation where *
+            expands to the type of the getter.
         </p>
         <p> We then finally end up with something like </p>
         <pre>@Default(ofString = "superFancyDefaultValue")
@@ -168,12 +177,12 @@ void superFancyPreference(String superFancyPreferenceValue);</pre>
         <h3> Runtime Defaults
         </h3>
         <p> In addtition to the annotated compile-time defaults, it is possible
-          to provide runtime-defaults. To use them the getter method for a
-          preference has to be specifically defined. Every getter that allows a
-          runtime-default must not have the <code>@Default</code> annotation
-          but instead end with <code>$Default</code> in the method name. The
-          one and only parameter has to be of the type of the preference and
-          resembles the given value that should be used as default.
+            to provide runtime-defaults. To use them the getter method for a
+            preference has to be specifically defined. Every getter that allows a
+            runtime-default must not have the <code>@Default</code> annotation
+            but instead end with <code>$Default</code> in the method name. The
+            one and only parameter has to be of the type of the preference and
+            resembles the given value that should be used as default.
         </p>
         <p> Example: </p>
         <pre>String superFancyPreference(); // getter with implicit compile-time-default
@@ -194,9 +203,9 @@ void superFancyPreference(String superFancyPreferenceValue); // putter</pre>
         <h4> Additional actions
         </h4>
         <p> All generated classes do not only implement our defined preference
-          interface but also the <code>de.devland.esperandro.SharedPreferenceActions</code>
-          interface. That means, if we let our interface extend it we have
-          access to these convenience methods: </p>
+            interface but also the <code>de.devland.esperandro.SharedPreferenceActions</code>
+            interface. That means, if we let our interface extend it we have
+            access to these convenience methods: </p>
         <pre>    /**
      * @return the underlying SharedPreference instance.
      */
@@ -244,10 +253,10 @@ void superFancyPreference(String superFancyPreferenceValue); // putter</pre>
         <h4> Inheritance
         </h4>
         <p> If the annotated interface extends from other interfaces that define
-          getters and putters for preferences, the generated class will
-          implement them too. This way we can order the preferences
-          hierarchically or even use common preference keys in different
-          SharedPreference files.
+            getters and putters for preferences, the generated class will
+            implement them too. This way we can order the preferences
+            hierarchically or even use common preference keys in different
+            SharedPreference files.
         </p>
         <h2> Proguard
         </h2>
@@ -274,7 +283,7 @@ void superFancyPreference(String superFancyPreferenceValue); // putter</pre>
 
         <h2>Usage
         </h2>
-          <h3>Gradle and Android Studio</h3>
+        <h3>Gradle and Android Studio</h3>
         <p>Configure your build.gradle</p>
         <pre>buildscript {
     repositories {
@@ -307,32 +316,40 @@ dependencies {
 }
 </pre>
         <p></p>
-          <h3>IntelliJ</h3>
-          <p>Additionally to the gradle configuration enable annotation processing in the settings.<br />
-          Build, Execution, Deployment -> Compiler -> Annotation Processors<br />
-          Check "Enable annotation processing"</p>
+        <h3>IntelliJ</h3>
+        <p>Additionally to the gradle configuration enable annotation processing in the settings.<br/>
+            Build, Execution, Deployment -> Compiler -> Annotation Processors<br/>
+            Check "Enable annotation processing"</p>
         <h2> Binaries Overview
         </h2>
         <p>
         </p>
         <ul>
-          <li> <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-2.4.1-jar-with-dependencies.jar">esperandro</a>
-            - The annotation processor itself. Do not include in final packaged
-            application, just use at compile time. </li>
-          <li> <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.4.1/esperandro-api-2.4.1.jar">esperandro-api</a>
-            - The annotations and interfaces needed at runtime. Include in the
-            final package. </li>
-          <li> <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.4.1/esperandro-gson-addon-2.4.1-jar-with-dependencies.jar">esperandro-gson-addon</a>
-            - A gson-Serializer for object preferences. Include in the final
-            package if necessary. </li>
-          <li> <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.4.1/esperandro-jackson-addon-2.4.1-jar-with-dependencies.jar">esperandro-jackson-addon</a>
-            - A jackson-Serializer for object preferences. Include in the final
-            package if necessary. </li>
+            <li>
+                <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-2.4.1-jar-with-dependencies.jar">esperandro</a>
+                - The annotation processor itself. Do not include in final packaged
+                application, just use at compile time.
+            </li>
+            <li>
+                <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-api/2.4.1/esperandro-api-2.4.1.jar">esperandro-api</a>
+                - The annotations and interfaces needed at runtime. Include in the
+                final package.
+            </li>
+            <li>
+                <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.4.1/esperandro-gson-addon-2.4.1-jar-with-dependencies.jar">esperandro-gson-addon</a>
+                - A gson-Serializer for object preferences. Include in the final
+                package if necessary.
+            </li>
+            <li>
+                <a href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro-gson-addon/2.4.1/esperandro-jackson-addon-2.4.1-jar-with-dependencies.jar">esperandro-jackson-addon</a>
+                - A jackson-Serializer for object preferences. Include in the final
+                package if necessary.
+            </li>
         </ul>
         <p></p>
         <h2> License
         </h2>
-        <p> </p>
+        <p></p>
         <pre>Copyright 2017 David Kunzler
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -347,15 +364,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.</pre>
         <p></p>
-      </section>
-    </div>
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
+    </section>
+</div>
+<!-- FOOTER  -->
+<div id="footer_wrap" class="outer">
+    <footer class="inner">
         <p class="copyright">Esperandro maintained by <a href="https://github.com/dkunzler">dkunzler</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-        <p>Powered by the <a href="https://www.jetbrains.com/buy/opensource/?product=idea" target="_blank">open-source edition</a> of <a href="https://www.jetbrains.com/idea/" target="_blank">IntelliJ IDEA</a></p>
-      </footer>
-    </div>
-  </body>
+        <p>Powered by the <a href="https://www.jetbrains.com/buy/opensource/?product=idea" target="_blank">open-source
+            edition</a> of <a href="https://www.jetbrains.com/idea/" target="_blank">IntelliJ IDEA</a></p>
+    </footer>
+</div>
+</body>
 </html>
