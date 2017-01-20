@@ -28,18 +28,15 @@
         </h1>
         <p>Easy SharedPreference Engine foR ANDROid</p>
         <h2>What Is It?</h2>
-        <p> esperandro helps us Android developers using the <code>SharedPreferences</code>
+        <p> esperandro helps Android developers using the <code>SharedPreferences</code>
             of the Android system. Normally there is a lot of boilerplate code
-            when using them and we have to know everytime we are using a specific
-            preference of which type it is. Furthermore we could potentially
-            override existing preferences when using the same key twice.
+            when using them. One has to know the name and the type of a specific preference everywhere this preference
+            is used.
         </p>
-        <p> There comes esperandro to play. By defining which keys exist, along
-            with their type, for each used named <code>SharedPreference</code>
-            the usage of these preferences is both, typesafe and easy.<br>
-            For this purpose esperandro uses an Annotation Processor to generate a
-            class implementing the defined interface at compile time. When storing
-            and accessing preferences in the future, this generated class is used.
+        <p> With esperandro you define once which keys exist, along
+            with their type.
+            The usage of these preferences is now both, typesafe and easy.<br>
+            Esperandro uses compile-time code generation to generate reusable boilerplate code for you.
         </p>
         <h2> Usage
         </h2>
@@ -48,7 +45,8 @@
             in our Android App. The <a
                     href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-2.4.1-jar-with-dependencies.jar">esperandro
                 annotation processor</a> itself has to be in the classpath of the
-            java compiler for annotation processing.
+            java compiler for annotation processing. This is done with some configuration in the build.gradle file. This
+            is shown below in the chapter "configuration".
         </p>
         <h3> Defining Preferences
         </h3>
@@ -87,11 +85,12 @@ public interface EventPreferences {</pre>
             This parameter but be the type that should be stored in the
             preference. Again the name of the method is the key used to access the
             underlying Android <code>SharedPreference</code> object.
+            The naming of the methods does not use prefixes like "get", "set" or "is".
         </p>
-        <p> So for each value that should be stored in a specific <code>SharedPreference</code>
+        <p> For each value that should be stored in a specific <code>SharedPreference</code>
             we end up defining a pair of methods like: </p>
-        <pre>String superFancyPreference();
-void superFancyPreference(String superFancyPreferenceValue);</pre>
+        <pre>String nameOfPreference();
+void nameOfPreference(String nameOfPreference);</pre>
         <br>
         The possible types are <code>int</code>, <code>long</code>, <code>float</code>,
         <code>boolean</code>,
@@ -104,8 +103,8 @@ void superFancyPreference(String superFancyPreferenceValue);</pre>
                 docs</a>.
         </p>
         <p> This looks like so: </p>
-        <pre>boolean superFancyPreference(); // boolean getter
-boolean superFancyPreference(boolean superFancyPreferenceValue); // boolean setter with information about success</pre>
+        <pre>boolean nameOfPreference(); // boolean getter
+boolean nameOfPreference(boolean nameOfPreference); // boolean setter with information about success</pre>
         <p></p>
         <h3> API Compatibility
         </h3>
@@ -116,10 +115,10 @@ boolean superFancyPreference(boolean superFancyPreferenceValue); // boolean sett
             make sure your setters return a boolean as described above. This way
             you can guarantee that commit() is used.
         </p>
-        <h3> Serialized object preferences
+        <h3> POJO preferences
         </h3>
         <p> Sometimes it can be useful to not only be able to store primitive or
-            <code>String</code> preferences but also objects.<br>
+            <code>String</code> preferences but also POJOs.<br>
             Esperandro provides an API for this use-case, too. There exists a <code>Serializer</code>
             interface that cat be implemented to be able to serialize and
             deserialize objects into a String preference.
@@ -129,7 +128,7 @@ boolean superFancyPreference(boolean superFancyPreferenceValue); // boolean sett
             compatible with Android's <code>SharedPreference</code> structure
             will be stored into a String preference using the previously set <code>Serializer</code>.
         </p>
-        <p> If we don't want to provide our own <code>Serializer</code> we can
+        <p> If you don't want to provide your own <code>Serializer</code> you can
             use the <a
                     href="http://search.maven.org/remotecontent?filepath=de/devland/esperandro/esperandro/2.4.1/esperandro-gson-addon-2.4.1-jar-with-dependencies.jar">esperandro
                 gson addon</a> that will automatically be used to serialize objects
@@ -142,11 +141,11 @@ boolean superFancyPreference(boolean superFancyPreferenceValue); // boolean sett
         jackson addon</a> that can be used.
         <p>
         </p>
-        <p> After setting our <code>Serializer</code> or adding one of the
-            addons to the classpath we can use the following definition for object
+        <p> After setting your <code>Serializer</code> or adding one of the
+            addons to the classpath you can use the following definition for object
             preferences: </p>
-        <pre>Container superFancyObjectPreference();
-void superFancyObjectPreference(Container superFancyObjectPreferenceValue);</pre>
+        <pre>Container nameOfPojoPreference();
+void nameOfPojoPreference(Container nameOfPojoPreference);</pre>
         where <code>Container</code> ca be any class that can be serialized by
         your <code>Serializer</code> implementation.
         <p></p>
@@ -168,11 +167,11 @@ void superFancyObjectPreference(Container superFancyObjectPreferenceValue);</pre
             the respective <code>of*</code> property of the annotation where *
             expands to the type of the getter.
         </p>
-        <p> We then finally end up with something like </p>
+        <p> You then finally end up with something like </p>
         <pre>@Default(ofString = "superFancyDefaultValue")
-String superFancyPreference();
-void superFancyPreference(String superFancyPreferenceValue);</pre>
-        in our interface.
+String nameOfPreference();
+void nameOfPreference(String nameOfPreference);</pre>
+        in your interface.
         <p></p>
         <h3> Runtime Defaults
         </h3>
@@ -185,26 +184,34 @@ void superFancyPreference(String superFancyPreferenceValue);</pre>
             resembles the given value that should be used as default.
         </p>
         <p> Example: </p>
-        <pre>String superFancyPreference(); // getter with implicit compile-time-default
+        <pre>String nameOfPreference(); // getter with implicit compile-time-default
 
-String superFancyPreference$Default(String defaultValue); // getter with runtime-default
+String nameOfPreference$Default(String defaultValue); // getter with runtime-default
 
-void superFancyPreference(String superFancyPreferenceValue); // putter</pre>
+void nameOfPreference(String superFancyPreferenceValue); // putter</pre>
         <p></p>
         <h3> Obtain Instance
         </h3>
-        <p> Obtaining an instance of the generated class is easy. We just call </p>
+        <p> Obtaining an instance of the generated class is easy. You just call </p>
         <pre>Esperandro.getPreferences(Class&lt;T&gt; preferenceClass, Context context)</pre>
         <br>
-        where <code>preferenceClass</code> is the Class of our interface.
+        where <code>preferenceClass</code> is the Class of your interface.
         <p></p>
         <h3> Goodies
         </h3>
+        <!--
+        <h4>Key names</h4>
+            <p>There will be an additional class generated that contains all names of preferences as static final String
+                fields. This allows to use the preference names in your code while making sure changes are propagated
+                everywhere and no typos occur.<br>
+                The name of this class will be like your interface with a <code>Keys</code> suffix. For example <code>DefaultPrefsKeys</code>
+            </p>
+            -->
         <h4> Additional actions
         </h4>
-        <p> All generated classes do not only implement our defined preference
+        <p> All generated classes do not only implement your defined preference
             interface but also the <code>de.devland.esperandro.SharedPreferenceActions</code>
-            interface. That means, if we let our interface extend it we have
+            interface. That means, if you let your interface extend it you have
             access to these convenience methods: </p>
         <pre>    /**
      * @return the underlying SharedPreference instance.
@@ -254,7 +261,7 @@ void superFancyPreference(String superFancyPreferenceValue); // putter</pre>
         </h4>
         <p> If the annotated interface extends from other interfaces that define
             getters and putters for preferences, the generated class will
-            implement them too. This way we can order the preferences
+            implement them too. This way you can order the preferences
             hierarchically or even use common preference keys in different
             SharedPreference files.
         </p>
@@ -281,7 +288,7 @@ void superFancyPreference(String superFancyPreferenceValue); // putter</pre>
         <p>
         </p>
 
-        <h2>Usage
+        <h2>Configuration
         </h2>
         <h3>Gradle and Android Studio</h3>
         <p>Configure your build.gradle</p>
