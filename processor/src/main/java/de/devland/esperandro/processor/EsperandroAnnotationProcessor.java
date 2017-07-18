@@ -38,7 +38,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 // TODO errorHandling
-// TODO apply or commit as annotation
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("de.devland.esperandro.annotations.SharedPreferences")
 @SupportedOptions(EsperandroAnnotationProcessor.OPTION_RESDIR)
@@ -77,8 +76,6 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             Collection<PreferenceInformation> allPreferences = analyze(interfaze, interfaze);
                             postProcess(interfaze, allPreferences);
 
-
-                            // TODO check all types
                             if (hasErrors(interfaze, allPreferences)) {
                                 return false; // do not generate anything if errors are there
                             }
@@ -157,6 +154,14 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 warner.emitError("Found different types for the same preference. Aborting.", interfaze);
                 hasErrors = true;
             }
+            if (info.adder != null && (info.setter == null && info.commitSetter == null || info.getter == null)) {
+                warner.emitError("Missing getter or setter for " + info.preferenceName + ", add will not work" +
+                        " without one of them.", info.adder.element);
+            }
+            if (info.remover != null && (info.setter == null && info.commitSetter == null || info.getter == null)) {
+                warner.emitError("Missing getter or setter for " + info.preferenceName + ", remove will not work" +
+                        " without one of them.", info.remover.element);
+            }
         }
 
         return hasErrors;
@@ -164,7 +169,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     private void generateWarnings(Element interfaze, Collection<PreferenceInformation> allPreferences) {
         for (PreferenceInformation info : allPreferences) {
-            if (info.setter == null && info.getter == null) {
+            if (info.setter == null && info.commitSetter == null
+                    || info.getter == null && info.runtimeDefaultGetter == null) {
                 warner.emitWarning("Missing getter or setter for " + info.preferenceName + ", initDefaults" +
                         " will possibly not work as expected.", interfaze);
             }
