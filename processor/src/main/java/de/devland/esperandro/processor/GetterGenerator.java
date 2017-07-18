@@ -20,6 +20,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import de.devland.esperandro.Esperandro;
 import de.devland.esperandro.annotations.Default;
+import de.devland.esperandro.annotations.experimental.Cached;
 import de.devland.esperandro.serialization.Serializer;
 
 import javax.lang.model.element.Element;
@@ -38,174 +39,8 @@ public class GetterGenerator {
 
     private Warner warner;
 
-    private Map<String, Element> preferenceKeys;
-    private Map<String, TypeName> genericTypeNames;
-
     public GetterGenerator(Warner warner) {
         this.warner = warner;
-        preferenceKeys = new HashMap<String, Element>();
-        genericTypeNames = new HashMap<String, TypeName>();
-    }
-
-    public boolean isGetter(ExecutableElement method) {
-        boolean isGetter = false;
-        List<? extends VariableElement> parameters = method.getParameters();
-        PreferenceTypeInformation preferenceTypeInformation = getPreferenceTypeFromMethod(method);
-
-        boolean hasParameters = parameters != null && parameters.size() > 0;
-        boolean hasValidReturnType = preferenceTypeInformation.getPreferenceType() != PreferenceType.UNKNOWN;
-        boolean hasRuntimeDefault = false;
-        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
-
-        if (hasParameters && parameters.size() == 1) { // getter with default can have at most 1 parameter
-            VariableElement parameter = parameters.get(0);
-            TypeMirror parameterType = parameter.asType();
-
-            boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
-            if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
-                hasRuntimeDefault = true;
-            }
-        }
-
-        if (hasValidReturnType && hasRuntimeDefault) {
-            isGetter = true;
-        } else if (hasValidReturnType && !nameEndsWithDefaultSuffix && !hasParameters) {
-            isGetter = true;
-        }
-
-        if (nameEndsWithDefaultSuffix && !hasParameters) {
-            String reservedSuffixMessage = String.format("Preferences cannot end with \"%s\" as this " +
-                    "suffix is reserved for getters with a runtime default.", Constants.RUNTIME_DEFAULT_SUFFIX);
-            warner.emitError(reservedSuffixMessage, method);
-        }
-
-        return isGetter;
-    }
-
-    public boolean isGetter(Method method) {
-        boolean isGetter = false;
-        Class<?>[] parameters = method.getParameterTypes();
-        Type returnType = method.getGenericReturnType();
-        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(returnType);
-
-        boolean hasParameters = parameters != null && parameters.length > 0;
-        boolean hasValidReturnType = preferenceTypeInformation.getPreferenceType() != PreferenceType.UNKNOWN;
-        boolean hasRuntimeDefault = false;
-
-        if (hasParameters && parameters.length == 1) { // getter with default can have at most 1 parameter
-            Class<?> parameterType = parameters[0];
-
-            boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
-            boolean nameEndsWithDefaultSuffix = method.getName().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
-            if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
-                hasRuntimeDefault = true;
-            }
-        }
-
-        if (hasValidReturnType && (!hasParameters || hasRuntimeDefault)) {
-            isGetter = true;
-        }
-
-        return isGetter;
-    }
-
-    public void createGetterFromModel(ExecutableElement method, TypeSpec.Builder type, boolean caching) throws IOException {
-        String valueName = method.getSimpleName().toString();
-        boolean runtimeDefault = false;
-
-        if (valueName.endsWith(Constants.RUNTIME_DEFAULT_SUFFIX)) {
-            runtimeDefault = true;
-            valueName = valueName.substring(0, valueName.indexOf(Constants.RUNTIME_DEFAULT_SUFFIX));
-        }
-
-        preferenceKeys.put(valueName, method);
-
-        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getReturnType());
-        Default defaultAnnotation = method.getAnnotation(Default.class);
-
-        createGetter(defaultAnnotation, method, type, valueName, preferenceTypeInformation, runtimeDefault, caching);
-    }
-
-    public void createGetterFromReflection(Method method, Element topLevelInterface,
-                                           TypeSpec.Builder type, boolean caching) throws IOException {
-        String valueName = method.getName();
-
-        boolean runtimeDefault = false;
-
-        if (valueName.endsWith(Constants.RUNTIME_DEFAULT_SUFFIX)) {
-            runtimeDefault = true;
-            valueName = valueName.substring(0, valueName.indexOf(Constants.RUNTIME_DEFAULT_SUFFIX));
-        }
-
-        preferenceKeys.put(valueName, topLevelInterface);
-
-        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(method.getGenericReturnType());
-        Default defaultAnnotation = method.getAnnotation(Default.class);
-
-        createGetter(defaultAnnotation, topLevelInterface, type, valueName, preferenceTypeInformation, runtimeDefault, caching);
-    }
-
-    private PreferenceTypeInformation getPreferenceTypeFromMethod(ExecutableElement method) {
-        TypeMirror returnType = method.getReturnType();
-        return PreferenceTypeInformation.from(returnType);
-    }
-
-
-    private void createGetter(Default defaultAnnotation, Element element, TypeSpec.Builder type, String valueName,
-                              PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault, boolean caching) throws IOException {
-        MethodSpec.Builder getterBuilder = initGetter(valueName, preferenceTypeInformation, runtimeDefault);
-
-        if (caching) {
-            getterBuilder.addStatement("$T __result = ($T) cache.get($S)", preferenceTypeInformation.getObjectType(), preferenceTypeInformation.getObjectType(), valueName);
-            getterBuilder.beginControlFlow("if (__result == null)");
-        } else {
-            getterBuilder.addStatement("$T __result", preferenceTypeInformation.getType());
-        }
-
-        if (runtimeDefault) {
-            getterBuilder.beginControlFlow("if (preferences.contains($S))", valueName);
-        }
-
-        String statementPattern = "preferences.get%s(\"%s\", %s)";
-        String methodSuffix = Utils.getMethodSuffix(preferenceTypeInformation.getPreferenceType());
-        String defaultValue = getDefaultValue(defaultAnnotation, preferenceTypeInformation.getPreferenceType(), element);
-        if (preferenceTypeInformation.getPreferenceType() == PreferenceType.OBJECT) {
-            getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
-            if (preferenceTypeInformation.isGeneric()) {
-                String genericClassName = Utils.createClassNameForPreference(valueName);
-                genericTypeNames.put(genericClassName, preferenceTypeInformation.getType());
-                String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-                getterBuilder.addStatement("$L __container = __serializer.deserialize($L, $L.class)", genericClassName, statement, genericClassName);
-                getterBuilder.addStatement("$L __value = null", preferenceTypeInformation.getTypeName());
-                getterBuilder.beginControlFlow("if (__container != null)");
-                getterBuilder.addStatement("__value = __container.value");
-                getterBuilder.endControlFlow();
-                statementPattern = "__value";
-            } else {
-                statementPattern = String.format("__serializer.deserialize(%s, %s.class)",
-                        statementPattern, preferenceTypeInformation.getTypeName());
-            }
-        }
-
-        if (defaultAnnotation != null && runtimeDefault) {
-            warner.emitWarning("Pointless @Default Annotation", element);
-        }
-        String statement = String.format(statementPattern, methodSuffix, valueName, defaultValue);
-        getterBuilder.addStatement("__result = $L", statement);
-        if (runtimeDefault) {
-            getterBuilder.nextControlFlow("else")
-                    .addStatement("__result = defaultValue")
-                    .endControlFlow();
-        }
-
-        if (caching) {
-            getterBuilder.beginControlFlow("if (__result != null)");
-            getterBuilder.addStatement("cache.put($S, __result)", valueName);
-            getterBuilder.endControlFlow();
-            getterBuilder.endControlFlow();
-        }
-        getterBuilder.addStatement("return __result");
-        type.addMethod(getterBuilder.build());
     }
 
     private MethodSpec.Builder initGetter(String valueName, PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault) {
@@ -288,14 +123,6 @@ public class GetterGenerator {
         return defaultValue;
     }
 
-    public Map<String, Element> getPreferenceKeys() {
-        return preferenceKeys;
-    }
-
-    public Map<String, TypeName> getGenericTypeNames() {
-        return genericTypeNames;
-    }
-
 
     private boolean hasAllDefaults(Default defaultAnnotation) {
         //noinspection PointlessBooleanExpression
@@ -309,4 +136,60 @@ public class GetterGenerator {
     }
 
 
+    public void create(TypeSpec.Builder type, PreferenceInformation info, Cached cachedAnnotation, boolean runtimeDefault) {
+        MethodSpec.Builder getterBuilder = initGetter(info.preferenceName, info.typeInformation, runtimeDefault);
+        Element element = runtimeDefault ? info.runtimeDefaultGetterElement : info.getterElement;
+
+        if (cachedAnnotation != null) {
+            getterBuilder.addStatement("$T __result = ($T) cache.get($S)", info.typeInformation.getObjectType(), info.typeInformation.getObjectType(), info.preferenceName);
+            getterBuilder.beginControlFlow("if (__result == null)");
+        } else {
+            getterBuilder.addStatement("$T __result", info.typeInformation.getType());
+        }
+
+        if (runtimeDefault) {
+            getterBuilder.beginControlFlow("if (preferences.contains($S))", info.preferenceName);
+        }
+
+        String statementPattern = "preferences.get%s(\"%s\", %s)";
+        String methodSuffix = Utils.getMethodSuffix(info.typeInformation.getPreferenceType());
+        String defaultValue = getDefaultValue(info.defaultAnnotation, info.typeInformation.getPreferenceType(), element);
+        if (info.typeInformation.getPreferenceType() == PreferenceType.OBJECT) {
+            getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
+            if (info.typeInformation.isGeneric()) {
+                String genericClassName = Utils.createClassNameForPreference(info.preferenceName);
+                String statement = String.format(statementPattern, methodSuffix, info.preferenceName, defaultValue);
+                getterBuilder.addStatement("$L __container = __serializer.deserialize($L, $L.class)", genericClassName, statement, genericClassName);
+                getterBuilder.addStatement("$L __value = null", info.typeInformation.getTypeName());
+                getterBuilder.beginControlFlow("if (__container != null)");
+                getterBuilder.addStatement("__value = __container.value");
+                getterBuilder.endControlFlow();
+                statementPattern = "__value";
+            } else {
+                statementPattern = String.format("__serializer.deserialize(%s, %s.class)",
+                        statementPattern, info.typeInformation.getTypeName());
+            }
+        }
+
+        // TODO
+//        if (info.runtimeDefaultGetterElement != null && runtimeDefault) {
+//            warner.emitWarning("Pointless @Default Annotation", element);
+//        }
+        String statement = String.format(statementPattern, methodSuffix, info.preferenceName, defaultValue);
+        getterBuilder.addStatement("__result = $L", statement);
+        if (runtimeDefault) {
+            getterBuilder.nextControlFlow("else")
+                    .addStatement("__result = defaultValue")
+                    .endControlFlow();
+        }
+
+        if (cachedAnnotation != null) {
+            getterBuilder.beginControlFlow("if (__result != null)");
+            getterBuilder.addStatement("cache.put($S, __result)", info.preferenceName);
+            getterBuilder.endControlFlow();
+            getterBuilder.endControlFlow();
+        }
+        getterBuilder.addStatement("return __result");
+        type.addMethod(getterBuilder.build());
+    }
 }

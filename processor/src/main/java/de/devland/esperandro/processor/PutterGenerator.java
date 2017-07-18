@@ -25,98 +25,15 @@ import java.util.*;
 
 public class PutterGenerator {
 
-    private Map<String, Element> preferenceKeys;
-
-    private Set<TypeKind> validPutterReturnTypes = new HashSet<TypeKind>(Arrays.asList(TypeKind.VOID,
-            TypeKind.BOOLEAN));
-
-
-    public PutterGenerator() {
-        preferenceKeys = new HashMap<String, Element>();
-    }
-
-
-    @SuppressWarnings("SimplifiableConditionalExpression")
-    public boolean isPutter(ExecutableElement method) {
-        boolean isPutter = false;
-        List<? extends VariableElement> parameters = method.getParameters();
-        TypeMirror returnType = method.getReturnType();
-        TypeKind returnTypeKind = returnType.getKind();
-
-        boolean hasParameter = parameters != null && parameters.size() == 1;
-        boolean hasValidReturnType = validPutterReturnTypes.contains(returnTypeKind);
-        boolean hasValidPreferenceType = hasParameter ? PreferenceTypeInformation.from(parameters.get(0).asType()).getPreferenceType() != PreferenceType.UNKNOWN : false;
-        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
-
-        if (hasParameter && hasValidReturnType && hasValidPreferenceType && !nameEndsWithDefaultSuffix) {
-            isPutter = true;
-        }
-        return isPutter;
-    }
-
-
-    public boolean isPutter(Method method) {
-        boolean isPutter = false;
-        Type[] parameterTypes = method.getGenericParameterTypes();
-
-        boolean hasParameter = parameterTypes != null && parameterTypes.length == 1;
-        boolean hasValidReturnType = method.getReturnType().toString().equals("void")
-                || method.getReturnType().toString().equals("boolean");
-        //noinspection SimplifiableConditionalExpression
-        boolean hasValidPreferenceType = hasParameter ? PreferenceTypeInformation.from(parameterTypes[0]).getPreferenceType() != PreferenceType.UNKNOWN : false;
-        boolean hasRuntimeDefault = false;
-
-        if (hasParameter) {
-            Class<?> parameterType = method.getParameterTypes()[0];
-
-            boolean parameterTypeEqualsReturnType = parameterType.toString().equals(method.getReturnType().toString());
-            boolean nameEndsWithDefaultSuffix = method.getName().endsWith(Constants.RUNTIME_DEFAULT_SUFFIX);
-            if (parameterTypeEqualsReturnType && nameEndsWithDefaultSuffix) {
-                hasRuntimeDefault = true;
-            }
-        }
-
-        if (hasParameter && hasValidReturnType && hasValidPreferenceType && !hasRuntimeDefault) {
-            isPutter = true;
-        }
-        return isPutter;
-    }
-
-
-    public void createPutterFromModel(ExecutableElement method, TypeSpec.Builder type, Cached cachedAnnotation) throws IOException {
-        String valueName = method.getSimpleName().toString();
-        preferenceKeys.put(valueName, method);
-        TypeMirror parameterType = method.getParameters().get(0).asType();
-        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
-        TypeMirror returnType = method.getReturnType();
-
-        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString(), cachedAnnotation);
-    }
-
-
-    public void createPutterFromReflection(Method method, Element topLevelInterface,
-                                           TypeSpec.Builder type, Cached cachedAnnotation) throws IOException {
-        String valueName = method.getName();
-        preferenceKeys.put(valueName, topLevelInterface);
-        Type parameterType = method.getGenericParameterTypes()[0];
-        PreferenceTypeInformation preferenceTypeInformation = PreferenceTypeInformation.from(parameterType);
-        Class<?> returnType = method.getReturnType();
-
-        createPutter(type, valueName, valueName, preferenceTypeInformation, returnType.toString(), cachedAnnotation);
-    }
-
-
-    private void createPutter(TypeSpec.Builder type, String valueName, String value, PreferenceTypeInformation preferenceTypeInformation,
-                              String returnType, Cached cachedAnnotation) throws IOException {
-        MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(valueName)
+    public void create(TypeSpec.Builder type, PreferenceInformation info, Cached cachedAnnotation, boolean isCommitSetter) {
+        MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(info.preferenceName)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(preferenceTypeInformation.getType(), valueName);
-        boolean shouldReturnValue = returnType.equalsIgnoreCase(Boolean.class.getSimpleName());
+                .addParameter(info.typeInformation.getType(), info.preferenceName);
         PreferenceEditorCommitStyle commitStyle = PreferenceEditorCommitStyle.APPLY;
         StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s)");
 
-        if (shouldReturnValue) {
+        if (isCommitSetter) {
             putterBuilder.returns(boolean.class);
             statementPattern.insert(0, "return ");
             commitStyle = PreferenceEditorCommitStyle.COMMIT;
@@ -124,16 +41,17 @@ public class PutterGenerator {
             putterBuilder.returns(void.class);
         }
 
-        String methodSuffix = Utils.getMethodSuffix(preferenceTypeInformation.getPreferenceType());
-        switch (preferenceTypeInformation.getPreferenceType()) {
+        String methodSuffix = Utils.getMethodSuffix(info.typeInformation.getPreferenceType());
+        String value = info.preferenceName;
+        switch (info.typeInformation.getPreferenceType()) {
             case OBJECT:
-                if (preferenceTypeInformation.isGeneric()) {
-                    String genericClassName = Utils.createClassNameForPreference(valueName);
+                if (info.typeInformation.isGeneric()) {
+                    String genericClassName = Utils.createClassNameForPreference(info.preferenceName);
                     putterBuilder.addStatement("$L __container = new $L()", genericClassName, genericClassName);
-                    putterBuilder.addStatement("__container.value = $L", valueName);
+                    putterBuilder.addStatement("__container.value = $L", info.preferenceName);
                     value = "Esperandro.getSerializer().serialize(__container)";
                 } else {
-                    value = String.format("Esperandro.getSerializer().serialize(%s)", valueName);
+                    value = String.format("Esperandro.getSerializer().serialize(%s)", info.preferenceName);
                 }
                 break;
             case UNKNOWN:
@@ -142,29 +60,23 @@ public class PutterGenerator {
 
         if (cachedAnnotation != null) {
             if (cachedAnnotation.cacheOnPut()) {
-                if (preferenceTypeInformation.isPrimitive()) {
-                    putterBuilder.addStatement("cache.put($S, $L)", valueName, valueName);
+                if (info.typeInformation.isPrimitive()) {
+                    putterBuilder.addStatement("cache.put($S, $L)", info.preferenceName, info.preferenceName);
                 } else {
-                    putterBuilder.beginControlFlow("if ($L != null)", valueName)
-                            .addStatement("cache.put($S, $L)", valueName, valueName)
+                    putterBuilder.beginControlFlow("if ($L != null)", info.preferenceName)
+                            .addStatement("cache.put($S, $L)", info.preferenceName, info.preferenceName)
                             .nextControlFlow("else")
-                            .addStatement("cache.remove($S)", valueName)
+                            .addStatement("cache.remove($S)", info.preferenceName)
                             .endControlFlow();
                 }
             } else {
-                putterBuilder.addStatement("cache.remove($S)", valueName);
+                putterBuilder.addStatement("cache.remove($S)", info.preferenceName);
             }
         }
 
-        // only use apply on API >= 9
         putterBuilder.addStatement(String.format(statementPattern.toString(),
-                methodSuffix, valueName, value) + ".$L", commitStyle.getStatementPart());
+                methodSuffix, info.preferenceName, value) + ".$L", commitStyle.getStatementPart());
 
         type.addMethod(putterBuilder.build());
     }
-
-    public Map<String, Element> getPreferenceKeys() {
-        return preferenceKeys;
-    }
-
 }
