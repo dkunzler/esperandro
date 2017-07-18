@@ -6,22 +6,15 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
-package de.devland.esperandro.processor;
+package de.devland.esperandro.processor.generation;
 
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import de.devland.esperandro.annotations.experimental.Cached;
+import de.devland.esperandro.processor.PreferenceInformation;
+import de.devland.esperandro.processor.Utils;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.*;
 
 public class PutterGenerator {
 

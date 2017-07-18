@@ -13,7 +13,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package de.devland.esperandro.processor;
+package de.devland.esperandro.processor.generation;
 
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
@@ -21,6 +21,7 @@ import com.squareup.javapoet.TypeSpec;
 import de.devland.esperandro.Esperandro;
 import de.devland.esperandro.annotations.Default;
 import de.devland.esperandro.annotations.experimental.Cached;
+import de.devland.esperandro.processor.*;
 import de.devland.esperandro.serialization.Serializer;
 
 import javax.lang.model.element.Element;
