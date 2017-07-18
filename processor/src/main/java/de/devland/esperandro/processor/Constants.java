@@ -6,8 +6,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Constants {
-    public static final String RUNTIME_DEFAULT_SUFFIX = "$Default";
     public static final String IMPLEMENTATION_SUFFIX = "$$Impl";
+    public static final String SUFFIX_SEPARATOR = "$";
+    public static final String SUFFIX_DEFAULT = SUFFIX_SEPARATOR + "Default";
+    public static final String SUFFIX_ADD = SUFFIX_SEPARATOR + "Add";
+    public static final String SUFFIX_REMOVE = SUFFIX_SEPARATOR + "Remove";
 
     public static final String[] STANDARD_IMPORTS = new String[]{"android.os.Build", "android.content.Context",
             "android.content.SharedPreferences", "android.annotation.SuppressLint"};

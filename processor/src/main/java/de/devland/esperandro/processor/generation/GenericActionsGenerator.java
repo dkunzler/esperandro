@@ -91,7 +91,7 @@ public class GenericActionsGenerator {
                 .returns(void.class);
 
         for (PreferenceInformation info : allPreferences) {
-            if (info.hasGetter && info.hasSetter) {
+            if (info.setter != null && info.getter != null) {
                 initDefaultsBuilder.addStatement("this.$L(this.$L())", info.preferenceName, info.preferenceName);
             }
         }

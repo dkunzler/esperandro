@@ -30,12 +30,11 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 // TODO errorHandling
@@ -76,24 +75,15 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                         try {
                             // collect all PreferenceInformation
                             Collection<PreferenceInformation> allPreferences = analyze(interfaze, interfaze);
+                            postProcess(interfaze, allPreferences);
 
-                            // add interfaze as element for every method without explicit element for warnings
-                            for (PreferenceInformation info : allPreferences) {
-                                if (info.adderElement == null) info.adderElement = interfaze;
-                                if (info.removerElement == null) info.removerElement = interfaze;
-                                if (info.getterElement == null) info.getterElement = interfaze;
-                                if (info.setterElement == null) info.setterElement = interfaze;
-                                if (info.runtimeDefaultGetterElement == null) info.runtimeDefaultGetterElement = interfaze;
-                            }
+
                             // TODO check all types
-//                            TODO if (hasErrors(allPreferences)) {
-//                                return false; // do not generate anything if errors are there
-//                            }
+                            if (hasErrors(interfaze, allPreferences)) {
+                                return false; // do not generate anything if errors are there
+                            }
                             // handle errors and warning, check type for adder/remover
-//                            TODO generateWarning(allPreferences);
-                            // generate implementations
-                            // generate string resources
-                            // generate java statics
+                            generateWarnings(interfaze, allPreferences);
                             Cached cacheAnnotation = interfaze.getAnnotation(Cached.class);
                             boolean caching = cacheAnnotation != null;
                             TypeSpec.Builder type = initImplementation(interfaze, cacheAnnotation);
@@ -103,20 +93,12 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             createGenericClassImplementations(type, allPreferences);
                             createDefaultConstructor(type, allPreferences, cacheAnnotation);
                             finish(interfaze, allPreferences, type);
-
-
-                            // reinitialize getterGenerator and putter to start fresh for each interface
-//                            getterGenerator = new GetterGenerator(warner);
-//                            putterGenerator = new PutterGenerator();
-//                            processInterfaceMethods(interfaze, interfaze, type, cacheAnnotation);
-//                            checkPreferenceKeys();
-//                        } catch (IOException e) {
                         } catch (Exception e) {
                             StringWriter sw = new StringWriter();
                             PrintWriter pw = new PrintWriter(sw);
                             e.printStackTrace(pw);
                             String stacktrace = sw.toString().replace("\n", " - ");
-                            warner.emitError("Processor Error: " + stacktrace, interfaze);
+                            warner.emitError("Esperandro Processor Error: " + stacktrace, interfaze);
                             throw new RuntimeException(e);
                         }
                     }
@@ -128,32 +110,98 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         return false;
     }
 
+    private void postProcess(Element interfaze, Collection<PreferenceInformation> allPreferences) {
+        for (PreferenceInformation info : allPreferences) {
+            // add interfaze as element for every method without explicit element for warnings
+            if (info.setter != null && info.setter.element == null) info.setter.element = interfaze;
+            if (info.getter != null && info.getter.element == null) info.getter.element = interfaze;
+            if (info.runtimeDefaultGetter != null && info.runtimeDefaultGetter.element == null)
+                info.runtimeDefaultGetter.element = interfaze;
+            if (info.commitSetter != null && info.commitSetter.element == null) info.commitSetter.element = interfaze;
+            if (info.adder != null && info.adder.element == null) info.adder.element = interfaze;
+            if (info.remover != null && info.remover.element == null) info.remover.element = interfaze;
+
+            // find common preferenceType
+            info.preferenceType = commonPreferenceType(
+                    info.setter != null ? info.setter.parameterType : null,
+                    info.getter != null ? info.getter.returnType : null,
+                    info.runtimeDefaultGetter != null ? info.runtimeDefaultGetter.returnType : null,
+                    info.runtimeDefaultGetter != null ? info.runtimeDefaultGetter.parameterType : null,
+                    info.commitSetter != null ? info.commitSetter.parameterType : null
+            );
+        }
+    }
+
+    private PreferenceTypeInformation commonPreferenceType(PreferenceTypeInformation ... types) {
+        boolean same = true;
+        PreferenceTypeInformation candidate = null;
+        for (PreferenceTypeInformation type : types) {
+            if (type != null) {
+                if (candidate == null) {
+                    candidate = type;
+                } else {
+                    if (!candidate.getTypeName().equals(type.getTypeName())) {
+                        same = false;
+                    }
+                }
+            }
+        }
+
+        return same ? candidate : null;
+    }
+
+    private boolean hasErrors(Element interfaze, Collection<PreferenceInformation> allPreferences) {
+        boolean hasErrors = false;
+        for (PreferenceInformation info : allPreferences) {
+            if (info.preferenceType == null) {
+                warner.emitError("Found different types for the same preference. Aborting.", interfaze);
+                hasErrors = true;
+            }
+        }
+
+        return hasErrors;
+    }
+
+    private void generateWarnings(Element interfaze, Collection<PreferenceInformation> allPreferences) {
+        for (PreferenceInformation info : allPreferences) {
+            if (info.setter == null && info.getter == null) {
+                warner.emitWarning("Missing getter or setter for " + info.preferenceName + ", initDefaults" +
+                        " will possibly not work as expected.", interfaze);
+            }
+        }
+    }
+
     private void createMethods(TypeSpec.Builder type, Collection<PreferenceInformation> allPreferences, Cached cachedAnnotation) {
         // reinitialize getterGenerator and putter to start fresh for each interface
         GetterGenerator getterGenerator = new GetterGenerator(warner);
         PutterGenerator putterGenerator = new PutterGenerator();
-        // TODO AdderGenerator, RemoverGenerator
 
         for (PreferenceInformation info : allPreferences) {
-            if (info.hasSetter || info.hasCommitSetter) {
-                putterGenerator.create(type, info, cachedAnnotation, info.hasCommitSetter);
+            if (info.setter != null || info.commitSetter != null) {
+                putterGenerator.create(type, info, cachedAnnotation, info.commitSetter != null);
             }
-            if (info.hasGetter) {
+            if (info.getter != null) {
                 getterGenerator.create(type, info, cachedAnnotation, false);
             }
-            if (info.hasRuntimeDefaultGetter) {
+            if (info.runtimeDefaultGetter != null) {
                 getterGenerator.create(type, info, cachedAnnotation, true);
+            }
+            if (info.adder != null) {
+                AdderGenerator.generate(type, info);
+            }
+            if (info.remover != null) {
+                RemoverGenerator.generate(type, info);
             }
         }
     }
 
     private void createGenericClassImplementations(TypeSpec.Builder type, Collection<PreferenceInformation> allPreferences) throws IOException {
         for (PreferenceInformation info : allPreferences) {
-            if (info.typeInformation.isGeneric()) {
+            if (info.preferenceType.isGeneric()) {
                 TypeSpec innerGenericType = TypeSpec.classBuilder(Utils.createClassNameForPreference(info.preferenceName))
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                         .addSuperinterface(Serializable.class)
-                        .addField(info.typeInformation.getType(), "value", Modifier.PUBLIC)
+                        .addField(info.preferenceType.getType(), "value", Modifier.PUBLIC)
                         .build();
 
                 type.addType(innerGenericType);
@@ -186,7 +234,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     informationByType.put(preferenceName, info);
                 }
 //                try {
-                    PreferenceClassifier.analyze(method, info);
+                PreferenceClassifier.analyze(method, info);
 //                } catch (MethodException e) {
 //                    warner.emitError("No valid method name detected.", method);
 //                }
@@ -224,7 +272,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 informationByType.put(preferenceName, info);
             }
 //            try {
-                PreferenceClassifier.analyze(method, info);
+            PreferenceClassifier.analyze(method, info);
 //            } catch (MethodException e) {
 //                warner.emitError("No valid method name detected in class '" + interfaceClass.getName() + "' for " +
 //                        "method: '" + method.getName() + "'.", topLevelInterface);

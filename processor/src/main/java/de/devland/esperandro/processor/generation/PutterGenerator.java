@@ -22,7 +22,7 @@ public class PutterGenerator {
         MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(info.preferenceName)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(info.typeInformation.getType(), info.preferenceName);
+                .addParameter(info.preferenceType.getType(), info.preferenceName);
         PreferenceEditorCommitStyle commitStyle = PreferenceEditorCommitStyle.APPLY;
         StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s)");
 
@@ -34,11 +34,11 @@ public class PutterGenerator {
             putterBuilder.returns(void.class);
         }
 
-        String methodSuffix = Utils.getMethodSuffix(info.typeInformation.getPreferenceType());
+        String methodSuffix = Utils.getMethodSuffix(info.preferenceType.getPreferenceType());
         String value = info.preferenceName;
-        switch (info.typeInformation.getPreferenceType()) {
+        switch (info.preferenceType.getPreferenceType()) {
             case OBJECT:
-                if (info.typeInformation.isGeneric()) {
+                if (info.preferenceType.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(info.preferenceName);
                     putterBuilder.addStatement("$L __container = new $L()", genericClassName, genericClassName);
                     putterBuilder.addStatement("__container.value = $L", info.preferenceName);
@@ -53,7 +53,7 @@ public class PutterGenerator {
 
         if (cachedAnnotation != null) {
             if (cachedAnnotation.cacheOnPut()) {
-                if (info.typeInformation.isPrimitive()) {
+                if (info.preferenceType.isPrimitive()) {
                     putterBuilder.addStatement("cache.put($S, $L)", info.preferenceName, info.preferenceName);
                 } else {
                     putterBuilder.beginControlFlow("if ($L != null)", info.preferenceName)
