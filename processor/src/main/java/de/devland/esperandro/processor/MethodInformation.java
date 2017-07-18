@@ -1,6 +1,5 @@
 package de.devland.esperandro.processor;
 
-import com.sun.org.apache.xerces.internal.impl.xs.opti.DefaultElement;
 import de.devland.esperandro.annotations.Default;
 
 import javax.lang.model.element.Element;

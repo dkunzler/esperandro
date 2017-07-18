@@ -30,6 +30,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -129,7 +130,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private PreferenceTypeInformation commonPreferenceType(PreferenceTypeInformation ... types) {
+    private PreferenceTypeInformation commonPreferenceType(PreferenceTypeInformation... types) {
         boolean same = true;
         PreferenceTypeInformation candidate = null;
         for (PreferenceTypeInformation type : types) {
@@ -157,10 +158,30 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             if (info.adder != null && (info.setter == null && info.commitSetter == null || info.getter == null)) {
                 warner.emitError("Missing getter or setter for " + info.preferenceName + ", add will not work" +
                         " without one of them.", info.adder.element);
+                hasErrors = true;
             }
             if (info.remover != null && (info.setter == null && info.commitSetter == null || info.getter == null)) {
                 warner.emitError("Missing getter or setter for " + info.preferenceName + ", remove will not work" +
                         " without one of them.", info.remover.element);
+                hasErrors = true;
+            }
+            Types types = processingEnv.getTypeUtils();
+            if (info.adder != null || info.remover != null) {
+                if (info.getter != null) { // check with getter, if it is not there there will already be an error
+                    boolean isCollection = false;
+                    if (info.getter.method != null) {
+                        isCollection = Collection.class.isAssignableFrom(info.getter.method.getReturnType());
+                    } else if (info.getter.element != null) {
+                        TypeMirror collection = processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType();
+                        TypeMirror returnType = ((ExecutableElement) info.getter.element).getReturnType();
+                        isCollection = types.isAssignable(
+                                types.erasure(returnType), types.erasure(collection));
+                    }
+                    if (!isCollection) {
+                        warner.emitError("Type of " + info.preferenceName + " is not a Collection. " +
+                                "No collection operations possible.", interfaze);
+                    }
+                }
             }
         }
 
