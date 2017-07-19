@@ -1,5 +1,8 @@
 package de.devland.esperandro.processor;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.QualifiedNameable;
+
 public class Utils {
 
     public static String createClassNameForPreference(String valueName) {
@@ -40,5 +43,25 @@ public class Utils {
         }
 
         return methodSuffix;
+    }
+
+    public static String packageNameFromInterface(Element interfaze) {
+        QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
+        String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
+        String packageName = "";
+        for (int i = 0; i < split.length - 1; i++) {
+            packageName += split[i];
+            if (i < split.length - 2) {
+                packageName += ".";
+            }
+        }
+        return packageName;
+    }
+
+    public static String classNameFromInterface(Element interfaze) {
+        QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
+        String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
+        String typeName = split[split.length - 1];
+        return typeName;
     }
 }

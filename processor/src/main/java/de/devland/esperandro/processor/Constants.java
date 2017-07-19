@@ -11,6 +11,7 @@ public class Constants {
     public static final String SUFFIX_DEFAULT = SUFFIX_SEPARATOR + "Default";
     public static final String SUFFIX_ADD = SUFFIX_SEPARATOR + "Add";
     public static final String SUFFIX_REMOVE = SUFFIX_SEPARATOR + "Remove";
+    public static final String SUFFIX_KEYS = "Keys";
 
     public static final String[] STANDARD_IMPORTS = new String[]{"android.os.Build", "android.content.Context",
             "android.content.SharedPreferences", "android.annotation.SuppressLint"};

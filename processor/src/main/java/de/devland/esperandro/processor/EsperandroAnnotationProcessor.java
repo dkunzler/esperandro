@@ -91,6 +91,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                             createGenericClassImplementations(type, allPreferences);
                             createDefaultConstructor(type, allPreferences, cacheAnnotation);
                             finish(interfaze, allPreferences, type);
+                            StringConstantsGenerator.createConstantsClass(processingEnv.getFiler(), interfaze, allPreferences);
                         } catch (Exception e) {
                             StringWriter sw = new StringWriter();
                             PrintWriter pw = new PrintWriter(sw);
@@ -315,10 +316,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
 
         try {
-            QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
             boolean preferenceNamePresent = !preferencesName.equals("");
-            String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
-            String typeName = split[split.length - 1] + Constants.IMPLEMENTATION_SUFFIX;
+            String typeName = Utils.classNameFromInterface(interfaze) + Constants.IMPLEMENTATION_SUFFIX;
             result = TypeSpec.classBuilder(typeName)
                     .addModifiers(Modifier.PUBLIC)
                     .addSuperinterface(SharedPreferenceActions.class)
@@ -378,18 +377,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     private void finish(Element interfaze, Collection<PreferenceInformation> allPreferences, TypeSpec.Builder type) throws IOException {
         GenerateStringResources generateAnnotation = interfaze.getAnnotation(GenerateStringResources.class);
-        QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
-        String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
-        StringBuilder packageName = new StringBuilder();
-        for (int i = 0; i < split.length - 1; i++) {
-            packageName.append(split[i]);
-            if (i < split.length - 2) {
-                packageName.append(".");
-            }
-        }
+        String packageName = Utils.packageNameFromInterface(interfaze);
 
-
-        JavaFile javaFile = JavaFile.builder(packageName.toString(), type.build())
+        JavaFile javaFile = JavaFile.builder(packageName, type.build())
                 .build();
         Filer filer = processingEnv.getFiler();
         javaFile.writeTo(filer);
