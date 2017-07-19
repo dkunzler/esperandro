@@ -260,11 +260,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                     info.preferenceName = preferenceName;
                     informationByType.put(preferenceName, info);
                 }
-//                try {
                 PreferenceClassifier.analyze(method, info);
-//                } catch (MethodException e) {
-//                    warner.emitError("No valid method name detected.", method);
-//                }
             }
         }
 
@@ -279,7 +275,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 } else {
                     try {
                         Class<?> subInterfaceClass = Class.forName(subInterfaceTypeName);
-                        analyze(topLevelInterface, subInterfaceClass, informationByType);
+                        analyze(subInterfaceClass, informationByType);
                     } catch (ClassNotFoundException e) {
                         warner.emitError("Could not load Interface '" + subInterfaceTypeName + "' for generation.",
                                 topLevelInterface);
@@ -289,7 +285,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void analyze(Element topLevelInterface, Class<?> interfaceClass, Map<String, PreferenceInformation> informationByType) {
+    private void analyze(Class<?> interfaceClass, Map<String, PreferenceInformation> informationByType) {
         for (Method method : interfaceClass.getDeclaredMethods()) {
             String preferenceName = PreferenceClassifier.preferenceName(method);
             PreferenceInformation info = informationByType.get(preferenceName);
@@ -298,18 +294,13 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
                 info.preferenceName = preferenceName;
                 informationByType.put(preferenceName, info);
             }
-//            try {
             PreferenceClassifier.analyze(method, info);
-//            } catch (MethodException e) {
-//                warner.emitError("No valid method name detected in class '" + interfaceClass.getName() + "' for " +
-//                        "method: '" + method.getName() + "'.", topLevelInterface);
-//            }
         }
 
         for (Class<?> subInterfaceClass : interfaceClass.getInterfaces()) {
             if (subInterfaceClass.getName() != null && !subInterfaceClass.getName().equals(SharedPreferenceActions
                     .class.getName())) {
-                analyze(topLevelInterface, subInterfaceClass, informationByType);
+                analyze(subInterfaceClass, informationByType);
             }
         }
     }
@@ -325,7 +316,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
         try {
             QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
-            boolean preferenceNamePresent = preferencesName != null && !preferencesName.equals("");
+            boolean preferenceNamePresent = !preferencesName.equals("");
             String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
             String typeName = split[split.length - 1] + Constants.IMPLEMENTATION_SUFFIX;
             result = TypeSpec.classBuilder(typeName)
@@ -389,16 +380,16 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         GenerateStringResources generateAnnotation = interfaze.getAnnotation(GenerateStringResources.class);
         QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
         String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
-        String packageName = "";
+        StringBuilder packageName = new StringBuilder();
         for (int i = 0; i < split.length - 1; i++) {
-            packageName += split[i];
+            packageName.append(split[i]);
             if (i < split.length - 2) {
-                packageName += ".";
+                packageName.append(".");
             }
         }
 
 
-        JavaFile javaFile = JavaFile.builder(packageName, type.build())
+        JavaFile javaFile = JavaFile.builder(packageName.toString(), type.build())
                 .build();
         Filer filer = processingEnv.getFiler();
         javaFile.writeTo(filer);
