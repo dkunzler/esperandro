@@ -41,19 +41,19 @@ import java.util.*;
 // TODO errorHandling
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("de.devland.esperandro.annotations.SharedPreferences")
-@SupportedOptions(EsperandroAnnotationProcessor.OPTION_RESDIR)
+@SupportedOptions(EsperandroAnnotationProcessor.OPTION_VALUES_DIR)
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
-    public static final String OPTION_RESDIR = "esperandro_resDir";
+    public static final String OPTION_VALUES_DIR = "esperandro_valuesDir";
 
     private Warner warner;
     private Map<TypeMirror, Element> rootElements;
-    private String resDirLocation;
+    private String valuesLocation;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        resDirLocation = processingEnv.getOptions().get(OPTION_RESDIR);
+        valuesLocation = processingEnv.getOptions().get(OPTION_VALUES_DIR);
     }
 
     @Override
@@ -385,7 +385,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         javaFile.writeTo(filer);
 
         if (generateAnnotation != null) {
-            StringResourceGenerator resourceGenerator = new StringResourceGenerator(resDirLocation, warner);
+            StringResourceGenerator resourceGenerator = new StringResourceGenerator(valuesLocation, processingEnv, warner);
             resourceGenerator.generateStringResources(interfaze, allPreferences, generateAnnotation);
         }
     }
