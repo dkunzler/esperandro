@@ -201,7 +201,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     private void createMethods(TypeSpec.Builder type, Collection<PreferenceInformation> allPreferences, Cached cachedAnnotation) {
         // reinitialize getterGenerator and putter to start fresh for each interface
-        GetterGenerator getterGenerator = new GetterGenerator(warner);
+        GetterGenerator getterGenerator = new GetterGenerator(warner, processingEnv);
         PutterGenerator putterGenerator = new PutterGenerator();
 
         for (PreferenceInformation info : allPreferences) {

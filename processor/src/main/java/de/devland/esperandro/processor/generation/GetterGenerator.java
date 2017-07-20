@@ -16,6 +16,7 @@
 package de.devland.esperandro.processor.generation;
 
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import de.devland.esperandro.Esperandro;
 import de.devland.esperandro.annotations.Default;
@@ -23,15 +24,20 @@ import de.devland.esperandro.annotations.experimental.Cached;
 import de.devland.esperandro.processor.*;
 import de.devland.esperandro.serialization.Serializer;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.TypeMirror;
 
 public class GetterGenerator {
 
     private Warner warner;
+    private ProcessingEnvironment processingEnv;
 
-    public GetterGenerator(Warner warner) {
+    public GetterGenerator(Warner warner, ProcessingEnvironment processingEnv) {
         this.warner = warner;
+        this.processingEnv = processingEnv;
     }
 
     private MethodSpec.Builder initGetter(String valueName, PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault) {
@@ -48,14 +54,14 @@ public class GetterGenerator {
         return getterBuilder;
     }
 
-    private String getDefaultValue(Default defaultAnnotation, PreferenceType preferenceType, Element element) {
+    private String getDefaultValue(Default defaultAnnotation, PreferenceTypeInformation preferenceType, Element element) {
         boolean allDefaults = false;
         boolean hasDefaultAnnotation = defaultAnnotation != null;
         if (hasDefaultAnnotation) {
             allDefaults = hasAllDefaults(defaultAnnotation);
         }
         String defaultValue = "";
-        switch (preferenceType) {
+        switch (preferenceType.getPreferenceType()) {
             case INT:
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofInt() == Default.intDefault) {
                     warner.emitMissingDefaultWarning("int", element);
@@ -96,16 +102,22 @@ public class GetterGenerator {
                         .stringDefault + "\""));
                 break;
             case STRINGSET:
-                if (hasDefaultAnnotation) {
-                    warner.emitWarning("No default for Set<String> preferences allowed.", element);
+                if (hasDefaultAnnotation && getOfClassDefault(defaultAnnotation).equals(getDefaultType())) {
+                    warner.emitMissingDefaultWarning("Set<String>", element);
+                    defaultValue = "null";
+                } else if (hasDefaultAnnotation) {
+                    defaultValue = "new " + getOfClassDefault(defaultAnnotation).toString() + "()";
+                } else {
+                    defaultValue = "null";
                 }
-                defaultValue = "null";
                 break;
             case OBJECT:
-                if (hasDefaultAnnotation) {
-                    warner.emitWarning("No default for Object preferences allowed.", element);
+                if (hasDefaultAnnotation && getOfClassDefault(defaultAnnotation).equals(getDefaultType())) {
+                    warner.emitMissingDefaultWarning(preferenceType.getTypeName(), element);
+                    defaultValue = "null";
+                } else {
+                    defaultValue = "null";
                 }
-                defaultValue = "null";
                 break;
             case UNKNOWN:
                 break;
@@ -122,6 +134,7 @@ public class GetterGenerator {
         hasAllDefaults &= defaultAnnotation.ofFloat() == Default.floatDefault;
         hasAllDefaults &= defaultAnnotation.ofLong() == Default.longDefault;
         hasAllDefaults &= defaultAnnotation.ofString().equals(Default.stringDefault);
+        hasAllDefaults &= getOfClassDefault(defaultAnnotation).equals(getDefaultType());
 
         return hasAllDefaults;
     }
@@ -129,7 +142,8 @@ public class GetterGenerator {
 
     public void create(TypeSpec.Builder type, PreferenceInformation info, Cached cachedAnnotation, boolean runtimeDefault) {
         MethodSpec.Builder getterBuilder = initGetter(info.preferenceName, info.preferenceType, runtimeDefault);
-        Element element = runtimeDefault ? info.runtimeDefaultGetter.element : info.getter.element;
+        MethodInformation methodInformation = runtimeDefault ? info.runtimeDefaultGetter : info.getter;
+        Element element = methodInformation.element;
 
         if (cachedAnnotation != null) {
             getterBuilder.addStatement("$T __result = ($T) cache.get($S)", info.preferenceType.getObjectType(), info.preferenceType.getObjectType(), info.preferenceName);
@@ -144,12 +158,18 @@ public class GetterGenerator {
 
         String statementPattern = "preferences.get%s(\"%s\", %s)";
         String methodSuffix = Utils.getMethodSuffix(info.preferenceType.getPreferenceType());
-        String defaultValue = getDefaultValue(runtimeDefault ? info.runtimeDefaultGetter.defaultAnnotation : info.getter.defaultAnnotation, info.preferenceType.getPreferenceType(), element);
+        String defaultValue = getDefaultValue(runtimeDefault ? info.runtimeDefaultGetter.defaultAnnotation : info.getter.defaultAnnotation, info.preferenceType, element);
         if (info.preferenceType.getPreferenceType() == PreferenceType.OBJECT) {
             getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
             if (info.preferenceType.isGeneric()) {
                 String genericClassName = Utils.createClassNameForPreference(info.preferenceName);
                 String statement = String.format(statementPattern, methodSuffix, info.preferenceName, defaultValue);
+                getterBuilder.addStatement("$T __prefValue = $L", TypeName.get(String.class), statement);
+                if (methodInformation.defaultAnnotation != null && !getOfClassDefault(methodInformation.defaultAnnotation).equals(getDefaultType())) {
+                    getterBuilder.beginControlFlow("if (__prefValue == null)");
+                    getterBuilder.addStatement("return new $L()", getOfClassDefault(methodInformation.defaultAnnotation).toString());
+                    getterBuilder.endControlFlow();
+                }
                 getterBuilder.addStatement("$L __container = __serializer.deserialize($L, $L.class)", genericClassName, statement, genericClassName);
                 getterBuilder.addStatement("$L __value = null", info.preferenceType.getTypeName());
                 getterBuilder.beginControlFlow("if (__container != null)");
@@ -181,5 +201,21 @@ public class GetterGenerator {
         }
         getterBuilder.addStatement("return __result");
         type.addMethod(getterBuilder.build());
+    }
+
+    private TypeMirror getOfClassDefault(Default defaultAnnotation) {
+        try
+        {
+            defaultAnnotation.ofClass(); // this should throw
+        }
+        catch( MirroredTypeException mte )
+        {
+            return mte.getTypeMirror();
+        }
+        return getDefaultType();
+    }
+
+    private TypeMirror getDefaultType() {
+        return processingEnv.getElementUtils().getTypeElement(de.devland.esperandro.internal.Default.class.getCanonicalName()).asType();
     }
 }

@@ -141,4 +141,15 @@ public class CollectionTest {
         Assert.assertFalse(esperandroPreferences.setPreference().contains("foo"));
         Assert.assertTrue(esperandroPreferences.setPreference().contains("bar"));
     }
+
+    @Test
+    public void stringSetDefault() {
+        Assert.assertNotNull(esperandroPreferences.stringSetDefaultPreference());
+        Assert.assertEquals(0, esperandroPreferences.stringSetDefaultPreference().size());
+    }
+
+    public void collectionDefault() {
+        Assert.assertNotNull(esperandroPreferences.listDefaultPreference());
+        Assert.assertEquals(0, esperandroPreferences.listDefaultPreference().size());
+    }
 }

@@ -46,4 +46,6 @@ public @interface Default {
     float ofFloat() default floatDefault;
 
     String ofString() default stringDefault;
+
+    Class<?> ofClass() default de.devland.esperandro.internal.Default.class;
 }
