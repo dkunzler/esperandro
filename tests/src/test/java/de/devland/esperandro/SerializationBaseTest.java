@@ -100,4 +100,11 @@ public abstract class SerializationBaseTest {
         Assert.assertEquals(container, savedContainer);
     }
 
+    @Test
+    public void testContainerDefault() {
+        Assert.assertNotNull(esperandroPreferences.containerDefault());
+        Assert.assertEquals(0, esperandroPreferences.containerDefault().anotherValue);
+        Assert.assertNull(esperandroPreferences.containerDefault().value);
+    }
+
 }

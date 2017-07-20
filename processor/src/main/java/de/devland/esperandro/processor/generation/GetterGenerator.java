@@ -161,24 +161,27 @@ public class GetterGenerator {
         String defaultValue = getDefaultValue(runtimeDefault ? info.runtimeDefaultGetter.defaultAnnotation : info.getter.defaultAnnotation, info.preferenceType, element);
         if (info.preferenceType.getPreferenceType() == PreferenceType.OBJECT) {
             getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
+            String statement = String.format(statementPattern, methodSuffix, info.preferenceName, defaultValue);
+            getterBuilder.addStatement("$T __prefValue = $L", TypeName.get(String.class), statement);
+            getterBuilder.addStatement("$L __value = null", info.preferenceType.getTypeName());
+            if (methodInformation.defaultAnnotation != null && !getOfClassDefault(methodInformation.defaultAnnotation).equals(getDefaultType())) {
+                getterBuilder.beginControlFlow("if (__prefValue == null)");
+                getterBuilder.addStatement("__value = new $L()", getOfClassDefault(methodInformation.defaultAnnotation).toString());
+                getterBuilder.nextControlFlow("else");
+            }
             if (info.preferenceType.isGeneric()) {
                 String genericClassName = Utils.createClassNameForPreference(info.preferenceName);
-                String statement = String.format(statementPattern, methodSuffix, info.preferenceName, defaultValue);
-                getterBuilder.addStatement("$T __prefValue = $L", TypeName.get(String.class), statement);
-                if (methodInformation.defaultAnnotation != null && !getOfClassDefault(methodInformation.defaultAnnotation).equals(getDefaultType())) {
-                    getterBuilder.beginControlFlow("if (__prefValue == null)");
-                    getterBuilder.addStatement("return new $L()", getOfClassDefault(methodInformation.defaultAnnotation).toString());
-                    getterBuilder.endControlFlow();
-                }
-                getterBuilder.addStatement("$L __container = __serializer.deserialize($L, $L.class)", genericClassName, statement, genericClassName);
-                getterBuilder.addStatement("$L __value = null", info.preferenceType.getTypeName());
+                getterBuilder.addStatement("$L __container = __serializer.deserialize(__prefValue, $L.class)", genericClassName, genericClassName);
                 getterBuilder.beginControlFlow("if (__container != null)");
                 getterBuilder.addStatement("__value = __container.value");
                 getterBuilder.endControlFlow();
                 statementPattern = "__value";
             } else {
-                statementPattern = String.format("__serializer.deserialize(%s, %s.class)",
-                        statementPattern, info.preferenceType.getTypeName());
+                getterBuilder.addStatement("__value = __serializer.deserialize(__prefValue, $L.class)", info.preferenceType.getTypeName());
+                statementPattern = "__value";
+            }
+            if (methodInformation.defaultAnnotation != null && !getOfClassDefault(methodInformation.defaultAnnotation).equals(getDefaultType())) {
+                getterBuilder.endControlFlow();
             }
         }
 
@@ -204,12 +207,9 @@ public class GetterGenerator {
     }
 
     private TypeMirror getOfClassDefault(Default defaultAnnotation) {
-        try
-        {
+        try {
             defaultAnnotation.ofClass(); // this should throw
-        }
-        catch( MirroredTypeException mte )
-        {
+        } catch (MirroredTypeException mte) {
             return mte.getTypeMirror();
         }
         return getDefaultType();
