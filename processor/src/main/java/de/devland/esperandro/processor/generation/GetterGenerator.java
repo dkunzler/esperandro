@@ -40,7 +40,7 @@ public class GetterGenerator {
         this.processingEnv = processingEnv;
     }
 
-    private MethodSpec.Builder initGetter(String valueName, PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault) {
+    private MethodSpec.Builder initGetter(String valueName, PreferenceTypeInformation preferenceTypeInformation, boolean runtimeDefault, boolean internal) {
         MethodSpec.Builder getterBuilder;
         if (runtimeDefault) {
             getterBuilder = MethodSpec.methodBuilder(valueName + Constants.SUFFIX_DEFAULT)
@@ -48,9 +48,13 @@ public class GetterGenerator {
         } else {
             getterBuilder = MethodSpec.methodBuilder(valueName);
         }
-        getterBuilder.addAnnotation(Override.class)
-                .addModifiers(Modifier.PUBLIC)
+        getterBuilder.addModifiers(internal ? Modifier.PRIVATE : Modifier.PUBLIC)
                 .returns(preferenceTypeInformation.getType());
+
+        if (!internal) {
+            getterBuilder.addAnnotation(Override.class);
+        }
+
         return getterBuilder;
     }
 
@@ -141,9 +145,23 @@ public class GetterGenerator {
 
 
     public void create(TypeSpec.Builder type, PreferenceInformation info, Cached cachedAnnotation, boolean runtimeDefault) {
-        MethodSpec.Builder getterBuilder = initGetter(info.preferenceName, info.preferenceType, runtimeDefault);
+        MethodSpec.Builder getterBuilder = initGetter(info.preferenceName, info.preferenceType, runtimeDefault, false);
         MethodInformation methodInformation = runtimeDefault ? info.runtimeDefaultGetter : info.getter;
         Element element = methodInformation.element;
+        String defaultValue = getDefaultValue(runtimeDefault ? info.runtimeDefaultGetter.defaultAnnotation : info.getter.defaultAnnotation, info.preferenceType, element);
+        createInternal(type, info, cachedAnnotation, runtimeDefault, defaultValue, getterBuilder, methodInformation);
+    }
+
+    void createPrivate(TypeSpec.Builder type, PreferenceInformation info, Cached cachedAnnotation) {
+        MethodSpec.Builder getterBuilder = initGetter(info.preferenceName, info.preferenceType, false, true);
+        String defaultValue = getDefaultValue(null, info.preferenceType, null);
+        MethodInformation dummy = new MethodInformation(null, null, null, info.preferenceType, null);
+        createInternal(type, info, cachedAnnotation, false, defaultValue, getterBuilder, dummy);
+    }
+
+    private void createInternal(TypeSpec.Builder type, PreferenceInformation info, Cached cachedAnnotation,
+                                boolean runtimeDefault, String defaultValue, MethodSpec.Builder getterBuilder,
+                                MethodInformation methodInformation) {
 
         if (cachedAnnotation != null) {
             getterBuilder.addStatement("$T __result = ($T) cache.get($S)", info.preferenceType.getObjectType(), info.preferenceType.getObjectType(), info.preferenceName);
@@ -158,7 +176,6 @@ public class GetterGenerator {
 
         String statementPattern = "preferences.get%s(\"%s\", %s)";
         String methodSuffix = Utils.getMethodSuffix(info.preferenceType.getPreferenceType());
-        String defaultValue = getDefaultValue(runtimeDefault ? info.runtimeDefaultGetter.defaultAnnotation : info.getter.defaultAnnotation, info.preferenceType, element);
         if (info.preferenceType.getPreferenceType() == PreferenceType.OBJECT) {
             getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);
             String statement = String.format(statementPattern, methodSuffix, info.preferenceName, defaultValue);
@@ -186,6 +203,7 @@ public class GetterGenerator {
         }
 
         if (info.runtimeDefaultGetter != null && info.runtimeDefaultGetter.defaultAnnotation != null && runtimeDefault) {
+            Element element = info.runtimeDefaultGetter.element;
             warner.emitWarning("Pointless @Default Annotation", element);
         }
         String statement = String.format(statementPattern, methodSuffix, info.preferenceName, defaultValue);

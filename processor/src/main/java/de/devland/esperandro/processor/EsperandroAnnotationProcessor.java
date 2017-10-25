@@ -88,6 +88,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
                             createMethods(type, allPreferences, cacheAnnotation);
                             GenericActionsGenerator.createGenericActions(type, allPreferences, caching);
+                            UnsafeActionsGenerator.createUnsafeActions(type, allPreferences, cacheAnnotation);
                             createGenericClassImplementations(type, allPreferences);
                             createDefaultConstructor(type, allPreferences, cacheAnnotation);
                             finish(interfaze, allPreferences, type);
@@ -320,7 +321,6 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             String typeName = Utils.classNameFromInterface(interfaze) + Constants.IMPLEMENTATION_SUFFIX;
             result = TypeSpec.classBuilder(typeName)
                     .addModifiers(Modifier.PUBLIC)
-                    .addSuperinterface(SharedPreferenceActions.class)
                     .addSuperinterface(TypeName.get(interfaze.asType()))
                     .addField(ClassName.get("android.content", "SharedPreferences"), "preferences", Modifier.PRIVATE, Modifier.FINAL);
             if (cacheAnnotation != null) {

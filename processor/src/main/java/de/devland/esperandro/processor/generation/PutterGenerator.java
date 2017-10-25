@@ -18,11 +18,22 @@ import javax.lang.model.element.Modifier;
 
 public class PutterGenerator {
 
+    void createPrivate(TypeSpec.Builder type, PreferenceInformation info, Cached cachedAnnotation) {
+        createInternal(type, info, cachedAnnotation, false, true);
+    }
+
     public void create(TypeSpec.Builder type, PreferenceInformation info, Cached cachedAnnotation, boolean isCommitSetter) {
+        createInternal(type, info, cachedAnnotation, isCommitSetter, false);
+    }
+
+    private void createInternal(TypeSpec.Builder type, PreferenceInformation info, Cached cachedAnnotation,
+                                boolean isCommitSetter, boolean internal) {
         MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(info.preferenceName)
-                .addAnnotation(Override.class)
-                .addModifiers(Modifier.PUBLIC)
+                .addModifiers(internal ? Modifier.PRIVATE : Modifier.PUBLIC)
                 .addParameter(info.preferenceType.getType(), info.preferenceName);
+        if (!internal) {
+            putterBuilder.addAnnotation(Override.class);
+        }
         PreferenceEditorCommitStyle commitStyle = PreferenceEditorCommitStyle.APPLY;
         StringBuilder statementPattern = new StringBuilder("preferences.edit().put%s(\"%s\", %s)");
 

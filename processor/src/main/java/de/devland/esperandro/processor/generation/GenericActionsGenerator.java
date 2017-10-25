@@ -3,6 +3,7 @@ package de.devland.esperandro.processor.generation;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
+import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.processor.PreferenceInformation;
 
 import javax.lang.model.element.Modifier;
@@ -96,16 +97,16 @@ public class GenericActionsGenerator {
             }
         }
 
-        MethodSpec initDefaults = initDefaultsBuilder.build();
 
-        type.addMethod(get.build())
+        type.addSuperinterface(SharedPreferenceActions.class)
+                .addMethod(get.build())
                 .addMethod(contains.build())
                 .addMethod(remove.build())
                 .addMethod(registerListener.build())
                 .addMethod(unregisterListener.build())
                 .addMethod(clear.build())
                 .addMethod(clearDefined)
-                .addMethod(initDefaults);
+                .addMethod(initDefaultsBuilder.build());
 
         if (caching) {
             type.addMethod(resetCache.build());
