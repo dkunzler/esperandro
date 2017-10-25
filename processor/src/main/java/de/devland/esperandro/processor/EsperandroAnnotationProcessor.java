@@ -21,6 +21,7 @@ import com.squareup.javapoet.*;
 import de.devland.esperandro.CacheActions;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
+import de.devland.esperandro.UnsafeActions;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.annotations.experimental.Cached;
 import de.devland.esperandro.annotations.experimental.GenerateStringResources;
@@ -45,6 +46,16 @@ import java.util.*;
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     public static final String OPTION_VALUES_DIR = "esperandro_valuesDir";
+
+    private static final Set<String> SUPER_INTERFACE_BLACKLIST;
+
+    static {
+        Set<String> blacklist = new HashSet<>();
+        blacklist.add(SharedPreferenceActions.class.getName());
+        blacklist.add(CacheActions.class.getName());
+        blacklist.add(UnsafeActions.class.getName());
+        SUPER_INTERFACE_BLACKLIST = Collections.unmodifiableSet(blacklist);
+    }
 
     private Warner warner;
     private Map<TypeMirror, Element> rootElements;
@@ -154,7 +165,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         boolean hasErrors = false;
         for (PreferenceInformation info : allPreferences) {
             if (info.preferenceType == null) {
-                warner.emitError("Found different types for the same preference. Aborting.", interfaze);
+                warner.emitError("Found different types for the same preference (" + info.preferenceName + "). Aborting.", interfaze);
                 hasErrors = true;
             }
             if (info.adder != null && (info.setter == null && info.commitSetter == null || info.getter == null)) {
@@ -270,8 +281,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         for (TypeMirror subInterfaceType : interfaces) {
             Element subInterface = rootElements.get(subInterfaceType);
             String subInterfaceTypeName = subInterfaceType.toString();
-            if (!subInterfaceTypeName.equals(SharedPreferenceActions.class.getName()) &&
-                    !subInterfaceTypeName.equals(CacheActions.class.getName())) {
+            if (!SUPER_INTERFACE_BLACKLIST.contains(subInterfaceTypeName)) {
                 if (subInterface != null) {
                     analyze(topLevelInterface, subInterface, informationByType);
                 } else {

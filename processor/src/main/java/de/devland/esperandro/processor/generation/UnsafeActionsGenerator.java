@@ -18,6 +18,7 @@ public class UnsafeActionsGenerator {
         MethodSpec.Builder getValueBuilder = MethodSpec.methodBuilder("getValue")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
+                .addException(UnsafeActions.UnknownKeyException.class)
                 .addTypeVariable(typeVariable)
                 .addParameter(ClassName.get("android.content", "Context"), "context")
                 .addParameter(int.class, "prefId")
@@ -28,7 +29,7 @@ public class UnsafeActionsGenerator {
         for (PreferenceInformation info : allPreferences) {
             // when getter is missing, generate one
             if (info.getter == null) {
-                new GetterGenerator(null).createPrivate(type, info, cachedAnnotation);
+                new GetterGenerator(null, null).createPrivate(type, info, cachedAnnotation);
             }
             getValueBuilder.beginControlFlow("if (prefKey.equals($S))", info.preferenceName);
             if (info.preferenceType.isPrimitive()) {
@@ -39,11 +40,12 @@ public class UnsafeActionsGenerator {
             }
             getValueBuilder.endControlFlow();
         }
-        getValueBuilder.addStatement("return null");
+        getValueBuilder.addStatement("throw new $T(prefKey)", UnsafeActions.UnknownKeyException.class);
 
         MethodSpec.Builder setValueBuilder = MethodSpec.methodBuilder("setValue")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
+                .addException(UnsafeActions.UnknownKeyException.class)
                 .addTypeVariable(typeVariable)
                 .addParameter(ClassName.get("android.content", "Context"), "context")
                 .addParameter(int.class, "prefId")
@@ -64,8 +66,10 @@ public class UnsafeActionsGenerator {
             } else {
                 setValueBuilder.addStatement("$L(($T)pref)", info.preferenceName, info.preferenceType.getType());
             }
+            setValueBuilder.addStatement("return");
             setValueBuilder.endControlFlow();
         }
+        setValueBuilder.addStatement("throw new $T(prefKey)", UnsafeActions.UnknownKeyException.class);
 
         type.addSuperinterface(UnsafeActions.class)
                 .addMethod(getValueBuilder.build())
