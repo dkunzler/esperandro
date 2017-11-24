@@ -63,6 +63,9 @@ public class UnsafeActionsGenerator {
             if (info.preferenceType.isPrimitive()) {
                 // box
                 setValueBuilder.addStatement("$L(($T) ($T)pref)", info.preferenceName, info.preferenceType.getType(), info.preferenceType.getObjectType());
+            } else if (info.preferenceType.getTypeName().equals("Byte")) {
+                // box, byte is not handled as primitive
+                setValueBuilder.addStatement("$L(($T) (Byte)pref)", info.preferenceName, info.preferenceType.getType());
             } else {
                 setValueBuilder.addStatement("$L(($T)pref)", info.preferenceName, info.preferenceType.getType());
             }

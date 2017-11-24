@@ -35,6 +35,7 @@ public class PreferenceTypeInformation {
                 result.preferenceType = PreferenceType.FLOAT;
                 result.declaredTypeName = "float";
                 break;
+            case ARRAY:
             case DECLARED:
                 result.isPrimitive = false;
                 if (Constants.DECLARED_TYPENAME_STRING.equals(typeMirror.toString())) {
