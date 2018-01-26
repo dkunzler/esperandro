@@ -1,6 +1,7 @@
 package de.devland.esperandro.processor;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.QualifiedNameable;
 
 public class Utils {
@@ -63,5 +64,10 @@ public class Utils {
         String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
         String typeName = split[split.length - 1];
         return typeName;
+    }
+
+    public static boolean isPublic(Element interfaze) {
+        QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
+        return qualifiedNameable.getModifiers().contains(Modifier.PUBLIC);
     }
 }

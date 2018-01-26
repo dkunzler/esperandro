@@ -327,9 +327,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             boolean preferenceNamePresent = !preferencesName.equals("");
             String typeName = Utils.classNameFromInterface(interfaze) + Constants.IMPLEMENTATION_SUFFIX;
             result = TypeSpec.classBuilder(typeName)
-                    .addModifiers(Modifier.PUBLIC)
                     .addSuperinterface(TypeName.get(interfaze.asType()))
                     .addField(ClassName.get("android.content", "SharedPreferences"), "preferences", Modifier.PRIVATE, Modifier.FINAL);
+            if (Utils.isPublic(interfaze)) {
+                result.addModifiers(Modifier.PUBLIC);
+            }
             if (cacheAnnotation != null) {
                 result.addSuperinterface(CacheActions.class);
             }
