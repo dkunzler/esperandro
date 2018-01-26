@@ -120,7 +120,7 @@ public class GetterGenerator {
                     warner.emitMissingDefaultWarning(preferenceType.getTypeName(), element);
                     defaultValue = "null";
                 } else if (hasDefaultAnnotation) {
-                    defaultValue = "new " + getOfClassDefault(defaultAnnotation).toString() + "()";
+                    defaultValue = "__serializer.serialize(new " + getOfClassDefault(defaultAnnotation).toString() + "())";
                 } else {
                     defaultValue = "null";
                 }
