@@ -67,7 +67,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         warner = new Warner(processingEnv);
-        rootElements = new HashMap<TypeMirror, Element>();
+        rootElements = new HashMap<>();
 
         preProcessEnvironment(roundEnv);
 
@@ -232,7 +232,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void createGenericClassImplementations(TypeSpec.Builder type, Collection<PreferenceInformation> allPreferences) throws IOException {
+    private void createGenericClassImplementations(TypeSpec.Builder type, Collection<PreferenceInformation> allPreferences) {
         for (PreferenceInformation info : allPreferences) {
             if (info.preferenceType.isGeneric()) {
                 TypeSpec innerGenericType = TypeSpec.classBuilder(Utils.createClassNameForPreference(info.preferenceName))
