@@ -28,7 +28,11 @@ public class Utils {
                 break;
             case BOOLEAN:
                 methodSuffix = "Boolean";
-                //noinspection PointlessBooleanExpression
+                break;
+            case BYTE:
+            case CHAR:
+                // cast byte and char into int
+                methodSuffix = "Int";
                 break;
             case STRING:
                 methodSuffix = "String";

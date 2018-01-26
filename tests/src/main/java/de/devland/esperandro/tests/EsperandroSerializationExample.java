@@ -52,4 +52,10 @@ public interface EsperandroSerializationExample extends SharedPreferenceActions 
     @Default(ofClass = Container.class)
     Container containerDefault();
 
+    byte byteValue();
+    void byteValue(byte byteValue);
+
+    char charValue();
+    void charValue(char charValue);
+
 }

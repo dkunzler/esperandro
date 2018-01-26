@@ -35,6 +35,8 @@ public @interface Default {
     int intDefault = -1;
     long longDefault = -1L;
     float floatDefault = -1.0f;
+    char charDefault = 0;
+    byte byteDefault = 0x00;
     String stringDefault = "";
 
     boolean ofBoolean() default booleanDefault;
@@ -44,6 +46,10 @@ public @interface Default {
     long ofLong() default longDefault;
 
     float ofFloat() default floatDefault;
+
+    char ofChar() default charDefault;
+
+    byte ofByte() default byteDefault;
 
     String ofString() default stringDefault;
 

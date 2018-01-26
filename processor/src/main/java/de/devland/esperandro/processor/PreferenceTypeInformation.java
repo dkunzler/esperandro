@@ -35,6 +35,14 @@ public class PreferenceTypeInformation {
                 result.preferenceType = PreferenceType.FLOAT;
                 result.declaredTypeName = "float";
                 break;
+            case CHAR:
+                result.preferenceType = PreferenceType.CHAR;
+                result.declaredTypeName = "char";
+                break;
+            case BYTE:
+                result.preferenceType = PreferenceType.BYTE;
+                result.declaredTypeName = "byte";
+                break;
             case ARRAY:
             case DECLARED:
                 result.isPrimitive = false;
@@ -72,6 +80,12 @@ public class PreferenceTypeInformation {
             result.declaredTypeName = typeString;
         } else if (typeString.equals("boolean")) {
             result.preferenceType = PreferenceType.BOOLEAN;
+            result.declaredTypeName = typeString;
+        } else if (typeString.equals("char")) {
+            result.preferenceType = PreferenceType.CHAR;
+            result.declaredTypeName = typeString;
+        } else if (typeString.equals("byte")) {
+            result.preferenceType = PreferenceType.BYTE;
             result.declaredTypeName = typeString;
         } else if (typeString.equals("java.util.Set<java.lang.String>")) {
             result.isPrimitive = false;
@@ -131,6 +145,12 @@ public class PreferenceTypeInformation {
                     break;
                 case BOOLEAN:
                     result = TypeName.get(Boolean.class);
+                    break;
+                case BYTE:
+                    result = TypeName.get(Byte.class);
+                    break;
+                case CHAR:
+                    result = TypeName.get(Character.class);
                     break;
             }
             return result;

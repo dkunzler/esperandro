@@ -97,6 +97,20 @@ public class GetterGenerator {
                 defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofBoolean()) : String.valueOf
                         (Default.booleanDefault);
                 break;
+            case BYTE:
+                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofByte() == Default.byteDefault) {
+                    warner.emitMissingDefaultWarning("byte", element);
+                }
+                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofByte()) : String.valueOf
+                        (Default.byteDefault);
+                break;
+            case CHAR:
+                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofChar() == Default.charDefault) {
+                    warner.emitMissingDefaultWarning("char", element);
+                }
+                defaultValue = hasDefaultAnnotation ? String.valueOf((int)defaultAnnotation.ofChar()) : String.valueOf
+                        ((int)Default.charDefault);
+                break;
             case STRING:
                 if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofString().equals(Default
                         .stringDefault)) {
@@ -139,6 +153,8 @@ public class GetterGenerator {
         hasAllDefaults &= defaultAnnotation.ofInt() == Default.intDefault;
         hasAllDefaults &= defaultAnnotation.ofFloat() == Default.floatDefault;
         hasAllDefaults &= defaultAnnotation.ofLong() == Default.longDefault;
+        hasAllDefaults &= defaultAnnotation.ofChar() == Default.charDefault;
+        hasAllDefaults &= defaultAnnotation.ofByte() == Default.byteDefault;
         hasAllDefaults &= defaultAnnotation.ofString().equals(Default.stringDefault);
         hasAllDefaults &= hasDefaultClass(defaultAnnotation);
 
@@ -182,6 +198,12 @@ public class GetterGenerator {
         }
 
         String statementPattern = "preferences.get%s(\"%s\", %s)";
+        if (info.preferenceType.getPreferenceType() == PreferenceType.CHAR) {
+            statementPattern = "(char) " + statementPattern;
+        }
+        if (info.preferenceType.getPreferenceType() == PreferenceType.BYTE) {
+            statementPattern = "(byte) " + statementPattern;
+        }
         String methodSuffix = Utils.getMethodSuffix(info.preferenceType.getPreferenceType());
         if (info.preferenceType.getPreferenceType() == PreferenceType.OBJECT) {
             getterBuilder.addStatement("$T __serializer = $T.getSerializer()", Serializer.class, Esperandro.class);

@@ -16,5 +16,5 @@
 package de.devland.esperandro.processor;
 
 public enum PreferenceType {
-    UNKNOWN, INT, LONG, FLOAT, BOOLEAN, STRING, STRINGSET, OBJECT;
+    UNKNOWN, INT, LONG, FLOAT, BOOLEAN, CHAR, BYTE, STRING, STRINGSET, OBJECT
 }
