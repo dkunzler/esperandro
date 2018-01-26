@@ -28,7 +28,6 @@ import de.devland.esperandro.annotations.experimental.GenerateStringResources;
 import de.devland.esperandro.processor.generation.*;
 
 import javax.annotation.processing.*;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -39,8 +38,6 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.*;
 
-// TODO errorHandling
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("de.devland.esperandro.annotations.SharedPreferences")
 @SupportedOptions(EsperandroAnnotationProcessor.OPTION_VALUES_DIR)
 public class EsperandroAnnotationProcessor extends AbstractProcessor {
