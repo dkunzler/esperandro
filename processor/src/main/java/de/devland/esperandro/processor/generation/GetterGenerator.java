@@ -106,7 +106,7 @@ public class GetterGenerator {
                         .stringDefault + "\""));
                 break;
             case STRINGSET:
-                if (hasDefaultAnnotation && getOfClassDefault(defaultAnnotation).equals(getDefaultType())) {
+                if (hasDefaultAnnotation && hasDefaultClass(defaultAnnotation)) {
                     warner.emitMissingDefaultWarning("Set<String>", element);
                     defaultValue = "null";
                 } else if (hasDefaultAnnotation) {
@@ -116,9 +116,11 @@ public class GetterGenerator {
                 }
                 break;
             case OBJECT:
-                if (hasDefaultAnnotation && getOfClassDefault(defaultAnnotation).equals(getDefaultType())) {
+                if (hasDefaultAnnotation && hasDefaultClass(defaultAnnotation)) {
                     warner.emitMissingDefaultWarning(preferenceType.getTypeName(), element);
                     defaultValue = "null";
+                } else if (hasDefaultAnnotation) {
+                    defaultValue = "new " + getOfClassDefault(defaultAnnotation).toString() + "()";
                 } else {
                     defaultValue = "null";
                 }
@@ -138,9 +140,14 @@ public class GetterGenerator {
         hasAllDefaults &= defaultAnnotation.ofFloat() == Default.floatDefault;
         hasAllDefaults &= defaultAnnotation.ofLong() == Default.longDefault;
         hasAllDefaults &= defaultAnnotation.ofString().equals(Default.stringDefault);
-        hasAllDefaults &= getOfClassDefault(defaultAnnotation).equals(getDefaultType());
+        hasAllDefaults &= hasDefaultClass(defaultAnnotation);
 
         return hasAllDefaults;
+    }
+
+    private boolean hasDefaultClass(Default defaultAnnotation) {
+        return getOfClassDefault(defaultAnnotation).toString()
+                .equals(getDefaultType().toString());
     }
 
 
@@ -181,7 +188,7 @@ public class GetterGenerator {
             String statement = String.format(statementPattern, methodSuffix, info.preferenceName, defaultValue);
             getterBuilder.addStatement("$T __prefValue = $L", TypeName.get(String.class), statement);
             getterBuilder.addStatement("$L __value = null", info.preferenceType.getTypeName());
-            if (methodInformation.defaultAnnotation != null && !getOfClassDefault(methodInformation.defaultAnnotation).equals(getDefaultType())) {
+            if (methodInformation.defaultAnnotation != null && !hasDefaultClass(methodInformation.defaultAnnotation)) {
                 getterBuilder.beginControlFlow("if (__prefValue == null)");
                 getterBuilder.addStatement("__value = new $L()", getOfClassDefault(methodInformation.defaultAnnotation).toString());
                 getterBuilder.nextControlFlow("else");
@@ -197,14 +204,14 @@ public class GetterGenerator {
                 getterBuilder.addStatement("__value = __serializer.deserialize(__prefValue, $L.class)", info.preferenceType.getTypeName());
                 statementPattern = "__value";
             }
-            if (methodInformation.defaultAnnotation != null && !getOfClassDefault(methodInformation.defaultAnnotation).equals(getDefaultType())) {
+            if (methodInformation.defaultAnnotation != null && !hasDefaultClass(methodInformation.defaultAnnotation)) {
                 getterBuilder.endControlFlow();
             }
         }
 
         if (info.runtimeDefaultGetter != null && info.runtimeDefaultGetter.defaultAnnotation != null && runtimeDefault) {
             Element element = info.runtimeDefaultGetter.element;
-            warner.emitWarning("Pointless @Default Annotation", element);
+            warner.emitError("@Default annotation not supported when using runtime defaults", element);
         }
         String statement = String.format(statementPattern, methodSuffix, info.preferenceName, defaultValue);
         getterBuilder.addStatement("__result = $L", statement);

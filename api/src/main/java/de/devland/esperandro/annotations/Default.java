@@ -31,11 +31,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Default {
 
-    public static final boolean booleanDefault = false;
-    public static final int intDefault = -1;
-    public static final long longDefault = -1l;
-    public static final float floatDefault = -1.0f;
-    public static final String stringDefault = "";
+    boolean booleanDefault = false;
+    int intDefault = -1;
+    long longDefault = -1L;
+    float floatDefault = -1.0f;
+    String stringDefault = "";
 
     boolean ofBoolean() default booleanDefault;
 
@@ -47,5 +47,9 @@ public @interface Default {
 
     String ofString() default stringDefault;
 
+    /**
+     * A default for complex types. The default constructor of the class that is put here will be invoked to get
+     * a default when no preference is set.
+     */
     Class<?> ofClass() default de.devland.esperandro.internal.Default.class;
 }

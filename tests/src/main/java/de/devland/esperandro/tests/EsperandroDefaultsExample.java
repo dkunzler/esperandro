@@ -42,6 +42,9 @@ public interface EsperandroDefaultsExample extends SharedPreferenceActions {
 
     void boolPref(boolean value);
 
+    @Default(ofBoolean = false)
+    boolean defaultBoolPref();
+
     @Default(ofString = "The truth is out there...")
     String stringPref();
 
