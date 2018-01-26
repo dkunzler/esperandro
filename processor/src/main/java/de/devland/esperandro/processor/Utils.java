@@ -49,21 +49,20 @@ public class Utils {
     public static String packageNameFromInterface(Element interfaze) {
         QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
         String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
-        String packageName = "";
+        StringBuilder packageName = new StringBuilder();
         for (int i = 0; i < split.length - 1; i++) {
-            packageName += split[i];
+            packageName.append(split[i]);
             if (i < split.length - 2) {
-                packageName += ".";
+                packageName.append(".");
             }
         }
-        return packageName;
+        return packageName.toString();
     }
 
     public static String classNameFromInterface(Element interfaze) {
         QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
         String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");
-        String typeName = split[split.length - 1];
-        return typeName;
+        return split[split.length - 1]; // last part of qualified name is simple name
     }
 
     public static boolean isPublic(Element interfaze) {
