@@ -56,6 +56,15 @@ public @interface Default {
     /**
      * A default for complex types. The default constructor of the class that is put here will be invoked to get
      * a default when no preference is set.
+     *
+     * @deprecated Use ofStatement instead (for example ofStatement="new de.devland.SomeClass()")
      */
+    @Deprecated
     Class<?> ofClass() default de.devland.esperandro.internal.Default.class;
+
+    /**
+     * A default that can be used on every type. If present the value of the provided string will be used as is
+     * as the default value when getting the preference value.
+     */
+    String ofStatement() default stringDefault;
 }

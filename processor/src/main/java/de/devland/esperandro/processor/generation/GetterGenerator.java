@@ -65,82 +65,86 @@ public class GetterGenerator {
             allDefaults = hasAllDefaults(defaultAnnotation);
         }
         String defaultValue = "";
-        switch (preferenceType.getPreferenceType()) {
-            case INT:
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofInt() == Default.intDefault) {
-                    warner.emitMissingDefaultWarning("int", element);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofInt()) : String.valueOf
-                        (Default.intDefault);
-                break;
-            case LONG:
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofLong() == Default.longDefault) {
-                    warner.emitMissingDefaultWarning("long", element);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofLong()) : String.valueOf
-                        (Default.longDefault);
-                defaultValue += "l";
-                break;
-            case FLOAT:
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofFloat() == Default.floatDefault) {
-                    warner.emitMissingDefaultWarning("float", element);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofFloat()) : String.valueOf
-                        (Default.floatDefault);
-                defaultValue += "f";
-                break;
-            case BOOLEAN:
-                //noinspection PointlessBooleanExpression
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
-                    warner.emitMissingDefaultWarning("boolean", element);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofBoolean()) : String.valueOf
-                        (Default.booleanDefault);
-                break;
-            case BYTE:
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofByte() == Default.byteDefault) {
-                    warner.emitMissingDefaultWarning("byte", element);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofByte()) : String.valueOf
-                        (Default.byteDefault);
-                break;
-            case CHAR:
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofChar() == Default.charDefault) {
-                    warner.emitMissingDefaultWarning("char", element);
-                }
-                defaultValue = hasDefaultAnnotation ? String.valueOf((int)defaultAnnotation.ofChar()) : String.valueOf
-                        ((int)Default.charDefault);
-                break;
-            case STRING:
-                if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofString().equals(Default
-                        .stringDefault)) {
-                    warner.emitMissingDefaultWarning("String", element);
-                }
-                defaultValue = (hasDefaultAnnotation ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default
-                        .stringDefault + "\""));
-                break;
-            case STRINGSET:
-                if (hasDefaultAnnotation && hasDefaultClass(defaultAnnotation)) {
-                    warner.emitMissingDefaultWarning("Set<String>", element);
-                    defaultValue = "null";
-                } else if (hasDefaultAnnotation) {
-                    defaultValue = "new " + getOfClassDefault(defaultAnnotation).toString() + "()";
-                } else {
-                    defaultValue = "null";
-                }
-                break;
-            case OBJECT:
-                if (hasDefaultAnnotation && hasDefaultClass(defaultAnnotation)) {
-                    warner.emitMissingDefaultWarning(preferenceType.getTypeName(), element);
-                    defaultValue = "null";
-                } else if (hasDefaultAnnotation) {
-                    defaultValue = "__serializer.serialize(new " + getOfClassDefault(defaultAnnotation).toString() + "())";
-                } else {
-                    defaultValue = "null";
-                }
-                break;
-            case UNKNOWN:
-                break;
+        if (allDefaults && !defaultAnnotation.ofStatement().equals(Default.stringDefault)) {
+            defaultValue = defaultAnnotation.ofStatement();
+        } else {
+            switch (preferenceType.getPreferenceType()) {
+                case INT:
+                    if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofInt() == Default.intDefault) {
+                        warner.emitMissingDefaultWarning("int", element);
+                    }
+                    defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofInt()) : String.valueOf
+                            (Default.intDefault);
+                    break;
+                case LONG:
+                    if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofLong() == Default.longDefault) {
+                        warner.emitMissingDefaultWarning("long", element);
+                    }
+                    defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofLong()) : String.valueOf
+                            (Default.longDefault);
+                    defaultValue += "l";
+                    break;
+                case FLOAT:
+                    if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofFloat() == Default.floatDefault) {
+                        warner.emitMissingDefaultWarning("float", element);
+                    }
+                    defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofFloat()) : String.valueOf
+                            (Default.floatDefault);
+                    defaultValue += "f";
+                    break;
+                case BOOLEAN:
+                    //noinspection PointlessBooleanExpression
+                    if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofBoolean() == Default.booleanDefault) {
+                        warner.emitMissingDefaultWarning("boolean", element);
+                    }
+                    defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofBoolean()) : String.valueOf
+                            (Default.booleanDefault);
+                    break;
+                case BYTE:
+                    if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofByte() == Default.byteDefault) {
+                        warner.emitMissingDefaultWarning("byte", element);
+                    }
+                    defaultValue = hasDefaultAnnotation ? String.valueOf(defaultAnnotation.ofByte()) : String.valueOf
+                            (Default.byteDefault);
+                    break;
+                case CHAR:
+                    if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofChar() == Default.charDefault) {
+                        warner.emitMissingDefaultWarning("char", element);
+                    }
+                    defaultValue = hasDefaultAnnotation ? String.valueOf((int) defaultAnnotation.ofChar()) : String.valueOf
+                            ((int) Default.charDefault);
+                    break;
+                case STRING:
+                    if (hasDefaultAnnotation && !allDefaults && defaultAnnotation.ofString().equals(Default
+                            .stringDefault)) {
+                        warner.emitMissingDefaultWarning("String", element);
+                    }
+                    defaultValue = (hasDefaultAnnotation ? ("\"" + defaultAnnotation.ofString() + "\"") : ("\"" + Default
+                            .stringDefault + "\""));
+                    break;
+                case STRINGSET:
+                    if (hasDefaultAnnotation && hasDefaultClass(defaultAnnotation)) {
+                        warner.emitMissingDefaultWarning("Set<String>", element);
+                        defaultValue = "null";
+                    } else if (hasDefaultAnnotation) {
+                        defaultValue = "new " + getOfClassDefault(defaultAnnotation).toString() + "()";
+                    } else {
+                        defaultValue = "null";
+                    }
+                    break;
+                case OBJECT:
+                    if (hasDefaultAnnotation && hasDefaultClass(defaultAnnotation)) {
+                        warner.emitMissingDefaultWarning(preferenceType.getTypeName(), element);
+                        defaultValue = "null";
+                    } else if (hasDefaultAnnotation) {
+                        defaultValue = "__serializer.serialize(new " + getOfClassDefault(defaultAnnotation).toString() + "())";
+                    } else {
+                        defaultValue = "null";
+                    }
+                    break;
+                case UNKNOWN:
+                    break;
+            }
         }
 
         return defaultValue;

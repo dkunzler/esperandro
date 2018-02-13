@@ -29,7 +29,7 @@ public interface EsperandroDefaultsExample extends SharedPreferenceActions {
     @Default(ofInt = 42)
     int integerPref();
 
-    @Default(ofLong = 42l)
+    @Default(ofLong = 42L)
     long longPref();
 
     @Default(ofFloat = 4.2f)
@@ -55,5 +55,9 @@ public interface EsperandroDefaultsExample extends SharedPreferenceActions {
     Container complexPref();
 
     Container complexPref$Default(Container defaultValue);
+
+    @Default(ofStatement = "java.lang.Math.max(5,4)")
+    int statementDefault();
+    void statementDefault(int statementDefault);
 
 }
