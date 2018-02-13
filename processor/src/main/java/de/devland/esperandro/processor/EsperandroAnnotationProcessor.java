@@ -235,9 +235,13 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     private void createGenericClassImplementations(TypeSpec.Builder type, Collection<PreferenceInformation> allPreferences) {
         for (PreferenceInformation info : allPreferences) {
             if (info.preferenceType.isGeneric()) {
+                FieldSpec serialVersionUid = FieldSpec.builder(TypeName.LONG, "serialVersionUID", Modifier.PRIVATE)
+                        .initializer("1L")
+                        .build();
                 TypeSpec innerGenericType = TypeSpec.classBuilder(Utils.createClassNameForPreference(info.preferenceName))
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                         .addSuperinterface(Serializable.class)
+                        .addField(serialVersionUid)
                         .addField(info.preferenceType.getType(), "value", Modifier.PUBLIC)
                         .build();
 
