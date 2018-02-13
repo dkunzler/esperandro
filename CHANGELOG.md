@@ -1,6 +1,46 @@
 Changelog
 =========
 
+2.6.0
+-----
+ * fix #48
+ * fix #47, use same visibility for generated preferences as interface
+ * add char and byte support
+ * update dependencies
+
+2.5.2
+-----
+ * simple set and get methods via name of preference
+ * Add support for Arrays
+
+2.5.1
+-----
+ * class default for complex types (proved class will be instantiated with default constructor)
+
+2.5.0
+-----
+ * internal refactoring
+ * generate String constants of preference names
+ * possibility to add and remove values from Collection types via $Add and $Remove prefixes
+
+2.4.1
+-----
+ * fix warning message
+ * automatic cache size
+
+2.4.0
+-----
+ * fix #41, #38
+ * add resetCache method on CacheActions
+ * fix NullPointerException in cache
+ * warn when caching default SharedPreferences
+ * experimental String resource generation
+
+2.3.1
+-----
+ * fix #37
+ * update dependencies
+
 2.3.0
 -----
  * generated container classes implement the Serializable interface
