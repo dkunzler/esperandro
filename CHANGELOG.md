@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Next version
+-----
+ * fix 51
+ * add ofStatement definition to @Default annotation
+
 2.6.0
 -----
  * fix #48
