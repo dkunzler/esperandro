@@ -3,12 +3,14 @@ package de.devland.esperandro.processor.generation;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
-import de.devland.esperandro.SharedPreferenceActions;
-import de.devland.esperandro.processor.PreferenceInformation;
 
-import javax.lang.model.element.Modifier;
 import java.io.IOException;
 import java.util.Collection;
+
+import javax.lang.model.element.Modifier;
+
+import de.devland.esperandro.SharedPreferenceActions;
+import de.devland.esperandro.processor.PreferenceInformation;
 
 /**
  * @author David Kunzler on 18.07.2017.
@@ -92,7 +94,7 @@ public class GenericActionsGenerator {
                 .returns(void.class);
 
         for (PreferenceInformation info : allPreferences) {
-            if (info.setter != null && info.getter != null) {
+            if ((info.setter != null || info.commitSetter != null) && info.getter != null) {
                 initDefaultsBuilder.addStatement("this.$L(this.$L())", info.preferenceName, info.preferenceName);
             }
         }

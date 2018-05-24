@@ -17,7 +17,42 @@
 
 package de.devland.esperandro.processor;
 
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+
 import de.devland.esperandro.CacheActions;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
@@ -25,19 +60,14 @@ import de.devland.esperandro.UnsafeActions;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.annotations.experimental.Cached;
 import de.devland.esperandro.annotations.experimental.GenerateStringResources;
-import de.devland.esperandro.processor.generation.*;
-
-import javax.annotation.processing.*;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.lang.reflect.Method;
-import java.util.*;
+import de.devland.esperandro.processor.generation.AdderGenerator;
+import de.devland.esperandro.processor.generation.GenericActionsGenerator;
+import de.devland.esperandro.processor.generation.GetterGenerator;
+import de.devland.esperandro.processor.generation.PutterGenerator;
+import de.devland.esperandro.processor.generation.RemoverGenerator;
+import de.devland.esperandro.processor.generation.StringConstantsGenerator;
+import de.devland.esperandro.processor.generation.StringResourceGenerator;
+import de.devland.esperandro.processor.generation.UnsafeActionsGenerator;
 
 @SupportedAnnotationTypes("de.devland.esperandro.annotations.SharedPreferences")
 @SupportedOptions(EsperandroAnnotationProcessor.OPTION_VALUES_DIR)
@@ -126,9 +156,11 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             if (info.getter != null && info.getter.element == null) info.getter.element = interfaze;
             if (info.runtimeDefaultGetter != null && info.runtimeDefaultGetter.element == null)
                 info.runtimeDefaultGetter.element = interfaze;
-            if (info.commitSetter != null && info.commitSetter.element == null) info.commitSetter.element = interfaze;
+            if (info.commitSetter != null && info.commitSetter.element == null)
+                info.commitSetter.element = interfaze;
             if (info.adder != null && info.adder.element == null) info.adder.element = interfaze;
-            if (info.remover != null && info.remover.element == null) info.remover.element = interfaze;
+            if (info.remover != null && info.remover.element == null)
+                info.remover.element = interfaze;
 
             // find common preferenceType
             info.preferenceType = commonPreferenceType(
@@ -201,8 +233,7 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     private void generateWarnings(Element interfaze, Collection<PreferenceInformation> allPreferences) {
         for (PreferenceInformation info : allPreferences) {
-            if (info.setter == null && info.commitSetter == null
-                    || info.getter == null && info.runtimeDefaultGetter == null) {
+            if (info.setter == null && info.commitSetter == null || info.getter == null) {
                 warner.emitWarning("Missing getter or setter for " + info.preferenceName + ", initDefaults" +
                         " will possibly not work as expected.", interfaze);
             }
