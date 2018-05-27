@@ -233,8 +233,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     private void generateWarnings(Element interfaze, Collection<PreferenceInformation> allPreferences) {
         for (PreferenceInformation info : allPreferences) {
-            if (info.setter == null && info.commitSetter == null || info.getter == null) {
-                warner.emitWarning("Missing getter or setter for " + info.preferenceName + ", initDefaults" +
+            if (info.getter == null) {
+                warner.emitWarning("Missing getter or setter for '" + info.preferenceName + "', initDefaults" +
                         " will possibly not work as expected.", interfaze);
             }
         }

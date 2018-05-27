@@ -11,6 +11,8 @@ import javax.lang.model.element.Modifier;
 
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.processor.PreferenceInformation;
+import de.devland.esperandro.processor.PreferenceType;
+import de.devland.esperandro.processor.Utils;
 
 /**
  * @author David Kunzler on 18.07.2017.
@@ -59,17 +61,64 @@ public class GenericActionsGenerator {
                 .returns(void.class)
                 .addStatement("preferences.edit().clear().$L", PreferenceEditorCommitStyle.APPLY.getStatementPart());
 
-        MethodSpec.Builder clearDefinedBuilder = MethodSpec.methodBuilder("clearDefined")
-                .addAnnotation(Override.class)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(void.class)
-                .addStatement("SharedPreferences.Editor editor = preferences.edit()");
 
         MethodSpec.Builder resetCache = MethodSpec.methodBuilder("resetCache")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
                 .addStatement("cache.evictAll()");
+
+        MethodSpec clearDefined = createClearDefinedMethod(allPreferences, caching, remove, clear);
+
+        MethodSpec initDefaults = createInitDefaultsMethod(allPreferences);
+
+
+        type.addSuperinterface(SharedPreferenceActions.class)
+                .addMethod(get.build())
+                .addMethod(contains.build())
+                .addMethod(remove.build())
+                .addMethod(registerListener.build())
+                .addMethod(unregisterListener.build())
+                .addMethod(clear.build())
+                .addMethod(clearDefined)
+                .addMethod(initDefaults);
+
+        if (caching) {
+            type.addMethod(resetCache.build());
+        }
+    }
+
+    private static MethodSpec createInitDefaultsMethod(Collection<PreferenceInformation> allPreferences) {
+        MethodSpec.Builder initDefaultsBuilder = MethodSpec.methodBuilder("initDefaults")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class)
+                .addStatement("SharedPreferences.Editor editor = preferences.edit()");
+
+        for (PreferenceInformation info : allPreferences) {
+            if (info.getter != null) {
+                String methodSuffix = Utils.getMethodSuffix(info.preferenceType.getPreferenceType());
+                String value = "this." + info.preferenceName + "()";
+                if (info.preferenceType.getPreferenceType() == PreferenceType.OBJECT) {
+                    value = "Esperandro.getSerializer().serialize(" + value + ")";
+                }
+
+                initDefaultsBuilder.addStatement("editor.put$L($S, $L)", methodSuffix, info.preferenceName, value);
+            } else {
+                initDefaultsBuilder.addComment("no default initialization possible for '$L'", info.preferenceName);
+            }
+        }
+
+        initDefaultsBuilder.addStatement("editor.commit()");
+        return initDefaultsBuilder.build();
+    }
+
+    private static MethodSpec createClearDefinedMethod(Collection<PreferenceInformation> allPreferences, boolean caching, MethodSpec.Builder remove, MethodSpec.Builder clear) {
+        MethodSpec.Builder clearDefinedBuilder = MethodSpec.methodBuilder("clearDefined")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class)
+                .addStatement("SharedPreferences.Editor editor = preferences.edit()");
 
 
         for (PreferenceInformation info : allPreferences) {
@@ -84,34 +133,8 @@ public class GenericActionsGenerator {
             }
         }
 
-        MethodSpec clearDefined = clearDefinedBuilder
+        return clearDefinedBuilder
                 .addStatement("editor.$L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
                 .build();
-
-        MethodSpec.Builder initDefaultsBuilder = MethodSpec.methodBuilder("initDefaults")
-                .addAnnotation(Override.class)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(void.class);
-
-        for (PreferenceInformation info : allPreferences) {
-            if ((info.setter != null || info.commitSetter != null) && info.getter != null) {
-                initDefaultsBuilder.addStatement("this.$L(this.$L())", info.preferenceName, info.preferenceName);
-            }
-        }
-
-
-        type.addSuperinterface(SharedPreferenceActions.class)
-                .addMethod(get.build())
-                .addMethod(contains.build())
-                .addMethod(remove.build())
-                .addMethod(registerListener.build())
-                .addMethod(unregisterListener.build())
-                .addMethod(clear.build())
-                .addMethod(clearDefined)
-                .addMethod(initDefaultsBuilder.build());
-
-        if (caching) {
-            type.addMethod(resetCache.build());
-        }
     }
 }
