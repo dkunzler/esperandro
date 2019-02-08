@@ -297,7 +297,8 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
     private void analyze(Element topLevelInterface, Element currentInterface, Map<String, PreferenceInformation> informationByType) {
         List<? extends Element> potentialMethods = currentInterface.getEnclosedElements();
         for (Element element : potentialMethods) {
-            if (element.getKind() == ElementKind.METHOD) {
+            if (element.getKind() == ElementKind.METHOD
+                    && !element.getModifiers().contains(Modifier.STATIC)) {
                 ExecutableElement method = (ExecutableElement) element;
                 String preferenceName = PreferenceClassifier.preferenceName(method);
                 PreferenceInformation info = informationByType.get(preferenceName);
@@ -332,6 +333,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
 
     private void analyze(Class<?> interfaceClass, Map<String, PreferenceInformation> informationByType) {
         for (Method method : interfaceClass.getDeclaredMethods()) {
+            if (java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
+                continue;
+            }
             String preferenceName = PreferenceClassifier.preferenceName(method);
             PreferenceInformation info = informationByType.get(preferenceName);
             if (info == null) {
