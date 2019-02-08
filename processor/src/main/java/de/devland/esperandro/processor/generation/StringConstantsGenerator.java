@@ -3,15 +3,17 @@ package de.devland.esperandro.processor.generation;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
-import de.devland.esperandro.processor.Constants;
-import de.devland.esperandro.processor.PreferenceInformation;
-import de.devland.esperandro.processor.Utils;
+
+import java.io.IOException;
+import java.util.Collection;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import java.io.IOException;
-import java.util.Collection;
+
+import de.devland.esperandro.processor.Constants;
+import de.devland.esperandro.processor.PreferenceInformation;
+import de.devland.esperandro.processor.Utils;
 
 /**
  * Created by deekay on 18.01.2017.
@@ -23,6 +25,10 @@ public class StringConstantsGenerator {
 
         String typeName = Utils.classNameFromInterface(interfaze) + Constants.SUFFIX_KEYS;
         result = TypeSpec.classBuilder(typeName);
+
+        if (Utils.isPublic(interfaze)) {
+            result.addModifiers(Modifier.PUBLIC);
+        }
 
         for (PreferenceInformation info : keys) {
             result.addField(generateField(info.preferenceName));
