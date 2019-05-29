@@ -42,6 +42,7 @@
     </parent>
     <modules>
         <module>api</module>
+        <module>base</module>
         <module>processor</module>
         <!--<module>sample</module>-->
         <module>gson-serializer</module>
@@ -136,6 +137,11 @@
             <dependency>
                 <groupId>de.devland.esperandro</groupId>
                 <artifactId>esperandro-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.devland.esperandro</groupId>
+                <artifactId>esperandro-base</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

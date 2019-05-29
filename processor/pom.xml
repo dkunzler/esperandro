@@ -20,6 +20,10 @@
             <artifactId>esperandro-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>de.devland.esperandro</groupId>
+            <artifactId>esperandro-base</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.android</groupId>
             <artifactId>annotations</artifactId>
         </dependency>
