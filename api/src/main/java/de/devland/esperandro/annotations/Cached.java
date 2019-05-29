@@ -1,4 +1,4 @@
-package de.devland.esperandro.annotations.experimental;
+package de.devland.esperandro.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -18,7 +18,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface Cached {
     /**
-     * defines the size of the underlying cache
+     * Defines the size of the underlying cache. This value is ignored if autoSize is set to true.
      */
     int cacheSize() default 20;
 
@@ -35,8 +35,16 @@ public @interface Cached {
     boolean cacheOnPut() default false;
 
     /**
-     * indicates if LruCache from support library v4 is used or the LruCache integrated in the
-     * Android SDK (version 12 and up)
+     * indicates which LruCache implementation is used:
+     * - FRAMEWORK means the integrated version in the Android SDK (version 12 and up)
+     * - SUPPORT_V$ means the class from the support-v4 library
+     * - ANDROID_X means the version from the androidx collection library
      */
-    boolean support() default false;
+    CacheVersion cacheVersion() default CacheVersion.FRAMEWORK;
+
+
+    enum CacheVersion {
+        FRAMEWORK, SUPPORT_V4, ANDROID_X
+    }
+
 }

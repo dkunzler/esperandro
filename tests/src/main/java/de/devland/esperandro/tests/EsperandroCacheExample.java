@@ -1,13 +1,13 @@
 package de.devland.esperandro.tests;
 
+import java.util.ArrayList;
+
 import de.devland.esperandro.CacheActions;
 import de.devland.esperandro.SharedPreferenceActions;
-import de.devland.esperandro.annotations.experimental.Cached;
+import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
 import de.devland.esperandro.tests.model.ContainerListObject;
-
-import java.util.ArrayList;
 
 /**
  * Created by deekay on 16.12.2015.

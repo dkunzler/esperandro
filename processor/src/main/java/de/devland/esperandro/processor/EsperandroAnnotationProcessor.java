@@ -57,8 +57,8 @@ import de.devland.esperandro.CacheActions;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.UnsafeActions;
+import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.annotations.SharedPreferences;
-import de.devland.esperandro.annotations.experimental.Cached;
 import de.devland.esperandro.annotations.experimental.GenerateStringResources;
 import de.devland.esperandro.processor.generation.AdderGenerator;
 import de.devland.esperandro.processor.generation.GenericActionsGenerator;
@@ -388,10 +388,17 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             if (cacheAnnotation != null) {
                 constructor.addParameter(TypeName.INT, "cacheSize");
                 ClassName cacheClass;
-                if (cacheAnnotation.support()) {
-                    cacheClass = ClassName.get("android.support.v4.util", "LruCache");
-                } else {
-                    cacheClass = ClassName.get("android.util", "LruCache");
+                switch (cacheAnnotation.cacheVersion()) {
+                    case SUPPORT_V4:
+                        cacheClass = ClassName.get("android.support.v4.util", "LruCache");
+                        break;
+                    case ANDROID_X:
+                        cacheClass = ClassName.get("androidx.collection", "LruCache");
+                        break;
+                    case FRAMEWORK:
+                    default:
+                        cacheClass = ClassName.get("android.util", "LruCache");
+                        break;
                 }
                 ParameterizedTypeName lruCache = ParameterizedTypeName.get(
                         cacheClass,

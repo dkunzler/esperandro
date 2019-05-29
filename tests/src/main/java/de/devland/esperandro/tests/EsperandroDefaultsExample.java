@@ -15,13 +15,13 @@
  */
 package de.devland.esperandro.tests;
 
+import java.util.Set;
+
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.Default;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
-
-import java.util.Set;
 
 @SharedPreferences(name = "defaults", mode = SharedPreferenceMode.PRIVATE)
 public interface EsperandroDefaultsExample extends SharedPreferenceActions {
@@ -59,5 +59,9 @@ public interface EsperandroDefaultsExample extends SharedPreferenceActions {
     @Default(ofStatement = "java.lang.Math.max(5,4)")
     int statementDefault();
     void statementDefault(int statementDefault);
+
+    @Default(ofStatement = "new Container()")
+    Container complextPrefStatementDefault();
+    void complexPrefStatementDefault(Container container);
 
 }

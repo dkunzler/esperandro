@@ -26,8 +26,8 @@ import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 
 import de.devland.esperandro.Esperandro;
+import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.annotations.Default;
-import de.devland.esperandro.annotations.experimental.Cached;
 import de.devland.esperandro.processor.Constants;
 import de.devland.esperandro.processor.MethodInformation;
 import de.devland.esperandro.processor.PreferenceInformation;

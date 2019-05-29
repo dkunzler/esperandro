@@ -4,12 +4,14 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
-import de.devland.esperandro.UnsafeActions;
-import de.devland.esperandro.annotations.experimental.Cached;
-import de.devland.esperandro.processor.PreferenceInformation;
+
+import java.util.Collection;
 
 import javax.lang.model.element.Modifier;
-import java.util.Collection;
+
+import de.devland.esperandro.UnsafeActions;
+import de.devland.esperandro.annotations.Cached;
+import de.devland.esperandro.processor.PreferenceInformation;
 
 public class UnsafeActionsGenerator {
 

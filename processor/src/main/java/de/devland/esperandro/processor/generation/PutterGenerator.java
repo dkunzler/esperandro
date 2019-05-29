@@ -10,11 +10,12 @@ package de.devland.esperandro.processor.generation;
 
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
-import de.devland.esperandro.annotations.experimental.Cached;
-import de.devland.esperandro.processor.PreferenceInformation;
-import de.devland.esperandro.processor.Utils;
 
 import javax.lang.model.element.Modifier;
+
+import de.devland.esperandro.annotations.Cached;
+import de.devland.esperandro.processor.PreferenceInformation;
+import de.devland.esperandro.processor.Utils;
 
 public class PutterGenerator {
 
