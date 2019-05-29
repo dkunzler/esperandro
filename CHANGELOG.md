@@ -1,7 +1,11 @@
 Changelog
 =========
 
-Next version
+2.7.1
+-----
+ * fix ofStatement default for serialized preferences
+
+2.7.0
 -----
  * fix 51
  * add ofStatement definition to @Default annotation

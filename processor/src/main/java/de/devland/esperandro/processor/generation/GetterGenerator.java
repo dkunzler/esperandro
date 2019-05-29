@@ -18,17 +18,24 @@ package de.devland.esperandro.processor.generation;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import de.devland.esperandro.Esperandro;
-import de.devland.esperandro.annotations.Default;
-import de.devland.esperandro.annotations.experimental.Cached;
-import de.devland.esperandro.processor.*;
-import de.devland.esperandro.serialization.Serializer;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
+
+import de.devland.esperandro.Esperandro;
+import de.devland.esperandro.annotations.Default;
+import de.devland.esperandro.annotations.experimental.Cached;
+import de.devland.esperandro.processor.Constants;
+import de.devland.esperandro.processor.MethodInformation;
+import de.devland.esperandro.processor.PreferenceInformation;
+import de.devland.esperandro.processor.PreferenceType;
+import de.devland.esperandro.processor.PreferenceTypeInformation;
+import de.devland.esperandro.processor.Utils;
+import de.devland.esperandro.processor.Warner;
+import de.devland.esperandro.serialization.Serializer;
 
 public class GetterGenerator {
 
@@ -67,6 +74,9 @@ public class GetterGenerator {
         String defaultValue = "";
         if (allDefaults && !defaultAnnotation.ofStatement().equals(Default.stringDefault)) {
             defaultValue = defaultAnnotation.ofStatement();
+            if (preferenceType.getPreferenceType() == PreferenceType.OBJECT) {
+                defaultValue = "__serializer.serialize(" + defaultValue + ")";
+            }
         } else {
             switch (preferenceType.getPreferenceType()) {
                 case INT:
