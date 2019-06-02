@@ -13,5 +13,6 @@ public class PreferenceInformation {
     public MethodInformation commitSetter;
     public MethodInformation adder;
     public MethodInformation remover;
+    public MethodInformation contains;
 
 }

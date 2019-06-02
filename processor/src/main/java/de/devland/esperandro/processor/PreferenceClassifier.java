@@ -1,14 +1,15 @@
 package de.devland.esperandro.processor;
 
-import de.devland.esperandro.annotations.Default;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.List;
+
+import de.devland.esperandro.annotations.Default;
 
 /**
  * @author David Kunzler on 18.07.2017.
@@ -56,6 +57,9 @@ class PreferenceClassifier {
         if (info.remover == null) {
             info.remover = getRemover(method);
         }
+        if (info.contains == null) {
+            info.contains = getContains(method);
+        }
     }
 
     @SuppressWarnings("Duplicates") // not a real duplicate since ExecutableElement and Method are incompatible
@@ -77,6 +81,9 @@ class PreferenceClassifier {
         }
         if (info.remover == null) {
             info.remover = getRemover(method);
+        }
+        if (info.contains == null) {
+            info.contains = getContains(method);
         }
     }
 
@@ -313,6 +320,16 @@ class PreferenceClassifier {
         return methodName.endsWith(Constants.SUFFIX_REMOVE) ? getVoidWithOneParameter(method) : null;
     }
 
+    private static MethodInformation getContains(ExecutableElement method) {
+        String methodName = method.getSimpleName().toString();
+        return methodName.endsWith(Constants.SUFFIX_CONTAINS) ? getVoidWithOneParameter(method) : null;
+    }
+
+    private static MethodInformation getContains(Method method) {
+        String methodName = method.getName();
+        return methodName.endsWith(Constants.SUFFIX_CONTAINS) ? getVoidWithOneParameter(method) : null;
+    }
+
     private static MethodInformation getVoidWithOneParameter(ExecutableElement method) {
         boolean isVoidWithOneParameter = false;
         List<? extends VariableElement> parameters = method.getParameters();
@@ -346,6 +363,58 @@ class PreferenceClassifier {
 
         boolean hasParameter = parameterTypes != null && parameterTypes.length == 1;
         boolean hasValidReturnType = method.getReturnType().toString().equals("void");
+        //noinspection SimplifiableConditionalExpression
+        boolean hasValidPreferenceType = hasParameter ? PreferenceTypeInformation.from(parameterTypes[0]).getPreferenceType() != PreferenceType.UNKNOWN : false;
+
+        if (hasParameter && hasValidReturnType && hasValidPreferenceType) {
+            isVoidWithOneParameter = true;
+        }
+        if (isVoidWithOneParameter) {
+            return new MethodInformation(
+                    method.getAnnotation(Default.class),
+                    null,
+                    method,
+                    null,
+                    PreferenceTypeInformation.from(parameterTypes[0])
+            );
+        } else {
+            return null;
+        }
+    }
+
+    private static MethodInformation getBooleanWithOneParameter(ExecutableElement method) {
+        boolean isVoidWithOneParameter = false;
+        List<? extends VariableElement> parameters = method.getParameters();
+        TypeMirror returnType = method.getReturnType();
+        TypeKind returnTypeKind = returnType.getKind();
+
+        boolean hasParameter = parameters != null && parameters.size() == 1;
+        boolean hasValidReturnType = TypeKind.BOOLEAN.equals(returnTypeKind);
+        boolean hasValidPreferenceType = hasParameter && PreferenceTypeInformation.from(parameters.get(0).asType()).getPreferenceType() != PreferenceType.UNKNOWN;
+        boolean nameEndsWithDefaultSuffix = method.getSimpleName().toString().endsWith(Constants.SUFFIX_DEFAULT);
+
+        if (hasParameter && hasValidReturnType && hasValidPreferenceType && !nameEndsWithDefaultSuffix) {
+            isVoidWithOneParameter = true;
+        }
+        if (isVoidWithOneParameter) {
+            return new MethodInformation(
+                    method.getAnnotation(Default.class),
+                    method,
+                    null,
+                    null,
+                    PreferenceTypeInformation.from(parameters.get(0).asType())
+            );
+        } else {
+            return null;
+        }
+    }
+
+    private static MethodInformation getBooleanWithOneParameter(Method method) {
+        boolean isVoidWithOneParameter = false;
+        Type[] parameterTypes = method.getGenericParameterTypes();
+
+        boolean hasParameter = parameterTypes != null && parameterTypes.length == 1;
+        boolean hasValidReturnType = method.getReturnType().toString().equals("boolean");
         //noinspection SimplifiableConditionalExpression
         boolean hasValidPreferenceType = hasParameter ? PreferenceTypeInformation.from(parameterTypes[0]).getPreferenceType() != PreferenceType.UNKNOWN : false;
 

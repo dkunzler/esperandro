@@ -61,6 +61,7 @@ import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.annotations.experimental.GenerateStringResources;
 import de.devland.esperandro.processor.generation.AdderGenerator;
+import de.devland.esperandro.processor.generation.ContainsGenerator;
 import de.devland.esperandro.processor.generation.GenericActionsGenerator;
 import de.devland.esperandro.processor.generation.GetterGenerator;
 import de.devland.esperandro.processor.generation.PutterGenerator;
@@ -260,6 +261,9 @@ public class EsperandroAnnotationProcessor extends AbstractProcessor {
             }
             if (info.remover != null) {
                 RemoverGenerator.generate(type, info);
+            }
+            if (info.contains != null) {
+                ContainsGenerator.generate(type, info);
             }
         }
     }

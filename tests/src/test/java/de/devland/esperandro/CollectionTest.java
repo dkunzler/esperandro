@@ -1,8 +1,5 @@
 package de.devland.esperandro;
 
-import de.devland.esperandro.serialization.JacksonSerializer;
-import de.devland.esperandro.tests.EsperandroCollectionExample;
-import de.devland.esperandro.tests.model.Container;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,7 +9,15 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import de.devland.esperandro.serialization.JacksonSerializer;
+import de.devland.esperandro.tests.EsperandroCollectionExample;
+import de.devland.esperandro.tests.model.Container;
 
 /**
  * @author David Kunzler on 19.07.2017.
@@ -50,7 +55,7 @@ public class CollectionTest {
 
     @Test
     public void addList() {
-        Assert.assertNull(esperandroPreferences.setPreference());
+        Assert.assertNull(esperandroPreferences.listPreference());
         Container container = new Container();
         container.anotherValue = 5;
         container.value = "hello World";
@@ -70,7 +75,7 @@ public class CollectionTest {
 
     @Test
     public void removeList() {
-        Assert.assertNull(esperandroPreferences.setPreference());
+        Assert.assertNull(esperandroPreferences.listPreference());
 
         Container container = new Container();
         container.anotherValue = 5;
@@ -94,6 +99,32 @@ public class CollectionTest {
         Assert.assertEquals(1, esperandroPreferences.listPreference().size());
         Assert.assertFalse(esperandroPreferences.listPreference().contains(container));
         Assert.assertTrue(esperandroPreferences.listPreference().contains(other));
+    }
+
+    @Test
+    public void containsList() {
+        Assert.assertNull(esperandroPreferences.listPreference());
+
+        Container container = new Container();
+        container.anotherValue = 5;
+        container.value = "hello World";
+
+        Container other = new Container();
+        other.anotherValue = 42;
+        other.value = "foo";
+
+        List<Container> list = new ArrayList<>();
+        list.add(container);
+        esperandroPreferences.listPreference(list);
+        Assert.assertTrue(esperandroPreferences.listPreference$Contains(container));
+        Assert.assertFalse(esperandroPreferences.listPreference$Contains(other));
+        esperandroPreferences.listPreference$Add(other);
+        Assert.assertTrue(esperandroPreferences.listPreference$Contains(container));
+        Assert.assertTrue(esperandroPreferences.listPreference$Contains(other));
+        esperandroPreferences.listPreference$Remove(container);
+        esperandroPreferences.listPreference$Remove(other);
+        Assert.assertFalse(esperandroPreferences.listPreference$Contains(container));
+        Assert.assertFalse(esperandroPreferences.listPreference$Contains(other));
     }
 
     @Test
