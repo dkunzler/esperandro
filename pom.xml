@@ -48,6 +48,7 @@
         <module>gson-serializer</module>
         <module>tests</module>
         <module>jackson-serializer</module>
+        <module>preference-processor</module>
     </modules>
 
     <properties>

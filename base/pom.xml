@@ -10,6 +10,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>esperandro-base</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>de.devland.esperandro</groupId>
+            <artifactId>esperandro-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>javapoet</artifactId>
+        </dependency>
+    </dependencies>
 
 
 </project>
