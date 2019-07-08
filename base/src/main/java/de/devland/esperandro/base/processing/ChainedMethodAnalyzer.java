@@ -16,25 +16,23 @@
 
 package de.devland.esperandro.base.processing;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
-import javax.lang.model.element.ExecutableElement;
-
 import de.devland.esperandro.base.MethodAnalyzer;
+import de.devland.esperandro.base.preferences.MethodInformation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 
 class ChainedMethodAnalyzer implements MethodAnalyzer {
 
-    private final List<MethodAnalyzer> delegates;
+    private final List<? extends MethodAnalyzer> delegates;
 
-    ChainedMethodAnalyzer(List<MethodAnalyzer> delegates) {
+    ChainedMethodAnalyzer(List<? extends MethodAnalyzer> delegates) {
         this.delegates = delegates;
     }
 
 
     @Override
-    public boolean isApplicableMethod(ExecutableElement method) {
+    public boolean isApplicableMethod(MethodInformation method) {
         for (MethodAnalyzer analyzer : delegates) {
             if (analyzer.isApplicableMethod(method)) {
                 return true;
@@ -44,7 +42,7 @@ class ChainedMethodAnalyzer implements MethodAnalyzer {
     }
 
     @Override
-    public String getPreferenceName(ExecutableElement method) {
+    public String getPreferenceName(MethodInformation method) {
         for (MethodAnalyzer analyzer : delegates) {
             if (analyzer.isApplicableMethod(method)) {
                 return analyzer.getPreferenceName(method);
@@ -54,7 +52,7 @@ class ChainedMethodAnalyzer implements MethodAnalyzer {
     }
 
     @Override
-    public TypeInformation getPreferenceType(ExecutableElement method) {
+    public TypeInformation getPreferenceType(MethodInformation method) {
         for (MethodAnalyzer analyzer : delegates) {
             if (analyzer.isApplicableMethod(method)) {
                 return analyzer.getPreferenceType(method);
@@ -63,33 +61,4 @@ class ChainedMethodAnalyzer implements MethodAnalyzer {
         return null;
     }
 
-    @Override
-    public boolean isApplicableMethod(Method method) {
-        for (MethodAnalyzer analyzer : delegates) {
-            if (analyzer.isApplicableMethod(method)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public String getPreferenceName(Method method) {
-        for (MethodAnalyzer analyzer : delegates) {
-            if (analyzer.isApplicableMethod(method)) {
-                return analyzer.getPreferenceName(method);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public TypeInformation getPreferenceType(Method method) {
-        for (MethodAnalyzer analyzer : delegates) {
-            if (analyzer.isApplicableMethod(method)) {
-                return analyzer.getPreferenceType(method);
-            }
-        }
-        return null;
-    }
 }

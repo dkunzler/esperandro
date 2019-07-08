@@ -1,8 +1,7 @@
 package de.devland.esperandro;
 
 import android.content.Context;
-import de.devland.esperandro.tests.UnsafeExample;
-import de.devland.esperandro.tests.model.Container;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,6 +14,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.util.Set;
+
+import de.devland.esperandro.tests.UnsafeExample;
+import de.devland.esperandro.tests.model.Container;
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner.class)
@@ -30,7 +32,7 @@ public class UnsafeTest {
 
     @After
     public void clear() {
-        unsafe.clear();
+        unsafe.clearAll();
     }
 
     @Before
@@ -52,11 +54,11 @@ public class UnsafeTest {
         unsafe.putterWithoutGetter(1337L);
         unsafe.get().edit().putStringSet("getterWithoutPutter", Sets.newSet("a")).apply();
 
-        Assert.assertEquals(42, unsafe.getValue(mockContext, 1));
+        Assert.assertEquals(42, (int) unsafe.getValue(mockContext, 1));
         Container container = unsafe.getValue(mockContext, 2);
         Assert.assertNotNull(container);
         Assert.assertEquals("truth", unsafe.getValue(mockContext, 3));
-        Assert.assertEquals(1337L, unsafe.getValue(mockContext, 4));
+        Assert.assertEquals(1337L, (long) unsafe.getValue(mockContext, 4));
         Set<String> stringSet = unsafe.getValue(mockContext, 5);
         Assert.assertNotNull(stringSet);
         Assert.assertEquals(1, stringSet.size());

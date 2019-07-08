@@ -14,13 +14,14 @@
  *   limitations under the License.
  */
 
-package de.devland.esperandro;
+package de.devland.esperandro.base.processing;
 
-public class Constants {
-    public static final String IMPLEMENTATION_SUFFIX = "$$Impl";
+import javax.lang.model.element.Element;
 
-    public static final String SUFFIX_SEPARATOR = "$";
-    public static final String SUFFIX_DEFAULT = SUFFIX_SEPARATOR + "Default";
-    public static final String SUFFIX_ADD = SUFFIX_SEPARATOR + "Add";
-    public static final String SUFFIX_REMOVE = SUFFIX_SEPARATOR + "Remove";
+import de.devland.esperandro.base.preferences.PreferenceInterface;
+
+public class Environment {
+
+    public static Element currentElement;
+    public static PreferenceInterface currentPreferenceInterface;
 }

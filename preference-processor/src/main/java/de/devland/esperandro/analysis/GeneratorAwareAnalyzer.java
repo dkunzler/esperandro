@@ -13,8 +13,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package de.devland.esperandro.base.preferences;
 
-public enum PreferenceType {
-    UNKNOWN, INT, LONG, FLOAT, BOOLEAN, CHAR, BYTE, STRING, STRINGSET, OBJECT
+package de.devland.esperandro.analysis;
+
+import de.devland.esperandro.base.MethodAnalyzer;
+import de.devland.esperandro.generation.MethodGenerator;
+
+public interface GeneratorAwareAnalyzer extends MethodAnalyzer {
+    MethodGenerator getGenerator();
 }

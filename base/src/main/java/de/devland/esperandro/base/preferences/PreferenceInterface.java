@@ -16,21 +16,29 @@
 
 package de.devland.esperandro.base.preferences;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import de.devland.esperandro.annotations.Cached;
+import de.devland.esperandro.annotations.SharedPreferences;
 
 public class PreferenceInterface {
 
+    private SharedPreferences preferenceAnnotation;
     private Cached cacheAnnotation;
     private Map<String, List<MethodInformation>> methodsPerPreference = new HashMap<>();
     private Map<String, TypeInformation> typeInformationMap = new HashMap<>();
 
-    public PreferenceInterface(Cached cacheAnnotation) {
+    public PreferenceInterface(SharedPreferences preferenceAnnotation, Cached cacheAnnotation) {
+        this.preferenceAnnotation = preferenceAnnotation;
         this.cacheAnnotation = cacheAnnotation;
+    }
+
+    public SharedPreferences getPreferenceAnnotation() {
+        return preferenceAnnotation;
     }
 
     public Cached getCacheAnnotation() {
@@ -38,25 +46,26 @@ public class PreferenceInterface {
     }
 
     public Set<String> getAllPreferences() {
-        // TODO
-        return null;
+        return typeInformationMap.keySet();
     }
 
     public List<MethodInformation> getMethodsForPreference(String preferenceName) {
-        // TODO
-        return null;
+        return methodsPerPreference.get(preferenceName);
     }
 
     public TypeInformation getTypeOfPreference(String preferenceName) {
-        // TODO
-        return null;
+        return typeInformationMap.get(preferenceName);
     }
 
     public void addMethod(String preferenceName, MethodInformation methodInformation) {
-        // TODO
+        methodInformation.associatedPreference = preferenceName;
+        List<MethodInformation> methods = methodsPerPreference.computeIfAbsent(preferenceName, k -> new ArrayList<>());
+        methods.add(methodInformation);
     }
 
     public void addTypeInformation(String preferenceName, TypeInformation typeInformation) {
-        // TODO
+        if (typeInformation != null) {
+            typeInformationMap.putIfAbsent(preferenceName, typeInformation);
+        }
     }
 }

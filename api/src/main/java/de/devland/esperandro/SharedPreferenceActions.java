@@ -60,12 +60,12 @@ public interface SharedPreferenceActions {
      * Clears the complete sharedPreferences of the previously given name. (Be aware that ALL preferences under this
      * name are cleared not only the ones defined in your interface)
      */
-    void clear();
+    void clearAll();
 
     /**
      * Clears all preferences that are defined and generated for this particular interface.
      */
-    void clearDefined();
+    void clearPreferences();
 
     /**
      * Initializes the underlying SharedPreference object with the respective explicit or implicit default values. This

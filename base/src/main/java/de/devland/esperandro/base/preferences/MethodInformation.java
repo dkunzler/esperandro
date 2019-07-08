@@ -37,13 +37,22 @@ public class MethodInformation {
     }
 
     public static MethodInformation from(Method method) {
-        TypeInformation returnType = TypeInformation.from(method.getGenericReturnType());
+        TypeInformation returnType;
+        if (method.getReturnType().equals(void.class)) {
+            returnType = TypeInformation.from(method.getReturnType());
+        } else {
+            returnType = TypeInformation.from(method.getGenericReturnType());
+        }
         TypeInformation parameterType = null;
         if (method.getGenericParameterTypes().length == 1) {
             parameterType = TypeInformation.from(method.getGenericParameterTypes()[0]);
         }
 
         return new MethodInformation(null, method, returnType, parameterType);
+    }
+
+    public static MethodInformation internalMethod(TypeInformation returnType, TypeInformation parameterType) {
+        return new MethodInformation(null, null, returnType, parameterType);
     }
 
     private MethodInformation(Element element, Method method,
@@ -54,6 +63,7 @@ public class MethodInformation {
         this.parameterType = parameterType;
     }
 
+    public String associatedPreference;
     public final Element element;
     public final Method method;
     public final TypeInformation returnType;
@@ -68,6 +78,21 @@ public class MethodInformation {
         }
 
         return null;
+    }
+
+    public boolean isInternal() {
+        return element == null && method == null;
+    }
+
+    public String getMethodName() {
+        if (method != null) {
+            return method.getName();
+        } else if (element != null) {
+            return element.getSimpleName().toString();
+        }
+
+        // default is the name of the preference
+        return associatedPreference;
     }
 
 }

@@ -24,13 +24,12 @@ import com.squareup.javapoet.TypeVariableName;
 import javax.lang.model.element.Modifier;
 
 import de.devland.esperandro.UnsafeActions;
-import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
-import de.devland.esperandro.processor.PreferenceInformation;
+import de.devland.esperandro.base.preferences.TypeInformation;
 
 public class UnsafeActionsGenerator {
 
-    public static void createUnsafeActions(TypeSpec.Builder type, PreferenceInterface allPreferences, Cached cachedAnnotation) {
+    public static void createUnsafeActions(TypeSpec.Builder type, PreferenceInterface allPreferences) {
         TypeVariableName typeVariable = TypeVariableName.get("V");
         MethodSpec.Builder getValueBuilder = MethodSpec.methodBuilder("getValue")
                 .addAnnotation(Override.class)
@@ -43,17 +42,14 @@ public class UnsafeActionsGenerator {
 
         getValueBuilder.addStatement("String prefKey = context.getString(prefId)");
 
-        for (PreferenceInformation info : allPreferences) {
-            // when getter is missing, generate one
-            if (info.getter == null) {
-                new GetterGenerator(null, null).createPrivate(type, info, cachedAnnotation);
-            }
-            getValueBuilder.beginControlFlow("if (prefKey.equals($S))", info.preferenceName);
-            if (info.preferenceType.isPrimitive()) {
+        for (String preferenceName : allPreferences.getAllPreferences()) {
+            TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
+            getValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
+            if (typeOfPreference.isPrimitive()) {
                 // box
-                getValueBuilder.addStatement("return (V) ($T) $L()", info.preferenceType.getObjectType(), info.preferenceName);
+                getValueBuilder.addStatement("return (V) ($T) $L()", typeOfPreference.getObjectType(), preferenceName);
             } else {
-                getValueBuilder.addStatement("return (V) $L()", info.preferenceName);
+                getValueBuilder.addStatement("return (V) $L()", preferenceName);
             }
             getValueBuilder.endControlFlow();
         }
@@ -70,21 +66,18 @@ public class UnsafeActionsGenerator {
 
         setValueBuilder.addStatement("String prefKey = context.getString(prefId)");
 
-        for (PreferenceInformation info : allPreferences) {
-            // when setter is missing, generate one
-            if (info.setter == null && info.commitSetter == null) {
-                new PutterGenerator().createPrivate(type, info, cachedAnnotation);
-            }
+        for (String preferenceName : allPreferences.getAllPreferences()) {
+            TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
 
-            setValueBuilder.beginControlFlow("if (prefKey.equals($S))", info.preferenceName);
-            if (info.preferenceType.isPrimitive()) {
+            setValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
+            if (typeOfPreference.isPrimitive()) {
                 // box
-                setValueBuilder.addStatement("$L(($T) ($T)pref)", info.preferenceName, info.preferenceType.getType(), info.preferenceType.getObjectType());
-            } else if (info.preferenceType.getTypeName().equals("Byte")) {
+                setValueBuilder.addStatement("$L(($T) ($T)pref)", preferenceName, typeOfPreference.getType(), typeOfPreference.getObjectType());
+            } else if (typeOfPreference.getTypeName().equals("Byte")) {
                 // box, byte is not handled as primitive
-                setValueBuilder.addStatement("$L(($T) (Byte)pref)", info.preferenceName, info.preferenceType.getType());
+                setValueBuilder.addStatement("$L(($T) (Byte)pref)", preferenceName, typeOfPreference.getType());
             } else {
-                setValueBuilder.addStatement("$L(($T)pref)", info.preferenceName, info.preferenceType.getType());
+                setValueBuilder.addStatement("$L(($T)pref)", preferenceName, typeOfPreference.getType());
             }
             setValueBuilder.addStatement("return");
             setValueBuilder.endControlFlow();

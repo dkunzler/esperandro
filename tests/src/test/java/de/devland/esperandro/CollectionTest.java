@@ -1,8 +1,5 @@
 package de.devland.esperandro;
 
-import de.devland.esperandro.serialization.JacksonSerializer;
-import de.devland.esperandro.tests.EsperandroCollectionExample;
-import de.devland.esperandro.tests.model.Container;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,7 +9,15 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import de.devland.esperandro.serialization.JacksonSerializer;
+import de.devland.esperandro.tests.EsperandroCollectionExample;
+import de.devland.esperandro.tests.model.Container;
 
 /**
  * @author David Kunzler on 19.07.2017.
@@ -31,7 +36,7 @@ public class CollectionTest {
 
     @After
     public void tearDown() {
-        esperandroPreferences.clear();
+        esperandroPreferences.clearAll();
     }
 
     @Test

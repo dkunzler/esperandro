@@ -15,13 +15,13 @@
  */
 package de.devland.esperandro.tests;
 
+import java.util.ArrayList;
+
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.annotations.Default;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
 import de.devland.esperandro.tests.model.ContainerListObject;
-
-import java.util.ArrayList;
 
 @SharedPreferences
 public interface EsperandroSerializationExample extends SharedPreferenceActions {
@@ -49,7 +49,8 @@ public interface EsperandroSerializationExample extends SharedPreferenceActions 
     Container containerValueSync();
 
     void containerDefault(Container container);
-    @Default(ofClass = Container.class)
+
+    @Default(ofStatement = "new de.devland.esperandro.tests.model.Container()")
     Container containerDefault();
 
     byte byteValue();

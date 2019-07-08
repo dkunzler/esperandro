@@ -13,14 +13,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+package de.devland.esperandro.base.preferences;
 
-package de.devland.esperandro;
-
-public class Constants {
-    public static final String IMPLEMENTATION_SUFFIX = "$$Impl";
-
-    public static final String SUFFIX_SEPARATOR = "$";
-    public static final String SUFFIX_DEFAULT = SUFFIX_SEPARATOR + "Default";
-    public static final String SUFFIX_ADD = SUFFIX_SEPARATOR + "Add";
-    public static final String SUFFIX_REMOVE = SUFFIX_SEPARATOR + "Remove";
+public enum EsperandroType {
+    UNKNOWN, VOID, INT, LONG, FLOAT, BOOLEAN, CHAR, BYTE, STRING, STRINGSET, OBJECT
 }

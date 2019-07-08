@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?><!--suppress MavenModelInspection -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -43,7 +43,7 @@
     <modules>
         <module>api</module>
         <module>base</module>
-        <module>processor</module>
+        <!--        <module>processor</module>-->
         <!--<module>sample</module>-->
         <module>gson-serializer</module>
         <module>tests</module>
@@ -53,8 +53,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <source.version>1.7</source.version>
-        <target.version>1.7</target.version>
+        <source.version>1.8</source.version>
+        <target.version>1.8</target.version>
 
         <android.version>4.1.1.4</android.version>
         <javaPoet.version>1.11.1</javaPoet.version>
@@ -77,7 +77,7 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>3.0.0</version>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalOptions>-Xdoclint:none</additionalOptions>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -148,6 +148,11 @@
             <dependency>
                 <groupId>de.devland.esperandro</groupId>
                 <artifactId>esperandro</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.devland.esperandro</groupId>
+                <artifactId>preference-processor</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

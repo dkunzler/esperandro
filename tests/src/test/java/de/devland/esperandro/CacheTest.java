@@ -2,9 +2,9 @@ package de.devland.esperandro;
 
 import android.content.SharedPreferences;
 import android.util.LruCache;
-import de.devland.esperandro.tests.EsperandroCacheExample;
-import de.devland.esperandro.tests.EsperandroCacheOnPutExample;
+
 import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +14,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.lang.reflect.Field;
+
+import de.devland.esperandro.tests.EsperandroCacheExample;
+import de.devland.esperandro.tests.EsperandroCacheOnPutExample;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -36,8 +39,8 @@ public class CacheTest {
 
     @After
     public void tearDown() {
-        cachePreferences.clear();
-        cacheOnPutPreferences.clear();
+        cachePreferences.clearAll();
+        cacheOnPutPreferences.clearAll();
     }
 
     @Test
@@ -96,7 +99,7 @@ public class CacheTest {
         cacheOnPutPreferences.primitive(42);
         LruCache<String, Object> cache = getCache(cacheOnPutPreferences);
         assertEquals(2, cache.size());
-        cacheOnPutPreferences.clear();
+        cacheOnPutPreferences.clearAll();
         assertEquals(0, cache.size());
     }
 
@@ -106,7 +109,7 @@ public class CacheTest {
         cacheOnPutPreferences.primitive(42);
         LruCache<String, Object> cache = getCache(cacheOnPutPreferences);
         assertEquals(2, cache.size());
-        cacheOnPutPreferences.clearDefined();
+        cacheOnPutPreferences.clearPreferences();
         assertEquals(0, cache.size());
     }
 

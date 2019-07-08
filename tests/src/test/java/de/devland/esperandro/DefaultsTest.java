@@ -16,9 +16,8 @@
 
 package de.devland.esperandro;
 
-import de.devland.esperandro.tests.EsperandroDefaultsExample;
-import de.devland.esperandro.tests.model.Container;
 import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +28,9 @@ import org.robolectric.annotation.Config;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import de.devland.esperandro.tests.EsperandroDefaultsExample;
+import de.devland.esperandro.tests.model.Container;
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner.class)
@@ -44,7 +46,7 @@ public class DefaultsTest {
 
     @After
     public void tearDown() {
-        preferences.clear();
+        preferences.clearAll();
     }
 
     @Test

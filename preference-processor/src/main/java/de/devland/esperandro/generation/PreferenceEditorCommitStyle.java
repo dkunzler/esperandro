@@ -14,13 +14,19 @@
  *   limitations under the License.
  */
 
-package de.devland.esperandro;
+package de.devland.esperandro.generation;
 
-public class Constants {
-    public static final String IMPLEMENTATION_SUFFIX = "$$Impl";
+public enum PreferenceEditorCommitStyle {
+    COMMIT("commit()"), APPLY("apply()");
 
-    public static final String SUFFIX_SEPARATOR = "$";
-    public static final String SUFFIX_DEFAULT = SUFFIX_SEPARATOR + "Default";
-    public static final String SUFFIX_ADD = SUFFIX_SEPARATOR + "Add";
-    public static final String SUFFIX_REMOVE = SUFFIX_SEPARATOR + "Remove";
+    private String statementPart;
+
+    PreferenceEditorCommitStyle(String statementPart) {
+        this.statementPart = statementPart;
+    }
+
+    public String getStatementPart() {
+        return statementPart;
+    }
+
 }

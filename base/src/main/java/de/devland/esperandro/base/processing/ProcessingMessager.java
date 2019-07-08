@@ -23,9 +23,20 @@ public class ProcessingMessager {
 
     private static final String MESSAGE_PREFIX = "esperandro: ";
 
+    private static ProcessingMessager INSTANCE;
+
+    public static ProcessingMessager get() {
+        return INSTANCE;
+    }
+
+    public static ProcessingMessager init(ProcessingEnvironment processingEnv) {
+        INSTANCE = new ProcessingMessager(processingEnv);
+        return INSTANCE;
+    }
+
     private ProcessingEnvironment processingEnv;
 
-    ProcessingMessager(ProcessingEnvironment processingEnv) {
+    private ProcessingMessager(ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
     }
 

@@ -36,7 +36,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
-import de.devland.esperandro.SharedPreferenceActions;
+import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.base.Constants;
 import de.devland.esperandro.base.MethodAnalyzer;
@@ -51,7 +51,7 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        messager = new ProcessingMessager(processingEnv);
+        messager = ProcessingMessager.init(processingEnv);
         preProcessEnvironment(roundEnv);
 
         for (TypeElement typeElement : annotations) {
@@ -65,7 +65,11 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
                         try {
                             // collect all PreferenceInformation
                             PreferenceInterface allPreferences = analyze(interfaze, interfaze);
+                            Environment.currentElement = interfaze;
+                            Environment.currentPreferenceInterface = allPreferences;
                             generate(interfaze, allPreferences);
+                            Environment.currentElement = null;
+                            Environment.currentPreferenceInterface = null;
                         } catch (Exception e) {
                             StringWriter sw = new StringWriter();
                             PrintWriter pw = new PrintWriter(sw);
@@ -83,7 +87,9 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
     }
 
     private PreferenceInterface analyze(Element topLevelInterface, Element currentInterface) {
-        PreferenceInterface preferences = new PreferenceInterface();
+        PreferenceInterface preferences =
+                new PreferenceInterface(topLevelInterface.getAnnotation(SharedPreferences.class),
+                        topLevelInterface.getAnnotation(Cached.class));
         analyze(topLevelInterface, currentInterface, preferences);
         return preferences;
     }
@@ -145,8 +151,7 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
 
             // recursively analyze all super interfaces
             for (Class<?> subInterfaceClass : interfaceClass.getInterfaces()) {
-                if (subInterfaceClass.getName() != null && !subInterfaceClass.getName().equals(SharedPreferenceActions
-                        .class.getName())) {
+                if (subInterfaceClass.getName() != null && !Constants.SUPER_INTERFACE_BLACKLIST.contains(subInterfaceClass.getName())) {
                     analyze(subInterfaceClass, preferences);
                 }
             }
@@ -154,7 +159,7 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
     }
 
     private MethodAnalyzer getMethodAnalyzer() {
-        List<MethodAnalyzer> methodAnalyzers = getMethodAnalyzers();
+        List<? extends MethodAnalyzer> methodAnalyzers = getMethodAnalyzers();
         if (methodAnalyzers == null || methodAnalyzers.isEmpty()) {
             methodAnalyzers = Collections.singletonList((MethodAnalyzer) new SimpleMethodAnalyzer());
         }
@@ -162,7 +167,7 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
         return new ChainedMethodAnalyzer(methodAnalyzers);
     }
 
-    protected abstract List<MethodAnalyzer> getMethodAnalyzers();
+    protected abstract List<? extends MethodAnalyzer> getMethodAnalyzers();
 
     protected abstract void generate(Element currentElement, PreferenceInterface preferenceInterface) throws Exception;
 

@@ -14,13 +14,13 @@
  *   limitations under the License.
  */
 
-package de.devland.esperandro;
+package de.devland.esperandro.generation;
 
-public class Constants {
-    public static final String IMPLEMENTATION_SUFFIX = "$$Impl";
+import com.squareup.javapoet.TypeSpec;
 
-    public static final String SUFFIX_SEPARATOR = "$";
-    public static final String SUFFIX_DEFAULT = SUFFIX_SEPARATOR + "Default";
-    public static final String SUFFIX_ADD = SUFFIX_SEPARATOR + "Add";
-    public static final String SUFFIX_REMOVE = SUFFIX_SEPARATOR + "Remove";
+import de.devland.esperandro.annotations.Cached;
+import de.devland.esperandro.base.preferences.MethodInformation;
+
+public interface MethodGenerator {
+    void generateMethod(TypeSpec.Builder type, MethodInformation methodInformation, Cached cacheAnnotation);
 }

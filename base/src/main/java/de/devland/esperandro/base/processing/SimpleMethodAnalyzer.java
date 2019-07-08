@@ -16,41 +16,24 @@
 
 package de.devland.esperandro.base.processing;
 
-import java.lang.reflect.Method;
-
-import javax.lang.model.element.ExecutableElement;
-
 import de.devland.esperandro.base.MethodAnalyzer;
+import de.devland.esperandro.base.preferences.MethodInformation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 
 public class SimpleMethodAnalyzer implements MethodAnalyzer {
+
     @Override
-    public boolean isApplicableMethod(ExecutableElement method) {
+    public boolean isApplicableMethod(MethodInformation method) {
         return false;
     }
 
     @Override
-    public String getPreferenceName(ExecutableElement method) {
+    public String getPreferenceName(MethodInformation method) {
         return null;
     }
 
     @Override
-    public TypeInformation getPreferenceType(ExecutableElement method) {
-        return null;
-    }
-
-    @Override
-    public boolean isApplicableMethod(Method method) {
-        return false;
-    }
-
-    @Override
-    public String getPreferenceName(Method method) {
-        return null;
-    }
-
-    @Override
-    public TypeInformation getPreferenceType(Method method) {
+    public TypeInformation getPreferenceType(MethodInformation method) {
         return null;
     }
 }

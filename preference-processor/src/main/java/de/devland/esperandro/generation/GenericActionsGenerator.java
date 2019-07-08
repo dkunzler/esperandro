@@ -20,22 +20,20 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
-import java.io.IOException;
-
 import javax.lang.model.element.Modifier;
 
 import de.devland.esperandro.SharedPreferenceActions;
+import de.devland.esperandro.Utils;
+import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
-import de.devland.esperandro.processor.PreferenceInformation;
-import de.devland.esperandro.processor.PreferenceType;
-import de.devland.esperandro.processor.Utils;
 
 /**
  * @author David Kunzler on 18.07.2017.
  */
 public class GenericActionsGenerator {
 
-    public static void createGenericActions(TypeSpec.Builder type, PreferenceInterface allPreferences, boolean caching) throws IOException {
+    public static void createGenericActions(TypeSpec.Builder type, PreferenceInterface allPreferences) {
+        boolean caching = allPreferences.getCacheAnnotation() != null;
 
         MethodSpec.Builder get = MethodSpec.methodBuilder("get")
                 .addAnnotation(Override.class)
@@ -71,7 +69,7 @@ public class GenericActionsGenerator {
                 .addParameter(ClassName.get("android.content", "SharedPreferences.OnSharedPreferenceChangeListener"), "listener")
                 .addStatement("preferences.unregisterOnSharedPreferenceChangeListener(listener)");
 
-        MethodSpec.Builder clear = MethodSpec.methodBuilder("clear")
+        MethodSpec.Builder clear = MethodSpec.methodBuilder("clearAll")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
@@ -111,18 +109,14 @@ public class GenericActionsGenerator {
                 .returns(void.class)
                 .addStatement("SharedPreferences.Editor editor = preferences.edit()");
 
-        for (PreferenceInformation info : allPreferences) {
-            if (info.getter != null) {
-                String methodSuffix = Utils.getMethodSuffix(info.preferenceType.getPreferenceType());
-                String value = "this." + info.preferenceName + "()";
-                if (info.preferenceType.getPreferenceType() == PreferenceType.OBJECT) {
-                    value = "Esperandro.getSerializer().serialize(" + value + ")";
-                }
-
-                initDefaultsBuilder.addStatement("editor.put$L($S, $L)", methodSuffix, info.preferenceName, value);
-            } else {
-                initDefaultsBuilder.addComment("no default initialization possible for '$L'", info.preferenceName);
+        for (String preferenceName : allPreferences.getAllPreferences()) {
+            String methodSuffix = Utils.getMethodSuffix(allPreferences.getTypeOfPreference(preferenceName).getEsperandroType());
+            String value = "this." + preferenceName + "()";
+            if (allPreferences.getTypeOfPreference(preferenceName).getEsperandroType() == EsperandroType.OBJECT) {
+                value = "Esperandro.getSerializer().serialize(" + value + ")";
             }
+
+            initDefaultsBuilder.addStatement("editor.put$L($S, $L)", methodSuffix, preferenceName, value);
         }
 
         initDefaultsBuilder.addStatement("editor.commit()");
@@ -130,7 +124,7 @@ public class GenericActionsGenerator {
     }
 
     private static MethodSpec createClearDefinedMethod(PreferenceInterface preferenceInterface, boolean caching, MethodSpec.Builder remove, MethodSpec.Builder clear) {
-        MethodSpec.Builder clearDefinedBuilder = MethodSpec.methodBuilder("clearDefined")
+        MethodSpec.Builder clearDefinedBuilder = MethodSpec.methodBuilder("clearPreferences")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(void.class)
