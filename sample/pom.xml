@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>de.devland.esperandro</groupId>
-            <artifactId>preference-processor</artifactId>
+            <artifactId>esperandro-preference-gen</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

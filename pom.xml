@@ -152,7 +152,7 @@
             </dependency>
             <dependency>
                 <groupId>de.devland.esperandro</groupId>
-                <artifactId>preference-processor</artifactId>
+                <artifactId>esperandro-preference-gen</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
