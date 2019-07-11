@@ -43,8 +43,6 @@
     <modules>
         <module>api</module>
         <module>base</module>
-        <!--        <module>processor</module>-->
-        <!--<module>sample</module>-->
         <module>gson-serializer</module>
         <module>tests</module>
         <module>jackson-serializer</module>

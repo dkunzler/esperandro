@@ -37,7 +37,7 @@ public @interface Cached {
     /**
      * indicates which LruCache implementation is used:
      * - FRAMEWORK means the integrated version in the Android SDK (version 12 and up)
-     * - SUPPORT_V$ means the class from the support-v4 library
+     * - SUPPORT_V4 means the class from the support-v4 library
      * - ANDROID_X means the version from the androidx collection library
      */
     CacheVersion cacheVersion() default CacheVersion.FRAMEWORK;
