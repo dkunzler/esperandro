@@ -45,7 +45,6 @@ import de.devland.esperandro.base.processing.AbstractEsperandroProcessor;
 import de.devland.esperandro.generation.ContainerClassGenerator;
 import de.devland.esperandro.generation.GenericActionsGenerator;
 import de.devland.esperandro.generation.PreferenceClassConstructorGenerator;
-import de.devland.esperandro.generation.UnsafeActionsGenerator;
 import java8.util.stream.StreamSupport;
 
 @SupportedAnnotationTypes("de.devland.esperandro.annotations.SharedPreferences")
@@ -65,7 +64,6 @@ public class PreferenceProcessor extends AbstractEsperandroProcessor {
         addMissingRequiredMethods(preferenceInterface);
         createMethods(type, preferenceInterface);
         GenericActionsGenerator.createGenericActions(type, preferenceInterface);
-        UnsafeActionsGenerator.createUnsafeActions(type, preferenceInterface);
         ContainerClassGenerator.createGenericClassImplementations(type, preferenceInterface);
         finish(currentElement, type);
     }

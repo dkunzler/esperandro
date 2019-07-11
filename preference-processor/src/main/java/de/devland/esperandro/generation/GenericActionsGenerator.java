@@ -19,6 +19,7 @@ package de.devland.esperandro.generation;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.TypeVariableName;
 
 import javax.lang.model.element.Modifier;
 
@@ -26,6 +27,7 @@ import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.Utils;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
+import de.devland.esperandro.base.preferences.TypeInformation;
 
 /**
  * @author David Kunzler on 18.07.2017.
@@ -86,6 +88,10 @@ public class GenericActionsGenerator {
 
         MethodSpec initDefaults = createInitDefaultsMethod(allPreferences);
 
+        MethodSpec getValue = createGetValueMethod(allPreferences);
+
+        MethodSpec setValue = createSetValueMethod(allPreferences);
+
 
         type.addSuperinterface(SharedPreferenceActions.class)
                 .addMethod(get.build())
@@ -95,7 +101,9 @@ public class GenericActionsGenerator {
                 .addMethod(unregisterListener.build())
                 .addMethod(clear.build())
                 .addMethod(clearDefined)
-                .addMethod(initDefaults);
+                .addMethod(initDefaults)
+                .addMethod(getValue)
+                .addMethod(setValue);
 
         if (caching) {
             type.addMethod(resetCache.build());
@@ -146,5 +154,68 @@ public class GenericActionsGenerator {
         return clearDefinedBuilder
                 .addStatement("editor.$L", PreferenceEditorCommitStyle.APPLY.getStatementPart())
                 .build();
+    }
+
+    private static MethodSpec createGetValueMethod(PreferenceInterface allPreferences) {
+        TypeVariableName typeVariable = TypeVariableName.get("V");
+        MethodSpec.Builder getValueBuilder = MethodSpec.methodBuilder("getValue")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addException(SharedPreferenceActions.UnknownKeyException.class)
+                .addTypeVariable(typeVariable)
+                .addParameter(ClassName.get("android.content", "Context"), "context")
+                .addParameter(int.class, "prefId")
+                .returns(typeVariable);
+
+        getValueBuilder.addStatement("String prefKey = context.getString(prefId)");
+
+        for (String preferenceName : allPreferences.getAllPreferences()) {
+            TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
+            getValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
+            if (typeOfPreference.isPrimitive()) {
+                // box
+                getValueBuilder.addStatement("return (V) ($T) $L()", typeOfPreference.getObjectType(), preferenceName);
+            } else {
+                getValueBuilder.addStatement("return (V) $L()", preferenceName);
+            }
+            getValueBuilder.endControlFlow();
+        }
+        getValueBuilder.addStatement("throw new $T(prefKey)", SharedPreferenceActions.UnknownKeyException.class);
+
+        return getValueBuilder.build();
+    }
+
+    private static MethodSpec createSetValueMethod(PreferenceInterface allPreferences) {
+        TypeVariableName typeVariable = TypeVariableName.get("V");
+        MethodSpec.Builder setValueBuilder = MethodSpec.methodBuilder("setValue")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addException(SharedPreferenceActions.UnknownKeyException.class)
+                .addTypeVariable(typeVariable)
+                .addParameter(ClassName.get("android.content", "Context"), "context")
+                .addParameter(int.class, "prefId")
+                .addParameter(typeVariable, "pref");
+
+        setValueBuilder.addStatement("String prefKey = context.getString(prefId)");
+
+        for (String preferenceName : allPreferences.getAllPreferences()) {
+            TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
+
+            setValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
+            if (typeOfPreference.isPrimitive()) {
+                // box
+                setValueBuilder.addStatement("$L(($T) ($T)pref)", preferenceName, typeOfPreference.getType(), typeOfPreference.getObjectType());
+            } else if (typeOfPreference.getTypeName().equals("Byte")) {
+                // box, byte is not handled as primitive
+                setValueBuilder.addStatement("$L(($T) (Byte)pref)", preferenceName, typeOfPreference.getType());
+            } else {
+                setValueBuilder.addStatement("$L(($T)pref)", preferenceName, typeOfPreference.getType());
+            }
+            setValueBuilder.addStatement("return");
+            setValueBuilder.endControlFlow();
+        }
+        setValueBuilder.addStatement("throw new $T(prefKey)", SharedPreferenceActions.UnknownKeyException.class);
+
+        return setValueBuilder.build();
     }
 }

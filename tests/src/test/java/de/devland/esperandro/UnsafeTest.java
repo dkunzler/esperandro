@@ -95,12 +95,12 @@ public class UnsafeTest {
         unsafe.setValue(mockContext, 3, 42);
     }
 
-    @Test(expected = UnsafeActions.UnknownKeyException.class)
+    @Test(expected = SharedPreferenceActions.UnknownKeyException.class)
     public void testReadUnknownProperty() throws Exception {
         unsafe.getValue(mockContext, 6);
     }
 
-    @Test(expected = UnsafeActions.UnknownKeyException.class)
+    @Test(expected = SharedPreferenceActions.UnknownKeyException.class)
     public void testWriteUnknownProperty() throws Exception {
         unsafe.setValue(mockContext, 6, "foo");
     }

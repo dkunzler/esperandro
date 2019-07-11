@@ -22,7 +22,6 @@ import java.util.Set;
 
 import de.devland.esperandro.CacheActions;
 import de.devland.esperandro.SharedPreferenceActions;
-import de.devland.esperandro.UnsafeActions;
 
 public class Constants {
     public static final String SHARED_PREFERENCES_ANNOTATION_NAME = "de.devland.esperandro.annotations.SharedPreferences";
@@ -35,7 +34,6 @@ public class Constants {
         Set<String> blacklist = new HashSet<>();
         blacklist.add(SharedPreferenceActions.class.getName());
         blacklist.add(CacheActions.class.getName());
-        blacklist.add(UnsafeActions.class.getName());
         SUPER_INTERFACE_BLACKLIST = Collections.unmodifiableSet(blacklist);
     }
 }
