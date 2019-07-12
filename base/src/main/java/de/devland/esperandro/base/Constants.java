@@ -30,6 +30,8 @@ public class Constants {
     public static final String DECLARED_TYPENAME_STRING = "java.lang.String";
     public static final String DECLARED_TYPENAME_STRINGSET = "java.util.Set<java.lang.String>";
 
+    public static final String SUFFIX_SEPARATOR = "$";
+
     static {
         Set<String> blacklist = new HashSet<>();
         blacklist.add(SharedPreferenceActions.class.getName());

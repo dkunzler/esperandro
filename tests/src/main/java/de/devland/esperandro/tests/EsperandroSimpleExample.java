@@ -15,13 +15,15 @@
  */
 package de.devland.esperandro.tests;
 
+import java.util.Set;
+
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.Default;
 import de.devland.esperandro.annotations.SharedPreferences;
+import de.devland.esperandro.annotations.experimental.GenerateStringResources;
 
-import java.util.Set;
-
+@GenerateStringResources
 @SharedPreferences(name = "simple", mode = SharedPreferenceMode.PRIVATE)
 public interface EsperandroSimpleExample extends SharedPreferenceActions {
 
@@ -30,7 +32,7 @@ public interface EsperandroSimpleExample extends SharedPreferenceActions {
 
     void integerPref(int pref);
 
-    @Default(ofLong = 42l)
+    @Default(ofLong = 42L)
     long longPref();
 
     void longPref(long longPref);

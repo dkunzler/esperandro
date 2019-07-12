@@ -16,10 +16,9 @@
 
 package de.devland.esperandro;
 
-public class Constants {
-    public static final String IMPLEMENTATION_SUFFIX = "$$Impl";
+public class Constants extends de.devland.esperandro.base.Constants {
+    static final String IMPLEMENTATION_SUFFIX = "$$Impl";
 
-    public static final String SUFFIX_SEPARATOR = "$";
     public static final String SUFFIX_DEFAULT = SUFFIX_SEPARATOR + "Default";
     public static final String SUFFIX_ADD = SUFFIX_SEPARATOR + "Add";
     public static final String SUFFIX_REMOVE = SUFFIX_SEPARATOR + "Remove";

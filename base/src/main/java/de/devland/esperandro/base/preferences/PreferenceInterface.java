@@ -46,7 +46,7 @@ public class PreferenceInterface {
     }
 
     public Set<String> getAllPreferences() {
-        return typeInformationMap.keySet();
+        return methodsPerPreference.keySet();
     }
 
     public List<MethodInformation> getMethodsForPreference(String preferenceName) {
