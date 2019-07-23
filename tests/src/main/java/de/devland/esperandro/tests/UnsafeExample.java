@@ -10,7 +10,7 @@ import de.devland.esperandro.tests.model.Container;
 
 @SharedPreferences(name = "unsafe")
 @Cached(cacheOnPut = true)
-@GenerateStringResources(stringPrefix = "foo")
+@GenerateStringResources(stringPrefix = "foo_")
 public interface UnsafeExample extends SharedPreferenceActions {
     void simpleInt(int simpleInt);
     int simpleInt();

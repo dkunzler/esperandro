@@ -15,6 +15,7 @@ Changelog
  * moved @GenerateStringResources and @Cached from experimental package
  * incorporated UnsafeActions into SharedPreferenceActions
  * update dependencies
+ * ability to choose LruCache implementation from support, androidx or framework
 
 2.7.1
 -----
