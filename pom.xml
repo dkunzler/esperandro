@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?><!--suppress MavenModelInspection -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.devland.esperandro</groupId>
     <artifactId>esperandro-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.0</version>
+    <version>3.0.1-SNAPSHOT</version>
 
     <name>esperandro</name>
     <description>An annotation processor designed to ease the access and use of Android SharedPreferences</description>
