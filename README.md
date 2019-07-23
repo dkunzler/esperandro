@@ -25,20 +25,7 @@ More information about integration and deeper explanation of usage can be found 
 
 For everybody that just thinks "give me the stuff":
 
-    buildscript {
-        repositories {
-          mavenCentral()
-        }
-        dependencies {
-            // replace with the current version of the Android plugin
-            classpath 'com.android.tools.build:gradle:1.2.3'
-            // the latest version of the android-apt plugin from https://bitbucket.org/hvisser/android-apt
-            classpath 'com.neenbedankt.gradle.plugins:android-apt:1.5.1'
-        }
-    }
-
     apply plugin: 'com.android.application'
-    apply plugin: 'com.neenbedankt.android-apt'
 
 
     repositories {
@@ -46,13 +33,19 @@ For everybody that just thinks "give me the stuff":
     }
 
     dependencies {
-        compile 'de.devland.esperandro:esperandro-api:2.2.0'
-        apt 'de.devland.esperandro:esperandro:2.2.0'
+        implementation 'de.devland.esperandro:esperandro-api:3.0.0'
+        annotationProcessor 'de.devland.esperandro:esperandro-preference-gen:3.0.0'
 
         // optional, if we want to use object serialization but don't provide our own Serializer
-        // compile 'de.devland.esperandro:esperandro-gson-addon:2.2.0'
+        // implementation 'de.devland.esperandro:esperandro-gson-addon:3.0.0'
         // or
-        // compile 'de.devland.esperandro:esperandro-jackson-addon:2.2.0'
+        // implementation 'de.devland.esperandro:esperandro-jackson-addon:3.0.0'
+        
+        // additional processor to generate a file with all keys as string constants
+        // annotationProcessor 'de.devland.esperandro:esperandro-keys-gen:3.0.0'
+        
+        // additional processor to generate a file with all keys as string resources
+        // annotationProcessor 'de.devland.esperandro:esperandro-resources-gen:3.0.0'
     }
     
 Current Travis status
