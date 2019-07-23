@@ -20,10 +20,12 @@ import java.util.Set;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.Default;
+import de.devland.esperandro.annotations.GenerateStringResources;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
 
 @SharedPreferences(name = "defaults", mode = SharedPreferenceMode.PRIVATE)
+@GenerateStringResources(filePrefix = "bar_")
 public interface EsperandroDefaultsExample extends SharedPreferenceActions {
 
     @Default(ofInt = 42)

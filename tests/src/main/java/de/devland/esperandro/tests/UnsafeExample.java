@@ -4,11 +4,13 @@ import java.util.Set;
 
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.annotations.Cached;
+import de.devland.esperandro.annotations.GenerateStringResources;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
 
 @SharedPreferences(name = "unsafe")
 @Cached(cacheOnPut = true)
+@GenerateStringResources(stringPrefix = "foo")
 public interface UnsafeExample extends SharedPreferenceActions {
     void simpleInt(int simpleInt);
     int simpleInt();
