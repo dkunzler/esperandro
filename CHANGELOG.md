@@ -1,6 +1,21 @@
 Changelog
 =========
 
+3.0.0
+-----
+ * complete overhaul of processor structure, split into 3 seperate processor artifacts:
+    - _esperandro-preference-gen_ The default processor that generates implementations for 
+    interfaces annotated with @SharedPreferences. This one is incremental.
+    - _esperandro-resources-gen_ A processor that generates a resource file for accessing the
+    names of the preferences in other resource files via @string/... This is not incremental.
+    - _esperandro-keys-gen_ A processor that generates a Java class with the same name as the 
+    preference interface plus *Keys* suffix. This contains string constants for all defined
+    preferences if string based access is still needed. This one is incremental.
+ * removed deprecated values
+ * moved @GenerateStringResources and @Cached from experimental package
+ * incorporated UnsafeActions into SharedPreferenceActions
+ * update dependencies
+
 2.7.1
 -----
  * fix ofStatement default for serialized preferences
