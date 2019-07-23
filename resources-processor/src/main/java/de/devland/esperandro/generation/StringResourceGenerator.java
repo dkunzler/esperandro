@@ -30,7 +30,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;
 
 import de.devland.esperandro.StringResourceProcessor;
-import de.devland.esperandro.annotations.experimental.GenerateStringResources;
+import de.devland.esperandro.annotations.GenerateStringResources;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
 import de.devland.esperandro.base.processing.Environment;
 import de.devland.esperandro.base.processing.ProcessingMessager;

@@ -16,25 +16,24 @@
 
 package de.devland.esperandro;
 
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.TypeSpec;
+
 import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 
-import de.devland.esperandro.annotations.GenerateStringResources;
 import de.devland.esperandro.base.MethodAnalyzer;
+import de.devland.esperandro.base.Utils;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
 import de.devland.esperandro.base.processing.AbstractEsperandroProcessor;
-import de.devland.esperandro.generation.StringResourceGenerator;
 
 @SupportedAnnotationTypes("de.devland.esperandro.annotations.SharedPreferences")
-@SupportedOptions(StringResourceProcessor.OPTION_VALUES_DIR)
-public class StringResourceProcessor extends AbstractEsperandroProcessor {
-
-    public static final String OPTION_VALUES_DIR = "esperandro_valuesDir";
-
+public class KeysProcessor extends AbstractEsperandroProcessor {
     @Override
     protected List<? extends MethodAnalyzer> getMethodAnalyzers() {
         return Collections.singletonList(new NameMethodAnalyzer());
@@ -42,11 +41,28 @@ public class StringResourceProcessor extends AbstractEsperandroProcessor {
 
     @Override
     protected void generate(Element currentElement, PreferenceInterface preferenceInterface) throws Exception {
-        GenerateStringResources generateStringResources = currentElement.getAnnotation(GenerateStringResources.class);
-        if (generateStringResources != null) {
-            StringResourceGenerator.generateStringResources(processingEnv,
-                    processingEnv.getOptions().get(OPTION_VALUES_DIR), preferenceInterface,
-                    generateStringResources);
+        TypeSpec.Builder result;
+
+        String typeName = Utils.classNameFromInterface(currentElement) + Constants.SUFFIX_KEYS;
+        result = TypeSpec.classBuilder(typeName);
+
+        if (Utils.isPublic(currentElement)) {
+            result.addModifiers(Modifier.PUBLIC);
         }
+
+        for (String preferenceName : preferenceInterface.getAllPreferences()) {
+            result.addField(generateField(preferenceName));
+        }
+
+        String packageName = Utils.packageNameFromInterface(currentElement);
+        JavaFile javaFile = JavaFile.builder(packageName, result.build())
+                .build();
+        javaFile.writeTo(processingEnv.getFiler());
+    }
+
+    private static FieldSpec generateField(String key) {
+        FieldSpec.Builder builder = FieldSpec.builder(String.class, key, Modifier.FINAL, Modifier.PUBLIC, Modifier.STATIC);
+        builder.initializer("$S", key);
+        return builder.build();
     }
 }

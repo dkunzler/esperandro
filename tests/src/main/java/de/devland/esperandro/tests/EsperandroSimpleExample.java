@@ -20,8 +20,8 @@ import java.util.Set;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.SharedPreferenceMode;
 import de.devland.esperandro.annotations.Default;
+import de.devland.esperandro.annotations.GenerateStringResources;
 import de.devland.esperandro.annotations.SharedPreferences;
-import de.devland.esperandro.annotations.experimental.GenerateStringResources;
 
 @GenerateStringResources
 @SharedPreferences(name = "simple", mode = SharedPreferenceMode.PRIVATE)

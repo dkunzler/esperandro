@@ -48,6 +48,7 @@
         <module>jackson-serializer</module>
         <module>preference-processor</module>
         <module>resources-processor</module>
+        <module>keys-processor</module>
     </modules>
 
     <properties>
@@ -163,6 +164,11 @@
             <dependency>
                 <groupId>de.devland.esperandro</groupId>
                 <artifactId>esperandro-resources-gen</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.devland.esperandro</groupId>
+                <artifactId>esperandro-keys-gen</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
