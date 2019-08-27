@@ -1,53 +1,56 @@
-esperandro
-==========
+[![Maven Central](https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&url=https%3A%2F%2Fimg.shields.io%2Fmaven-central%2Fv%2Fde.devland.esperandro%2Fesperandro-api%3Fstyle%3Dflat-square)](https://search.maven.org/search?q=g:de.devland.esperandro)
+[![Build Status](https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&url=https%3A%2F%2Fimg.shields.io%2Ftravis%2Fdkunzler%2Fesperandro%3Fstyle%3Dflat-square)](https://travis-ci.org/dkunzler/esperandro)
+
+# esperandro
+
 
 Easy SharedPreference Engine foR ANDROid
 
-[Website with complete tutorial](http://dkunzler.github.io/esperandro)
+Please refer to the [wiki](https://github.com/dkunzler/esperandro/wiki) for in-depth examples.
 
-esperandro is for everybody that uses `SharedPreference`s in his Android App and is tired of the verbose usage of them.
+See the [changelog](changelog.md) for a brief overview of recent changes.
 
-**Load and save preferences without *esperandro*:**
+### Short example
 
-* `String superFancyPreference = preferences.getString("superFancyPreferenceKey", "default value")`
-* `preferences.edit().putString("superFancyPreferenceKey", superFancyPrefence).commit()`
+esperandro makes it simple to use `SharedPreference`s in a nicer and less error-prone way.
+
+**Without *esperandro* a key is referenced by a string:**
+
+* `String myPreference = preferences.getString("myPreference", "default value") // load preference`
+* `preferences.edit().putString("myPreference", myPreference).commit() // store preference`
 
 
 
-**Load and save preferences with *esperandro*:**
+**With *esperandro* you adhere to an interface that you defined:**
 
-* `String superFancyPreference = preferences.superFancyPreferenceKey()`
-* `preferences.superFancyPreferenceKey(superFancyPreference)`
+    @SharedPreferences
+    interface MyPreferences {
+        String myPreference();
+        void myPreference(String myPreference);
+    }
+    
+* `String myPreference = preferences.myPreference() // load preference`
+* `preferences.myPreference(myPreference) // store preference`
+
 
 Type safe, easy, less error-prone.
 
-More information about integration and deeper explanation of usage can be found on [the website](http://dkunzler.github.io/esperandro).
-
-For everybody that just thinks "give me the stuff":
-
-    apply plugin: 'com.android.application'
+### Gradle artifacts
 
 
-    repositories {
-         mavenCentral();
-    }
+    // essential dependencies
+    implementation 'de.devland.esperandro:esperandro-api:<insert version>'
+    annotationProcessor 'de.devland.esperandro:esperandro-preference-gen:<insert version>'
 
-    dependencies {
-        implementation 'de.devland.esperandro:esperandro-api:3.0.0'
-        annotationProcessor 'de.devland.esperandro:esperandro-preference-gen:3.0.0'
-
-        // optional, if we want to use object serialization but don't provide our own Serializer
-        // implementation 'de.devland.esperandro:esperandro-gson-addon:3.0.0'
-        // or
-        // implementation 'de.devland.esperandro:esperandro-jackson-addon:3.0.0'
-        
-        // additional processor to generate a file with all keys as string constants
-        // annotationProcessor 'de.devland.esperandro:esperandro-keys-gen:3.0.0'
-        
-        // additional processor to generate a file with all keys as string resources
-        // annotationProcessor 'de.devland.esperandro:esperandro-resources-gen:3.0.0'
-    }
+    // optional, if object serialization is needed via gson
+    implementation 'de.devland.esperandro:esperandro-gson-addon:<insert version>'
     
-Current Travis status
-
-[![Build Status](https://api.travis-ci.org/dkunzler/esperandro.png?branch=master)](https://travis-ci.org/dkunzler/esperandro)
+    // optional, if object serialization is needed via jackson
+    implementation 'de.devland.esperandro:esperandro-jackson-addon:<insert version>'
+    
+    // additional processor to generate a file with all keys as string constants
+    annotationProcessor 'de.devland.esperandro:esperandro-keys-gen:<insert version>'
+    
+    // additional processor to generate a file with all keys as string resources
+    annotationProcessor 'de.devland.esperandro:esperandro-resources-gen:<insert version>'
+    
