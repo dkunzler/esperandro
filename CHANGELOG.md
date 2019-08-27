@@ -1,5 +1,9 @@
 Changelog
 =========
+3.0.1
+-----
+ * suppress "unchecked" warnings in generated code
+ * update Jackson because of security issue
 
 3.0.0
 -----
