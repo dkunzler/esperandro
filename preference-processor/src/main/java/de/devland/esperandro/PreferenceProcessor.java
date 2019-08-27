@@ -16,6 +16,7 @@
 
 package de.devland.esperandro;
 
+import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeName;
@@ -79,6 +80,8 @@ public class PreferenceProcessor extends AbstractEsperandroProcessor {
         try {
             String typeName = Utils.classNameFromInterface(interfaze) + Constants.IMPLEMENTATION_SUFFIX;
             result = TypeSpec.classBuilder(typeName)
+                    .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class)
+                            .addMember("value", "$S", "unchecked").build())
                     .addSuperinterface(TypeName.get(interfaze.asType()))
                     .addField(ClassName.get("android.content", "SharedPreferences"), "preferences", Modifier.PRIVATE, Modifier.FINAL);
             if (Utils.isPublic(interfaze)) {
