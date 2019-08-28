@@ -35,6 +35,8 @@ esperandro makes it simple to use `SharedPreference`s in a nicer and less error-
 
 Type safe, easy, less error-prone.
 
+Interested? [Get Started](https://github.com/dkunzler/esperandro/wiki/Basic-Usage)
+
 ### Gradle artifacts
 
 
