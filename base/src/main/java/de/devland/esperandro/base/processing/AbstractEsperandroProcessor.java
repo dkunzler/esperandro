@@ -51,12 +51,12 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        messager = ProcessingMessager.init(processingEnv);
         preProcessEnvironment(roundEnv);
 
         for (TypeElement typeElement : annotations) {
             if (typeElement.getQualifiedName().toString().equals(Constants.SHARED_PREFERENCES_ANNOTATION_NAME)) {
                 Set<? extends Element> interfaces = roundEnv.getElementsAnnotatedWith(SharedPreferences.class);
+                messager = ProcessingMessager.init(processingEnv);
 
                 for (Element interfaze : interfaces) {
                     // fix some weird behaviour where getElementsAnnotatedWith returns more elements than expected
@@ -80,9 +80,12 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
                         }
                     }
                 }
+
+                ProcessingMessager.deinit();
             }
         }
 
+        // do not return true because we have potentially multiple processors
         return false;
     }
 

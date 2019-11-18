@@ -15,6 +15,7 @@
  */
 package de.devland.esperandro.base.processing;
 
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic;
@@ -24,6 +25,7 @@ public class ProcessingMessager {
     private static final String MESSAGE_PREFIX = "esperandro: ";
 
     private static ProcessingMessager INSTANCE;
+    private Messager messager;
 
     public static ProcessingMessager get() {
         return INSTANCE;
@@ -34,22 +36,25 @@ public class ProcessingMessager {
         return INSTANCE;
     }
 
-    private ProcessingEnvironment processingEnv;
+    public static void deinit() {
+        INSTANCE.messager = null;
+        INSTANCE = null;
+    }
 
     private ProcessingMessager(ProcessingEnvironment processingEnv) {
-        this.processingEnv = processingEnv;
+        this.messager = processingEnv.getMessager();
     }
 
     public void emitError(String message, Element element) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, MESSAGE_PREFIX + message, element);
+        messager.printMessage(Diagnostic.Kind.ERROR, MESSAGE_PREFIX + message, element);
     }
 
     public void emitWarning(String message, Element element) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, MESSAGE_PREFIX + message, element);
+        messager.printMessage(Diagnostic.Kind.WARNING, MESSAGE_PREFIX + message, element);
     }
 
     public void emitMissingDefaultWarning(String type, Element element) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, MESSAGE_PREFIX + "Wrong or no mandatory overwritten default "
+        messager.printMessage(Diagnostic.Kind.WARNING, MESSAGE_PREFIX + "Wrong or no mandatory overwritten default "
                 + type + " value " +
                 "detected, please check the annotation.", element);
     }

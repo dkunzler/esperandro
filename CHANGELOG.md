@@ -1,5 +1,10 @@
 Changelog
 =========
+3.0.2
+-----
+ * fix large Heap on build by not retaining `ProcessingEnvironment`
+ * update Jackson because of security issue
+
 3.0.1
 -----
  * suppress "unchecked" warnings in generated code
