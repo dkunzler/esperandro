@@ -21,6 +21,7 @@ import com.squareup.javapoet.TypeSpec;
 
 import javax.lang.model.element.Modifier;
 
+import de.devland.esperandro.Constants;
 import de.devland.esperandro.Utils;
 import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.base.preferences.EsperandroType;
@@ -36,7 +37,8 @@ public class PutterGenerator implements MethodGenerator {
 
     private void createInternal(TypeSpec.Builder type, TypeInformation typeInfo, Cached cachedAnnotation,
                                 boolean isCommitSetter, MethodInformation methodInformation) {
-        MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(methodInformation.associatedPreference)
+        String methodName = Constants.PREFIX_SET + Utils.upperCaseFirstLetter(methodInformation.associatedPreference);
+        MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(methodName)
                 .addModifiers(methodInformation.isInternal() ? Modifier.PRIVATE : Modifier.PUBLIC)
                 .addParameter(typeInfo.getType(), methodInformation.associatedPreference);
         if (!methodInformation.isInternal()) {

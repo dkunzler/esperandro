@@ -19,6 +19,7 @@ package de.devland.esperandro.analysis;
 import java.util.List;
 
 import de.devland.esperandro.Constants;
+import de.devland.esperandro.base.Utils;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
 import de.devland.esperandro.base.preferences.TypeInformation;
@@ -36,16 +37,18 @@ public class PutterAnalyzer implements GeneratorAwareAnalyzer {
     private static boolean isApplicableMethodInternal(MethodInformation method) {
         String methodName = method.getMethodName();
 
-        boolean hasSeparator = methodName.contains(Constants.SUFFIX_SEPARATOR);
+        boolean hasSuffixSeparator = methodName.contains(Constants.SUFFIX_SEPARATOR);
+        boolean hasSetPrefix = methodName.startsWith(Constants.PREFIX_SET);
         boolean hasValidParameter = method.parameterType != null && method.parameterType.getEsperandroType() != EsperandroType.UNKNOWN;
         boolean hasValidReturnType = method.returnType.getEsperandroType() == EsperandroType.VOID
                 || method.returnType.getEsperandroType() == EsperandroType.BOOLEAN;
 
-        return !hasSeparator && hasValidParameter && hasValidReturnType;
+        return !hasSuffixSeparator && hasSetPrefix && hasValidParameter && hasValidReturnType;
     }
 
     private static String getPreferenceNameInternal(MethodInformation method) {
-        return method.getMethodName();
+        String stripped = method.getMethodName().substring(Constants.PREFIX_SET.length());
+        return Utils.lowerCaseFirstLetter(stripped);
     }
 
     private static TypeInformation getPreferenceTypeInternal(MethodInformation method) {

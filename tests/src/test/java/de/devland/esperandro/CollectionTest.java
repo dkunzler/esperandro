@@ -41,21 +41,21 @@ public class CollectionTest {
 
     @Test
     public void putGetList() {
-        Assert.assertNull(esperandroPreferences.listPreference());
+        Assert.assertNull(esperandroPreferences.getListPreference());
         Container container = new Container();
         container.anotherValue = 5;
         container.value = "hello World";
 
-        esperandroPreferences.listPreference(Collections.singletonList(container));
+        esperandroPreferences.setListPreference(Collections.singletonList(container));
 
-        Container savedContainer = esperandroPreferences.listPreference().get(0);
+        Container savedContainer = esperandroPreferences.getListPreference().get(0);
         Assert.assertNotNull(savedContainer);
         Assert.assertEquals(container, savedContainer);
     }
 
     @Test
     public void addList() {
-        Assert.assertNull(esperandroPreferences.setPreference());
+        Assert.assertNull(esperandroPreferences.getListPreference());
         Container container = new Container();
         container.anotherValue = 5;
         container.value = "hello World";
@@ -66,16 +66,16 @@ public class CollectionTest {
 
         List<Container> list = new ArrayList<>();
         list.add(container);
-        esperandroPreferences.listPreference(list);
+        esperandroPreferences.setListPreference(list);
         esperandroPreferences.listPreference$Add(other);
 
-        Assert.assertTrue(esperandroPreferences.listPreference().contains(container));
-        Assert.assertTrue(esperandroPreferences.listPreference().contains(other));
+        Assert.assertTrue(esperandroPreferences.getListPreference().contains(container));
+        Assert.assertTrue(esperandroPreferences.getListPreference().contains(other));
     }
 
     @Test
     public void removeList() {
-        Assert.assertNull(esperandroPreferences.setPreference());
+        Assert.assertNull(esperandroPreferences.getListPreference());
 
         Container container = new Container();
         container.anotherValue = 5;
@@ -87,64 +87,64 @@ public class CollectionTest {
 
         List<Container> list = new ArrayList<>();
         list.add(container);
-        esperandroPreferences.listPreference(list);
+        esperandroPreferences.setListPreference(list);
         esperandroPreferences.listPreference$Add(other);
 
-        Assert.assertEquals(2, esperandroPreferences.listPreference().size());
-        Assert.assertTrue(esperandroPreferences.listPreference().contains(container));
-        Assert.assertTrue(esperandroPreferences.listPreference().contains(other));
+        Assert.assertEquals(2, esperandroPreferences.getListPreference().size());
+        Assert.assertTrue(esperandroPreferences.getListPreference().contains(container));
+        Assert.assertTrue(esperandroPreferences.getListPreference().contains(other));
 
         esperandroPreferences.listPreference$Remove(container);
 
-        Assert.assertEquals(1, esperandroPreferences.listPreference().size());
-        Assert.assertFalse(esperandroPreferences.listPreference().contains(container));
-        Assert.assertTrue(esperandroPreferences.listPreference().contains(other));
+        Assert.assertEquals(1, esperandroPreferences.getListPreference().size());
+        Assert.assertFalse(esperandroPreferences.getListPreference().contains(container));
+        Assert.assertTrue(esperandroPreferences.getListPreference().contains(other));
     }
 
     @Test
     public void putGetSet() {
-        Assert.assertNull(esperandroPreferences.setPreference());
+        Assert.assertNull(esperandroPreferences.getSetPreference());
 
         Set<String> set = new HashSet<>();
         set.add("foo");
-        esperandroPreferences.setPreference(set);
+        esperandroPreferences.setSetPreference(set);
 
-        String value = esperandroPreferences.setPreference().iterator().next();
+        String value = esperandroPreferences.getSetPreference().iterator().next();
         Assert.assertNotNull(value);
         Assert.assertEquals("foo", value);
     }
 
     @Test
     public void addSet() {
-        Assert.assertNull(esperandroPreferences.setPreference());
+        Assert.assertNull(esperandroPreferences.getSetPreference());
 
         Set<String> set = new HashSet<>();
         set.add("foo");
-        esperandroPreferences.setPreference(set);
+        esperandroPreferences.setSetPreference(set);
         esperandroPreferences.setPreference$Add("bar");
 
-        Assert.assertTrue(esperandroPreferences.setPreference().contains("foo"));
-        Assert.assertTrue(esperandroPreferences.setPreference().contains("bar"));
+        Assert.assertTrue(esperandroPreferences.getSetPreference().contains("foo"));
+        Assert.assertTrue(esperandroPreferences.getSetPreference().contains("bar"));
     }
 
     @Test
     public void removeSet() {
-        Assert.assertNull(esperandroPreferences.setPreference());
+        Assert.assertNull(esperandroPreferences.getSetPreference());
 
         Set<String> set = new HashSet<>();
         set.add("foo");
-        esperandroPreferences.setPreference(set);
+        esperandroPreferences.setSetPreference(set);
         esperandroPreferences.setPreference$Add("bar");
 
-        Assert.assertEquals(2, esperandroPreferences.setPreference().size());
-        Assert.assertTrue(esperandroPreferences.setPreference().contains("foo"));
-        Assert.assertTrue(esperandroPreferences.setPreference().contains("bar"));
+        Assert.assertEquals(2, esperandroPreferences.getSetPreference().size());
+        Assert.assertTrue(esperandroPreferences.getSetPreference().contains("foo"));
+        Assert.assertTrue(esperandroPreferences.getSetPreference().contains("bar"));
 
         esperandroPreferences.setPreference$Remove("foo");
 
-        Assert.assertEquals(1, esperandroPreferences.setPreference().size());
-        Assert.assertFalse(esperandroPreferences.setPreference().contains("foo"));
-        Assert.assertTrue(esperandroPreferences.setPreference().contains("bar"));
+        Assert.assertEquals(1, esperandroPreferences.getSetPreference().size());
+        Assert.assertFalse(esperandroPreferences.getSetPreference().contains("foo"));
+        Assert.assertTrue(esperandroPreferences.getSetPreference().contains("bar"));
     }
 
     @Test

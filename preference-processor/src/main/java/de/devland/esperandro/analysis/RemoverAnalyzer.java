@@ -27,11 +27,11 @@ public class RemoverAnalyzer implements GeneratorAwareAnalyzer {
 
     @Override
     public boolean isApplicableMethod(MethodInformation method) {
-        boolean hasAdderSuffix = method.getMethodName().endsWith(Constants.SUFFIX_REMOVE);
+        boolean hasRemoverSuffix = method.getMethodName().endsWith(Constants.SUFFIX_REMOVE);
         boolean hasValidParameter = method.parameterType != null && method.parameterType.getEsperandroType() != EsperandroType.UNKNOWN;
         boolean hasValidReturnType = method.returnType.getEsperandroType() == EsperandroType.VOID;
 
-        return hasAdderSuffix && hasValidParameter && hasValidReturnType;
+        return hasRemoverSuffix && hasValidParameter && hasValidReturnType;
     }
 
     @Override

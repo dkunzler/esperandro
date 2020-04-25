@@ -23,6 +23,7 @@ import com.squareup.javapoet.TypeVariableName;
 
 import javax.lang.model.element.Modifier;
 
+import de.devland.esperandro.Constants;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.Utils;
 import de.devland.esperandro.base.preferences.EsperandroType;
@@ -119,7 +120,7 @@ public class GenericActionsGenerator {
 
         for (String preferenceName : allPreferences.getAllPreferences()) {
             String methodSuffix = Utils.getMethodSuffix(allPreferences.getTypeOfPreference(preferenceName).getEsperandroType());
-            String value = "this." + preferenceName + "()";
+            String value = "this." + Constants.PREFIX_GET + Utils.upperCaseFirstLetter(preferenceName) + "()";
             if (allPreferences.getTypeOfPreference(preferenceName).getEsperandroType() == EsperandroType.OBJECT) {
                 value = "Esperandro.getSerializer().serialize(" + value + ")";
             }
@@ -171,12 +172,13 @@ public class GenericActionsGenerator {
 
         for (String preferenceName : allPreferences.getAllPreferences()) {
             TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
+            String methodName = Constants.PREFIX_GET + Utils.upperCaseFirstLetter(preferenceName);
             getValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
             if (typeOfPreference.isPrimitive()) {
                 // box
-                getValueBuilder.addStatement("return (V) ($T) $L()", typeOfPreference.getObjectType(), preferenceName);
+                getValueBuilder.addStatement("return (V) ($T) $L()", typeOfPreference.getObjectType(), methodName);
             } else {
-                getValueBuilder.addStatement("return (V) $L()", preferenceName);
+                getValueBuilder.addStatement("return (V) $L()", methodName);
             }
             getValueBuilder.endControlFlow();
         }
@@ -200,16 +202,17 @@ public class GenericActionsGenerator {
 
         for (String preferenceName : allPreferences.getAllPreferences()) {
             TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
+            String methodName = Constants.PREFIX_SET + Utils.upperCaseFirstLetter(preferenceName);
 
             setValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
             if (typeOfPreference.isPrimitive()) {
                 // box
-                setValueBuilder.addStatement("$L(($T) ($T)pref)", preferenceName, typeOfPreference.getType(), typeOfPreference.getObjectType());
+                setValueBuilder.addStatement("$L(($T) ($T)pref)", methodName, typeOfPreference.getType(), typeOfPreference.getObjectType());
             } else if (typeOfPreference.getTypeName().equals("Byte")) {
                 // box, byte is not handled as primitive
-                setValueBuilder.addStatement("$L(($T) (Byte)pref)", preferenceName, typeOfPreference.getType());
+                setValueBuilder.addStatement("$L(($T) (Byte)pref)", methodName, typeOfPreference.getType());
             } else {
-                setValueBuilder.addStatement("$L(($T)pref)", preferenceName, typeOfPreference.getType());
+                setValueBuilder.addStatement("$L(($T)pref)", methodName, typeOfPreference.getType());
             }
             setValueBuilder.addStatement("return");
             setValueBuilder.endControlFlow();

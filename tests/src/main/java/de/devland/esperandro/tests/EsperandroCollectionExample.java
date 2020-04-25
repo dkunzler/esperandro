@@ -13,13 +13,13 @@ import de.devland.esperandro.tests.model.Container;
  */
 @SharedPreferences
 public interface EsperandroCollectionExample extends SharedPreferenceActions {
-    boolean listPreference(List<Container> listPreference);
-    List<Container> listPreference();
+    boolean setListPreference(List<Container> listPreference);
+    List<Container> getListPreference();
     void listPreference$Add(Container toAdd);
     void listPreference$Remove(Container toRemove);
 
-    boolean setPreference(Set<String> setPreference);
-    Set<String> setPreference();
+    boolean setSetPreference(Set<String> setPreference);
+    Set<String> getSetPreference();
     void setPreference$Add(String toAdd);
     void setPreference$Remove(String toRemove);
 

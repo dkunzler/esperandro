@@ -52,12 +52,10 @@ public class GetterGenerator implements MethodGenerator {
     }
 
     private MethodSpec.Builder initGetter(String valueName, TypeInformation typeInformation, boolean runtimeDefault, boolean internal) {
-        MethodSpec.Builder getterBuilder;
+        String methodName = Constants.PREFIX_GET + Utils.upperCaseFirstLetter(valueName);
+        MethodSpec.Builder getterBuilder = MethodSpec.methodBuilder(methodName);
         if (runtimeDefault) {
-            getterBuilder = MethodSpec.methodBuilder(valueName + Constants.SUFFIX_DEFAULT)
-                    .addParameter(typeInformation.getType(), "defaultValue");
-        } else {
-            getterBuilder = MethodSpec.methodBuilder(valueName);
+            getterBuilder.addParameter(typeInformation.getType(), "defaultValue");
         }
         getterBuilder.addModifiers(internal ? Modifier.PRIVATE : Modifier.PUBLIC)
                 .returns(typeInformation.getType());
