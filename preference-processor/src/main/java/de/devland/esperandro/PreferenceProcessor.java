@@ -102,14 +102,16 @@ public class PreferenceProcessor extends AbstractEsperandroProcessor {
         for (String preferenceName : preferenceInterface.getAllPreferences()) {
             if (!GetterAnalyzer.hasMatch(preferenceInterface.getMethodsForPreference(preferenceName))) {
                 if (preferenceInterface.getTypeOfPreference(preferenceName) != null) {
-                    preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(preferenceInterface.getTypeOfPreference(preferenceName), null));
+                    String methodName = Constants.PREFIX_GET + Utils.upperCaseFirstLetter(preferenceName);
+                    preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(methodName, preferenceInterface.getTypeOfPreference(preferenceName), null));
                 } else {
                     messager.emitWarning("Could not determine type for preference '" + preferenceName + "', some actions might not work.", Environment.currentElement);
                 }
             }
             if (!PutterAnalyzer.hasMatch(preferenceInterface.getMethodsForPreference(preferenceName))) {
                 if (preferenceInterface.getTypeOfPreference(preferenceName) != null) {
-                    preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(TypeInformation.getVoid(), preferenceInterface.getTypeOfPreference(preferenceName)));
+                    String methodName = Constants.PREFIX_SET + Utils.upperCaseFirstLetter(preferenceName);
+                    preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(methodName, TypeInformation.getVoid(), preferenceInterface.getTypeOfPreference(preferenceName)));
                 } else {
                     messager.emitWarning("Could not determine type for preference '" + preferenceName + "', some actions might not work.", Environment.currentElement);
                 }

@@ -87,7 +87,7 @@ public class CacheTest {
         prefs.edit().putString("cachedValue", "value").apply();
         assertNull(cache.get("cachedValue"));
         // after get, value should be in cache
-        assertEquals("value", cacheOnPutPreferences.getChachedValue());
+        assertEquals("value", cacheOnPutPreferences.getCachedValue());
         assertEquals("value", cache.get("cachedValue"));
         cacheOnPutPreferences.setCachedValue("newValue");
         assertEquals("newValue", cache.get("cachedValue"));

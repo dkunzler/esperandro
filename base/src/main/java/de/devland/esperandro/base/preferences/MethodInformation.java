@@ -32,21 +32,23 @@ public class MethodInformation {
             parameterType = TypeInformation.from(method.getParameters().get(0).asType());
         }
 
-        return new MethodInformation(method, returnType, parameterType);
+        return new MethodInformation(method, method.getSimpleName().toString(), returnType, parameterType);
     }
 
-    public static MethodInformation internalMethod(TypeInformation returnType, TypeInformation parameterType) {
-        return new MethodInformation(null, returnType, parameterType);
+    public static MethodInformation internalMethod(String methodName, TypeInformation returnType, TypeInformation parameterType) {
+        return new MethodInformation(null, methodName, returnType, parameterType);
     }
 
-    private MethodInformation(Element element, TypeInformation returnType, TypeInformation parameterType) {
+    private MethodInformation(Element element, String methodName, TypeInformation returnType, TypeInformation parameterType) {
         this.element = element;
+        this.methodName = methodName;
         this.returnType = returnType;
         this.parameterType = parameterType;
     }
 
     public String associatedPreference;
     public final Element element;
+    public final String methodName;
     public final TypeInformation returnType;
     public final TypeInformation parameterType;
 
@@ -64,12 +66,7 @@ public class MethodInformation {
     }
 
     public String getMethodName() {
-        if (element != null) {
-            return element.getSimpleName().toString();
-        }
-
-        // default is the name of the preference
-        return associatedPreference;
+        return methodName;
     }
 
 }

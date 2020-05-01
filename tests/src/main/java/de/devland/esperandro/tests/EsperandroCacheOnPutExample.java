@@ -14,7 +14,7 @@ import de.devland.esperandro.tests.model.ContainerListObject;
 @SharedPreferences(name = "cacheOnPutExample")
 @Cached(cacheOnPut = true, autoSize = false, cacheSize = 30)
 public interface EsperandroCacheOnPutExample extends SharedPreferenceActions {
-    String getChachedValue();
+    String getCachedValue();
 
     void setCachedValue(String cachedValue);
 
