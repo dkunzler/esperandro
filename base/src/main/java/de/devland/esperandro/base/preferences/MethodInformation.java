@@ -17,7 +17,6 @@
 package de.devland.esperandro.base.preferences;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -33,47 +32,27 @@ public class MethodInformation {
             parameterType = TypeInformation.from(method.getParameters().get(0).asType());
         }
 
-        return new MethodInformation(method, null, returnType, parameterType);
-    }
-
-    public static MethodInformation from(Method method) {
-        TypeInformation returnType;
-        if (method.getReturnType().equals(void.class)) {
-            returnType = TypeInformation.from(method.getReturnType());
-        } else {
-            returnType = TypeInformation.from(method.getGenericReturnType());
-        }
-        TypeInformation parameterType = null;
-        if (method.getGenericParameterTypes().length == 1) {
-            parameterType = TypeInformation.from(method.getGenericParameterTypes()[0]);
-        }
-
-        return new MethodInformation(null, method, returnType, parameterType);
+        return new MethodInformation(method, returnType, parameterType);
     }
 
     public static MethodInformation internalMethod(TypeInformation returnType, TypeInformation parameterType) {
-        return new MethodInformation(null, null, returnType, parameterType);
+        return new MethodInformation(null, returnType, parameterType);
     }
 
-    private MethodInformation(Element element, Method method,
-                              TypeInformation returnType, TypeInformation parameterType) {
+    private MethodInformation(Element element, TypeInformation returnType, TypeInformation parameterType) {
         this.element = element;
-        this.method = method;
         this.returnType = returnType;
         this.parameterType = parameterType;
     }
 
     public String associatedPreference;
     public final Element element;
-    public final Method method;
     public final TypeInformation returnType;
     public final TypeInformation parameterType;
 
 
     public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-        if (method != null) {
-            return method.getAnnotation(annotationClass);
-        } else if (element != null) {
+        if (element != null) {
             return element.getAnnotation(annotationClass);
         }
 
@@ -81,13 +60,11 @@ public class MethodInformation {
     }
 
     public boolean isInternal() {
-        return element == null && method == null;
+        return element == null;
     }
 
     public String getMethodName() {
-        if (method != null) {
-            return method.getName();
-        } else if (element != null) {
+        if (element != null) {
             return element.getSimpleName().toString();
         }
 

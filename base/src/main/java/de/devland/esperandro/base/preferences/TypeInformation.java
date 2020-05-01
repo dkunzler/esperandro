@@ -18,8 +18,6 @@ package de.devland.esperandro.base.preferences;
 
 import com.squareup.javapoet.TypeName;
 
-import java.lang.reflect.Type;
-
 import javax.lang.model.type.TypeMirror;
 
 import de.devland.esperandro.base.Constants;
@@ -27,10 +25,9 @@ import de.devland.esperandro.base.Constants;
 public class TypeInformation {
     private EsperandroType esperandroType = EsperandroType.UNKNOWN;
     private boolean isGeneric = false;
-    private boolean isType = false;
+    private boolean isVoid = false;
     private boolean isPrimitive = true;
     private String declaredTypeName;
-    private Type type;
     private TypeMirror typeMirror;
 
     public static TypeInformation from(TypeMirror typeMirror) {
@@ -39,8 +36,7 @@ public class TypeInformation {
 
         switch (typeMirror.getKind()) {
             case VOID:
-                result.esperandroType = EsperandroType.VOID;
-                result.declaredTypeName = "void";
+                result = getVoid();
                 break;
             case BOOLEAN:
                 result.esperandroType = EsperandroType.BOOLEAN;
@@ -85,53 +81,11 @@ public class TypeInformation {
         return result;
     }
 
-    public static TypeInformation from(Type type) {
+    public static TypeInformation getVoid() {
         TypeInformation result = new TypeInformation();
-        result.type = type;
-        result.isType = true;
-
-        String typeString = type.toString();
-
-        if (type.equals(void.class)) {
-            result.esperandroType = EsperandroType.VOID;
-            result.declaredTypeName = "void";
-        } else if (typeString.equals("int")) {
-            result.esperandroType = EsperandroType.INT;
-            result.declaredTypeName = typeString;
-        } else if (typeString.equals("long")) {
-            result.esperandroType = EsperandroType.LONG;
-            result.declaredTypeName = typeString;
-        } else if (typeString.equals("float")) {
-            result.esperandroType = EsperandroType.FLOAT;
-            result.declaredTypeName = typeString;
-        } else if (typeString.equals("boolean")) {
-            result.esperandroType = EsperandroType.BOOLEAN;
-            result.declaredTypeName = typeString;
-        } else if (typeString.equals("char")) {
-            result.esperandroType = EsperandroType.CHAR;
-            result.declaredTypeName = typeString;
-        } else if (typeString.equals("byte")) {
-            result.esperandroType = EsperandroType.BYTE;
-            result.declaredTypeName = typeString;
-        } else if (typeString.equals("java.util.Set<java.lang.String>")) {
-            result.isPrimitive = false;
-            result.esperandroType = EsperandroType.STRINGSET;
-            result.declaredTypeName = Constants.DECLARED_TYPENAME_STRINGSET;
-        } else if (typeString.equals("class java.lang.String")) {
-            result.isPrimitive = false;
-            result.esperandroType = EsperandroType.STRING;
-            result.declaredTypeName = Constants.DECLARED_TYPENAME_STRING;
-        } else if (typeString.startsWith("class ")) {
-            result.isPrimitive = false;
-            result.esperandroType = EsperandroType.OBJECT;
-            // cut off "class " from type name
-            result.declaredTypeName = typeString.substring(6);
-        } else if (isGeneric(typeString)) {
-            result.isPrimitive = false;
-            result.esperandroType = EsperandroType.OBJECT;
-            result.declaredTypeName = typeString;
-            result.isGeneric = true;
-        }
+        result.isVoid = true;
+        result.esperandroType = EsperandroType.VOID;
+        result.declaredTypeName = "void";
 
         return result;
     }
@@ -157,7 +111,7 @@ public class TypeInformation {
     }
 
     public TypeName getType() {
-        return isType ? TypeName.get(type) : TypeName.get(typeMirror);
+        return isVoid ? TypeName.get(void.class) : TypeName.get(typeMirror);
     }
 
     public TypeName getObjectType() {

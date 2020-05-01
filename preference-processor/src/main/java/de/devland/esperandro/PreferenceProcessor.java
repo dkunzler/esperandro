@@ -109,7 +109,7 @@ public class PreferenceProcessor extends AbstractEsperandroProcessor {
             }
             if (!PutterAnalyzer.hasMatch(preferenceInterface.getMethodsForPreference(preferenceName))) {
                 if (preferenceInterface.getTypeOfPreference(preferenceName) != null) {
-                    preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(TypeInformation.from(void.class), preferenceInterface.getTypeOfPreference(preferenceName)));
+                    preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(TypeInformation.getVoid(), preferenceInterface.getTypeOfPreference(preferenceName)));
                 } else {
                     messager.emitWarning("Could not determine type for preference '" + preferenceName + "', some actions might not work.", Environment.currentElement);
                 }

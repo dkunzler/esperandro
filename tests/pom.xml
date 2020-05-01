@@ -24,11 +24,6 @@
         </dependency>
         <dependency>
             <groupId>de.devland.esperandro</groupId>
-            <artifactId>bintest</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>de.devland.esperandro</groupId>
             <artifactId>esperandro-preference-gen</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -92,13 +87,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>project.local</id>
-            <name>project</name>
-            <url>file:${project.basedir}/repo</url>
-        </repository>
-    </repositories>
 
 </project>
