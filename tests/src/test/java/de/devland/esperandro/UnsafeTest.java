@@ -48,10 +48,10 @@ public class UnsafeTest {
 
     @Test
     public void testReadGoodProperties() throws Exception {
-        unsafe.simpleInt(42);
-        unsafe.string("truth");
-        unsafe.container(new Container());
-        unsafe.putterWithoutGetter(1337L);
+        unsafe.setSimpleInt(42);
+        unsafe.setString("truth");
+        unsafe.setContainer(new Container());
+        unsafe.setPutterWithoutGetter(1337L);
         unsafe.get().edit().putStringSet("getterWithoutPutter", Sets.newSet("a")).apply();
 
         Assert.assertEquals(42, (int) unsafe.getValue(mockContext, 1));
@@ -73,11 +73,11 @@ public class UnsafeTest {
         unsafe.setValue(mockContext, 4, 23L);
         unsafe.setValue(mockContext, 5, Sets.newSet("1", "2"));
 
-        Assert.assertEquals(21, unsafe.simpleInt());
-        Assert.assertNotNull(unsafe.container());
-        Assert.assertEquals("bar", unsafe.string());
+        Assert.assertEquals(21, unsafe.getSimpleInt());
+        Assert.assertNotNull(unsafe.getContainer());
+        Assert.assertEquals("bar", unsafe.getString());
         Assert.assertEquals(23L, unsafe.get().getLong("putterWithoutGetter", 0L));
-        Set<String> stringSet = unsafe.getterWithoutPutter();
+        Set<String> stringSet = unsafe.getGetterWithoutPutter();
         Assert.assertNotNull(stringSet);
         Assert.assertEquals(2, stringSet.size());
         Assert.assertTrue(stringSet.contains("1"));

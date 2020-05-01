@@ -23,14 +23,14 @@ public interface EsperandroCollectionExample extends SharedPreferenceActions {
     void setPreference$Add(String toAdd);
     void setPreference$Remove(String toRemove);
 
-    void listDefaultPreference(List<String> listDefault);
+    void setListDefaultPreference(List<String> listDefault);
 
     @Default(ofStatement = "new java.util.ArrayList()")
-    List<String> listDefaultPreference();
+    List<String> getListDefaultPreference();
 
-    void stringSetDefaultPreference(Set<String> stringSetDefault);
+    void setStringSetDefaultPreference(Set<String> stringSetDefault);
 
     @Default(ofStatement = "new java.util.HashSet()")
-    Set<String> stringSetDefaultPreference();
+    Set<String> getStringSetDefaultPreference();
 
 }

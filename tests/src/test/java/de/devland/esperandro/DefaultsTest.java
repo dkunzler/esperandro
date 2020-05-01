@@ -53,48 +53,48 @@ public class DefaultsTest {
     public void annotationDefaults() {
         Assert.assertNotNull(preferences);
 
-        Assert.assertTrue(preferences.boolPref());
+        Assert.assertTrue(preferences.getBoolPref());
         // check if we get the default value, if the pref isn't set yet
-        Assert.assertTrue(preferences.boolPref$Default(true));
+        Assert.assertTrue(preferences.getBoolPref(true));
         // set the pref to false
-        preferences.boolPref(false);
+        preferences.setBoolPref(false);
         // verify we get the pref value, not the runtime default
-        Assert.assertFalse(preferences.boolPref$Default(true));
+        Assert.assertFalse(preferences.getBoolPref(true));
 
-        Assert.assertFalse(preferences.boolPref$Default(false));
+        Assert.assertFalse(preferences.getBoolPref(false));
 
-        Assert.assertEquals(42, preferences.integerPref());
+        Assert.assertEquals(42, preferences.getIntegerPref());
 
-        Assert.assertEquals(42l, preferences.longPref());
+        Assert.assertEquals(42l, preferences.getLongPref());
 
-        Assert.assertEquals(4.2f, preferences.floatPref());
+        Assert.assertEquals(4.2f, preferences.getFloatPref());
 
-        Assert.assertNull(preferences.stringSetPref());
+        Assert.assertNull(preferences.getStringSetPref());
         Set<String> exampleSet = new HashSet<String>();
         exampleSet.add("test");
-        Set<String> preferenceSet = preferences.stringSetPref$Default(exampleSet);
+        Set<String> preferenceSet = preferences.getStringSetPref(exampleSet);
         Assert.assertEquals(exampleSet, preferenceSet);
         Assert.assertEquals("test", preferenceSet.iterator().next());
 
-        Assert.assertNull(preferences.complexPref());
+        Assert.assertNull(preferences.getComplexPref());
         Container exampleComplex = new Container();
         exampleComplex.value = "test";
         exampleComplex.anotherValue = 23;
-        Assert.assertEquals(exampleComplex, preferences.complexPref$Default(exampleComplex));
+        Assert.assertEquals(exampleComplex, preferences.getComplexPref(exampleComplex));
     }
 
     @Test
     public void initDefaults() {
         Assert.assertFalse(preferences.contains("boolPref"));
-        boolean defaultValue = preferences.boolPref();
+        boolean defaultValue = preferences.getBoolPref();
         preferences.initDefaults();
         Assert.assertTrue(preferences.contains("boolPref"));
-        Assert.assertEquals(defaultValue, preferences.boolPref());
-        preferences.boolPref(!defaultValue);
-        Assert.assertEquals(!defaultValue, preferences.boolPref());
+        Assert.assertEquals(defaultValue, preferences.getBoolPref());
+        preferences.setBoolPref(!defaultValue);
+        Assert.assertEquals(!defaultValue, preferences.getBoolPref());
         preferences.initDefaults();
         // initDefaults should not override user-set value
-        Assert.assertEquals(!defaultValue, preferences.boolPref());
+        Assert.assertEquals(!defaultValue, preferences.getBoolPref());
     }
 
 

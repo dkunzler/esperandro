@@ -14,23 +14,23 @@ import de.devland.esperandro.tests.model.ContainerListObject;
 @SharedPreferences(name = "cacheOnPutExample")
 @Cached(cacheOnPut = true, autoSize = false, cacheSize = 30)
 public interface EsperandroCacheOnPutExample extends SharedPreferenceActions {
-    String cachedValue();
+    String getChachedValue();
 
-    void cachedValue(String cachedValue);
+    void setCachedValue(String cachedValue);
 
-    int primitive();
+    int getPrimitive();
 
-    void primitive(int primitive);
+    void setPrimitive(int primitive);
 
-    boolean primitiveCommit(int primitive);
+    boolean setPrimitiveCommit(int primitive);
 
-    void containerList(ArrayList<Container> containerList);
+    void setContainerList(ArrayList<Container> containerList);
 
-    ArrayList<Container> containerList();
+    ArrayList<Container> getContainerList();
 
-    ArrayList<Container> containerList$Default(ArrayList<Container> runtimeDefault);
+    ArrayList<Container> getContainerList(ArrayList<Container> runtimeDefault);
 
-    void containerListObject(ContainerListObject containerListObject);
+    void setContainerListObject(ContainerListObject containerListObject);
 
-    ContainerListObject containerListObject();
+    ContainerListObject getContainerListObject();
 }

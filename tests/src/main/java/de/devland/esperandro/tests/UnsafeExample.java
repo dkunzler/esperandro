@@ -12,16 +12,16 @@ import de.devland.esperandro.tests.model.Container;
 @Cached(cacheOnPut = true)
 @GenerateStringResources(stringPrefix = "foo_")
 public interface UnsafeExample extends SharedPreferenceActions {
-    void simpleInt(int simpleInt);
-    int simpleInt();
+    void setSimpleInt(int simpleInt);
+    int getSimpleInt();
 
-    void container(Container container);
-    Container container();
+    void setContainer(Container container);
+    Container getContainer();
 
-    void string(String string);
-    String string();
+    void setString(String string);
+    String getString();
 
-    void putterWithoutGetter(long value);
+    void setPutterWithoutGetter(long value);
 
-    Set<String> getterWithoutPutter();
+    Set<String> getGetterWithoutPutter();
 }

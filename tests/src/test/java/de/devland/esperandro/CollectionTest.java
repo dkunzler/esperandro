@@ -149,12 +149,12 @@ public class CollectionTest {
 
     @Test
     public void stringSetDefault() {
-        Assert.assertNotNull(esperandroPreferences.stringSetDefaultPreference());
-        Assert.assertEquals(0, esperandroPreferences.stringSetDefaultPreference().size());
+        Assert.assertNotNull(esperandroPreferences.getStringSetDefaultPreference());
+        Assert.assertEquals(0, esperandroPreferences.getStringSetDefaultPreference().size());
     }
 
     public void collectionDefault() {
-        Assert.assertNotNull(esperandroPreferences.listDefaultPreference());
-        Assert.assertEquals(0, esperandroPreferences.listDefaultPreference().size());
+        Assert.assertNotNull(esperandroPreferences.getListDefaultPreference());
+        Assert.assertEquals(0, esperandroPreferences.getListDefaultPreference().size());
     }
 }
