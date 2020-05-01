@@ -18,6 +18,7 @@ package de.devland.esperandro;
 
 import de.devland.esperandro.base.Constants;
 import de.devland.esperandro.base.MethodAnalyzer;
+import de.devland.esperandro.base.Utils;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
 import de.devland.esperandro.base.preferences.TypeInformation;
@@ -28,17 +29,27 @@ public class NameMethodAnalyzer implements MethodAnalyzer {
         boolean hasSeparator = method.getMethodName().contains(Constants.SUFFIX_SEPARATOR);
         boolean hasParameter = method.parameterType != null;
         boolean hasValidParameter = method.parameterType != null && method.parameterType.getEsperandroType() != EsperandroType.UNKNOWN;
-        boolean hasVoidReturnType = method.returnType.getEsperandroType() == EsperandroType.VOID;
+
+        boolean startsWithSet = method.getMethodName().startsWith(Constants.PREFIX_SET);
+        boolean startsWithGet = method.getMethodName().startsWith(Constants.PREFIX_GET);
         boolean hasPutterReturnType = method.returnType.getEsperandroType() == EsperandroType.VOID
                 || method.returnType.getEsperandroType() == EsperandroType.BOOLEAN;
         boolean hasGetterReturnType = method.returnType.getEsperandroType() != EsperandroType.UNKNOWN;
 
-        return (!hasSeparator && hasValidParameter && hasPutterReturnType)
-                || (!hasSeparator && !hasParameter && hasGetterReturnType);
+        return (!hasSeparator && hasValidParameter && startsWithSet && hasPutterReturnType)
+                || (!hasSeparator && !hasParameter && startsWithGet && hasGetterReturnType);
     }
 
     @Override
     public String getPreferenceName(MethodInformation method) {
+        boolean startsWithSet = method.getMethodName().startsWith(Constants.PREFIX_SET);
+        boolean startsWithGet = method.getMethodName().startsWith(Constants.PREFIX_GET);
+        if (startsWithGet) {
+            return Utils.lowerCaseFirstLetter(method.getMethodName().substring(Constants.PREFIX_GET.length()));
+        }
+        if (startsWithSet) {
+            return Utils.lowerCaseFirstLetter(method.getMethodName().substring(Constants.PREFIX_SET.length()));
+        }
         return method.getMethodName();
     }
 
