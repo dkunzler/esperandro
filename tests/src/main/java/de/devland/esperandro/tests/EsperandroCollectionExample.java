@@ -16,7 +16,7 @@ public interface EsperandroCollectionExample extends SharedPreferenceActions {
     boolean setListPreference(List<Container> listPreference);
     List<Container> getListPreference();
     void listPreference$Add(Container toAdd);
-    void listPreference$Remove(Container toRemove);
+    boolean listPreference$Remove(Container toRemove);
 
     boolean setSetPreference(Set<String> setPreference);
     Set<String> getSetPreference();

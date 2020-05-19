@@ -94,11 +94,15 @@ public class CollectionTest {
         Assert.assertTrue(esperandroPreferences.getListPreference().contains(container));
         Assert.assertTrue(esperandroPreferences.getListPreference().contains(other));
 
-        esperandroPreferences.listPreference$Remove(container);
+        boolean result = esperandroPreferences.listPreference$Remove(container);
 
+        Assert.assertTrue(result);
         Assert.assertEquals(1, esperandroPreferences.getListPreference().size());
         Assert.assertFalse(esperandroPreferences.getListPreference().contains(container));
         Assert.assertTrue(esperandroPreferences.getListPreference().contains(other));
+
+        boolean secondResult = esperandroPreferences.listPreference$Remove(container);
+        Assert.assertFalse(secondResult);
     }
 
     @Test

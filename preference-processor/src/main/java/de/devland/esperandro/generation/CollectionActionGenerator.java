@@ -24,6 +24,7 @@ import javax.lang.model.element.Modifier;
 import de.devland.esperandro.Constants;
 import de.devland.esperandro.Utils;
 import de.devland.esperandro.annotations.Cached;
+import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
 import de.devland.esperandro.base.processing.Environment;
 
@@ -40,14 +41,17 @@ public class CollectionActionGenerator implements MethodGenerator {
         String prefName = methodInformation.associatedPreference;
         String setterName = Constants.PREFIX_SET + Utils.upperCaseFirstLetter(prefName);
         String getterName = Constants.PREFIX_GET + Utils.upperCaseFirstLetter(prefName);
-        MethodSpec.Builder adder = MethodSpec.methodBuilder(methodInformation.getMethodName())
+        MethodSpec.Builder action = MethodSpec.methodBuilder(methodInformation.getMethodName())
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .returns(void.class)
+                .returns(methodInformation.returnType.getType())
                 .addParameter(methodInformation.parameterType.getType(), "value")
                 .addStatement("$T __pref = this.$L()", Environment.currentPreferenceInterface.getTypeOfPreference(prefName).getObjectType(), getterName)
-                .addStatement("__pref.$L(value)", action)
+                .addStatement("boolean result = __pref.$L(value)", this.action)
                 .addStatement("this.$L(__pref)", setterName);
-        type.addMethod(adder.build());
+        if (methodInformation.returnType.getEsperandroType() == EsperandroType.BOOLEAN) {
+            action.addStatement("return result");
+        }
+        type.addMethod(action.build());
     }
 }
