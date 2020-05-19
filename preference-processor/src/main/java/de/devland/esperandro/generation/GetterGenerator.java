@@ -45,14 +45,13 @@ public class GetterGenerator implements MethodGenerator {
 
     @Override
     public void generateMethod(TypeSpec.Builder type, MethodInformation methodInformation, Cached cacheAnnotation) {
-        MethodSpec.Builder getterBuilder = initGetter(methodInformation.associatedPreference, methodInformation.returnType, runtimeDefault, methodInformation.isInternal());
+        MethodSpec.Builder getterBuilder = initGetter(methodInformation.methodName, methodInformation.returnType, runtimeDefault, methodInformation.isInternal());
         Element element = methodInformation.element != null ? methodInformation.element : Environment.currentElement;
         String defaultValue = getDefaultValue(methodInformation.getAnnotation(Default.class), methodInformation.returnType, element);
         createInternal(type, element, methodInformation.returnType, cacheAnnotation, runtimeDefault, defaultValue, getterBuilder, methodInformation);
     }
 
-    private MethodSpec.Builder initGetter(String valueName, TypeInformation typeInformation, boolean runtimeDefault, boolean internal) {
-        String methodName = Constants.PREFIX_GET + Utils.upperCaseFirstLetter(valueName);
+    private MethodSpec.Builder initGetter(String methodName, TypeInformation typeInformation, boolean runtimeDefault, boolean internal) {
         MethodSpec.Builder getterBuilder = MethodSpec.methodBuilder(methodName);
         if (runtimeDefault) {
             getterBuilder.addParameter(typeInformation.getType(), "defaultValue");

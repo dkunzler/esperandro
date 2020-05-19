@@ -21,12 +21,17 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 
+import java.util.List;
+
 import javax.lang.model.element.Modifier;
 
-import de.devland.esperandro.Constants;
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.Utils;
+import de.devland.esperandro.analysis.GetterAnalyzer;
+import de.devland.esperandro.analysis.PutterAnalyzer;
+import de.devland.esperandro.base.MethodAnalyzer;
 import de.devland.esperandro.base.preferences.EsperandroType;
+import de.devland.esperandro.base.preferences.MethodInformation;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
 import de.devland.esperandro.base.preferences.TypeInformation;
 
@@ -118,9 +123,11 @@ public class GenericActionsGenerator {
                 .returns(void.class)
                 .addStatement("SharedPreferences.Editor editor = preferences.edit()");
 
+        GetterAnalyzer analyzer = new GetterAnalyzer();
+
         for (String preferenceName : allPreferences.getAllPreferences()) {
             String methodSuffix = Utils.getMethodSuffix(allPreferences.getTypeOfPreference(preferenceName).getEsperandroType());
-            String value = "this." + Constants.PREFIX_GET + Utils.upperCaseFirstLetter(preferenceName) + "()";
+            String value = getMethodName(allPreferences, preferenceName, analyzer) + "()";
             if (allPreferences.getTypeOfPreference(preferenceName).getEsperandroType() == EsperandroType.OBJECT) {
                 value = "Esperandro.getSerializer().serialize(" + value + ")";
             }
@@ -170,9 +177,12 @@ public class GenericActionsGenerator {
 
         getValueBuilder.addStatement("String prefKey = context.getString(prefId)");
 
+        GetterAnalyzer analyzer = new GetterAnalyzer();
+
         for (String preferenceName : allPreferences.getAllPreferences()) {
             TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
-            String methodName = Constants.PREFIX_GET + Utils.upperCaseFirstLetter(preferenceName);
+            String methodName = getMethodName(allPreferences, preferenceName, analyzer);
+
             getValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
             if (typeOfPreference.isPrimitive()) {
                 // box
@@ -200,9 +210,11 @@ public class GenericActionsGenerator {
 
         setValueBuilder.addStatement("String prefKey = context.getString(prefId)");
 
+        PutterAnalyzer analyzer = new PutterAnalyzer();
+
         for (String preferenceName : allPreferences.getAllPreferences()) {
             TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
-            String methodName = Constants.PREFIX_SET + Utils.upperCaseFirstLetter(preferenceName);
+            String methodName = getMethodName(allPreferences, preferenceName, analyzer);
 
             setValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
             if (typeOfPreference.isPrimitive()) {
@@ -220,5 +232,16 @@ public class GenericActionsGenerator {
         setValueBuilder.addStatement("throw new $T(prefKey)", SharedPreferenceActions.UnknownKeyException.class);
 
         return setValueBuilder.build();
+    }
+
+    private static String getMethodName(PreferenceInterface allPreferences, String preferenceName, MethodAnalyzer analyzer) {
+        List<MethodInformation> methods = allPreferences.getMethodsForPreference(preferenceName);
+        String methodName = null;
+        for (MethodInformation method : methods) {
+            if (analyzer.isApplicableMethod(method)) {
+                methodName = method.methodName;
+            }
+        }
+        return methodName;
     }
 }

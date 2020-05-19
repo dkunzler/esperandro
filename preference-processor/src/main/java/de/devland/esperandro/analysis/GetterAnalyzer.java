@@ -19,6 +19,7 @@ package de.devland.esperandro.analysis;
 import java.util.List;
 
 import de.devland.esperandro.Constants;
+import de.devland.esperandro.annotations.Get;
 import de.devland.esperandro.base.Utils;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
@@ -37,17 +38,26 @@ public class GetterAnalyzer implements GeneratorAwareAnalyzer {
     private static boolean isApplicableMethodInternal(MethodInformation method) {
         String methodName = method.getMethodName();
 
+        boolean hasGetAnnotation = method.getAnnotation(Get.class) != null;
         boolean hasSuffixSeparator = methodName.contains(Constants.SUFFIX_SEPARATOR);
         boolean hasGetPrefix = methodName.startsWith(Constants.PREFIX_GET);
         boolean hasParameter = method.parameterType != null;
         boolean hasValidReturnType = method.returnType.getEsperandroType() != EsperandroType.UNKNOWN;
 
-        return !hasSuffixSeparator && hasGetPrefix && !hasParameter && hasValidReturnType;
+        boolean validAnnotatedMethod = hasGetAnnotation && !hasParameter && hasValidReturnType;
+        boolean validUnAnnotatedMethod = !hasSuffixSeparator && hasGetPrefix && !hasParameter && hasValidReturnType;
+
+        return validAnnotatedMethod || validUnAnnotatedMethod;
     }
 
     private static String getPreferenceNameInternal(MethodInformation method) {
-        String stripped = method.getMethodName().substring(Constants.PREFIX_GET.length());
-        return Utils.lowerCaseFirstLetter(stripped);
+        Get get = method.getAnnotation(Get.class);
+        if (get != null) {
+            return get.value();
+        } else {
+            String stripped = method.getMethodName().substring(Constants.PREFIX_GET.length());
+            return Utils.lowerCaseFirstLetter(stripped);
+        }
     }
 
     private static TypeInformation getPreferenceTypeInternal(MethodInformation method) {

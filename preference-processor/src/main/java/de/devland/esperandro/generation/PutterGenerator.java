@@ -37,8 +37,7 @@ public class PutterGenerator implements MethodGenerator {
 
     private void createInternal(TypeSpec.Builder type, TypeInformation typeInfo, Cached cachedAnnotation,
                                 boolean isCommitSetter, MethodInformation methodInformation) {
-        String methodName = Constants.PREFIX_SET + Utils.upperCaseFirstLetter(methodInformation.associatedPreference);
-        MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(methodName)
+        MethodSpec.Builder putterBuilder = MethodSpec.methodBuilder(methodInformation.methodName)
                 .addModifiers(methodInformation.isInternal() ? Modifier.PRIVATE : Modifier.PUBLIC)
                 .addParameter(typeInfo.getType(), methodInformation.associatedPreference);
         if (!methodInformation.isInternal()) {

@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package de.devland.esperandro;
+package de.devland.esperandro.base.analysis;
 
 import de.devland.esperandro.base.Constants;
 import de.devland.esperandro.base.MethodAnalyzer;
