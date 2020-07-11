@@ -1,5 +1,10 @@
 Changelog
 =========
+3.0.3
+-----
+ * fix #73
+ * update Jackson because of security issue
+
 3.0.2
 -----
  * fix large Heap on build by not retaining `ProcessingEnvironment`
