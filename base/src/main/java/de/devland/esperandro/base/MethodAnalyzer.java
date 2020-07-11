@@ -17,10 +17,13 @@
 package de.devland.esperandro.base;
 
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 
 public interface MethodAnalyzer {
     boolean isApplicableMethod(MethodInformation method);
+
+    MethodOperation getMethodOperation(MethodInformation method);
 
     String getPreferenceName(MethodInformation method);
 

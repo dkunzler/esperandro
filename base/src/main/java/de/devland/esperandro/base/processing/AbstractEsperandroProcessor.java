@@ -105,10 +105,12 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
 
                 MethodInformation methodInformation = MethodInformation.from(method);
 
-                if (getMethodAnalyzer().isApplicableMethod(methodInformation)) {
-                    String preferenceName = getMethodAnalyzer().getPreferenceName(methodInformation);
+                MethodAnalyzer analyzer = getMethodAnalyzer();
+                if (analyzer.isApplicableMethod(methodInformation)) {
+                    methodInformation.operation = analyzer.getMethodOperation(methodInformation);
+                    String preferenceName = analyzer.getPreferenceName(methodInformation);
                     preferences.addMethod(preferenceName, methodInformation);
-                    preferences.addTypeInformation(preferenceName, getMethodAnalyzer().getPreferenceType(methodInformation));
+                    preferences.addTypeInformation(preferenceName, analyzer.getPreferenceType(methodInformation));
                 }
             }
         }

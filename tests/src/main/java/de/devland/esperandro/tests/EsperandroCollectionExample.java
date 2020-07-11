@@ -5,6 +5,8 @@ import java.util.Set;
 
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.annotations.Default;
+import de.devland.esperandro.annotations.Get;
+import de.devland.esperandro.annotations.Put;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
 
@@ -33,4 +35,11 @@ public interface EsperandroCollectionExample extends SharedPreferenceActions {
     @Default(ofStatement = "new java.util.HashSet()")
     Set<String> getStringSetDefaultPreference();
 
+
+    @Put("realPreferenceName")
+    boolean completelyDifferentNamedSetter(Set<String> setPreference);
+    @Get("realPreferenceName")
+    Set<String> completelyDifferentNamedGetter();
+    void realPreferenceName$Add(String toAdd);
+    void realPreferenceName$Remove(String toRemove);
 }

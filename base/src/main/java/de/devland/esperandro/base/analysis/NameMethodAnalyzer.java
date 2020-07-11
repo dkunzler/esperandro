@@ -21,6 +21,7 @@ import de.devland.esperandro.base.MethodAnalyzer;
 import de.devland.esperandro.base.Utils;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 
 public class NameMethodAnalyzer implements MethodAnalyzer {
@@ -56,5 +57,10 @@ public class NameMethodAnalyzer implements MethodAnalyzer {
     @Override
     public TypeInformation getPreferenceType(MethodInformation method) {
         return null;
+    }
+
+    @Override
+    public MethodOperation getMethodOperation(MethodInformation method) {
+        return MethodOperation.UNKNOWN;
     }
 }

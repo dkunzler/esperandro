@@ -47,6 +47,7 @@ public class MethodInformation {
     }
 
     public String associatedPreference;
+    public MethodOperation operation = MethodOperation.UNKNOWN;
     public final Element element;
     public final String methodName;
     public final TypeInformation returnType;

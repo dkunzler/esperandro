@@ -20,6 +20,7 @@ import java.util.List;
 
 import de.devland.esperandro.base.MethodAnalyzer;
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 
 class ChainedMethodAnalyzer implements MethodAnalyzer {
@@ -61,4 +62,13 @@ class ChainedMethodAnalyzer implements MethodAnalyzer {
         return null;
     }
 
+    @Override
+    public MethodOperation getMethodOperation(MethodInformation method) {
+        for (MethodAnalyzer analyzer : delegates) {
+            if (analyzer.isApplicableMethod(method)) {
+                return analyzer.getMethodOperation(method);
+            }
+        }
+        return MethodOperation.UNKNOWN;
+    }
 }

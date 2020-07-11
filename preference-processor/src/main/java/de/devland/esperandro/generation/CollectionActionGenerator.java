@@ -21,6 +21,7 @@ import com.squareup.javapoet.TypeSpec;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Modifier;
@@ -30,6 +31,7 @@ import de.devland.esperandro.Utils;
 import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 import de.devland.esperandro.base.processing.Environment;
 
@@ -44,9 +46,20 @@ public class CollectionActionGenerator implements MethodGenerator {
     @Override
     public void generateMethod(TypeSpec.Builder type, MethodInformation methodInformation, Cached cacheAnnotation) {
         String prefName = methodInformation.associatedPreference;
+        String setterName = null;
+        String getterName = null;
+
+        List<MethodInformation> methods = Environment.currentPreferenceInterface.getMethodsForPreference(prefName);
+        for (MethodInformation method : methods) {
+            if (method.operation == MethodOperation.GET) {
+                getterName = method.methodName;
+            }
+            if (method.operation == MethodOperation.PUT) {
+                setterName = method.methodName;
+            }
+        }
+
         // TODO method name could be something completely different due to @Get/@Set annotations
-        String setterName = Constants.PREFIX_SET + Utils.upperCaseFirstLetter(prefName);
-        String getterName = Constants.PREFIX_GET + Utils.upperCaseFirstLetter(prefName);
 
         TypeInformation preferenceType = Environment.currentPreferenceInterface.getTypeOfPreference(prefName);
         MethodSpec.Builder action = MethodSpec.methodBuilder(methodInformation.getMethodName())

@@ -20,6 +20,7 @@ import de.devland.esperandro.Constants;
 import de.devland.esperandro.base.Utils;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 import de.devland.esperandro.generation.GetterGenerator;
 import de.devland.esperandro.generation.MethodGenerator;
@@ -66,5 +67,10 @@ public class RuntimeDefaultGetterAnalyzer implements GeneratorAwareAnalyzer {
     @Override
     public TypeInformation getPreferenceType(MethodInformation method) {
         return getPreferenceTypeInternal(method);
+    }
+
+    @Override
+    public MethodOperation getMethodOperation(MethodInformation method) {
+        return MethodOperation.RUNTIME_GET;
     }
 }
