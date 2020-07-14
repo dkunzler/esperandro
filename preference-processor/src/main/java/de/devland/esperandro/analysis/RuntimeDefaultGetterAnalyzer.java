@@ -17,8 +17,10 @@
 package de.devland.esperandro.analysis;
 
 import de.devland.esperandro.Constants;
+import de.devland.esperandro.base.Utils;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 import de.devland.esperandro.generation.GetterGenerator;
 import de.devland.esperandro.generation.MethodGenerator;
@@ -28,18 +30,19 @@ public class RuntimeDefaultGetterAnalyzer implements GeneratorAwareAnalyzer {
     private static boolean isApplicableMethodInternal(MethodInformation method) {
         String methodName = method.getMethodName();
 
+        boolean hasSuffixSeparator = methodName.contains(Constants.SUFFIX_SEPARATOR);
+        boolean hasGetPrefix = methodName.startsWith(Constants.PREFIX_GET);
         boolean hasSeparator = methodName.contains(Constants.SUFFIX_SEPARATOR);
         boolean hasParameter = method.parameterType != null;
         boolean hasValidReturnType = method.returnType.getEsperandroType() != EsperandroType.UNKNOWN;
         boolean parameterEqualsReturnType = hasParameter && method.returnType.getTypeName().equals(method.parameterType.getTypeName());
-        boolean hasDefaultSuffix = methodName.endsWith(Constants.SUFFIX_DEFAULT);
 
-        return hasSeparator && hasParameter && hasValidReturnType && parameterEqualsReturnType && hasDefaultSuffix;
+        return !hasSuffixSeparator && hasGetPrefix && !hasSeparator && hasParameter && hasValidReturnType && parameterEqualsReturnType;
     }
 
     private static String getPreferenceNameInternal(MethodInformation method) {
-        String methodName = method.getMethodName();
-        return methodName.substring(0, methodName.length() - Constants.SUFFIX_DEFAULT.length());
+        String stripped = method.getMethodName().substring(Constants.PREFIX_GET.length());
+        return Utils.lowerCaseFirstLetter(stripped);
     }
 
     private static TypeInformation getPreferenceTypeInternal(MethodInformation method) {
@@ -64,5 +67,10 @@ public class RuntimeDefaultGetterAnalyzer implements GeneratorAwareAnalyzer {
     @Override
     public TypeInformation getPreferenceType(MethodInformation method) {
         return getPreferenceTypeInternal(method);
+    }
+
+    @Override
+    public MethodOperation getMethodOperation(MethodInformation method) {
+        return MethodOperation.RUNTIME_GET;
     }
 }

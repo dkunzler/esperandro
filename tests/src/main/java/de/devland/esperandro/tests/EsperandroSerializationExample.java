@@ -26,37 +26,37 @@ import de.devland.esperandro.tests.model.ContainerListObject;
 @SharedPreferences
 public interface EsperandroSerializationExample extends SharedPreferenceActions {
 
-    void containerValue(Container container);
+    void setContainerValue(Container container);
 
-    Container containerValue();
+    Container getContainerValue();
 
-    void stringList(ArrayList<String> stringList);
+    void setStringList(ArrayList<String> stringList);
 
-    ArrayList<String> stringList();
+    ArrayList<String> getStringList();
 
-    void containerList(ArrayList<Container> containerList);
+    void setContainerList(ArrayList<Container> containerList);
 
-    ArrayList<Container> containerList();
+    ArrayList<Container> getContainerList();
 
-    ArrayList<Container> containerList$Default(ArrayList<Container> runtimeDefault);
+    ArrayList<Container> getContainerList(ArrayList<Container> runtimeDefault);
 
-    void containerListObject(ContainerListObject containerListObject);
+    void setContainerListObject(ContainerListObject containerListObject);
 
-    ContainerListObject containerListObject();
+    ContainerListObject getContainerListObject();
 
-    boolean containerValueSync(Container container);
+    boolean setContainerValueSync(Container container);
 
-    Container containerValueSync();
+    Container getContainerValueSync();
 
-    void containerDefault(Container container);
+    void setContainerDefault(Container container);
 
     @Default(ofStatement = "new de.devland.esperandro.tests.model.Container()")
-    Container containerDefault();
+    Container getContainerDefault();
 
-    byte byteValue();
-    void byteValue(byte byteValue);
+    byte getByteValue();
+    void setByteValue(byte byteValue);
 
-    char charValue();
-    void charValue(char charValue);
+    char getCharValue();
+    void setCharValue(char charValue);
 
 }

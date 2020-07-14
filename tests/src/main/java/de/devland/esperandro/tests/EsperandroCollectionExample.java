@@ -5,6 +5,8 @@ import java.util.Set;
 
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.annotations.Default;
+import de.devland.esperandro.annotations.Get;
+import de.devland.esperandro.annotations.Put;
 import de.devland.esperandro.annotations.SharedPreferences;
 import de.devland.esperandro.tests.model.Container;
 
@@ -13,24 +15,31 @@ import de.devland.esperandro.tests.model.Container;
  */
 @SharedPreferences
 public interface EsperandroCollectionExample extends SharedPreferenceActions {
-    boolean listPreference(List<Container> listPreference);
-    List<Container> listPreference();
-    void listPreference$Add(Container toAdd);
-    void listPreference$Remove(Container toRemove);
+    boolean setListPreference(List<Container> listPreference);
+    List<Container> getListPreference();
+    boolean listPreference$Add(Container toAdd);
+    boolean listPreference$Remove(Container toRemove);
 
-    boolean setPreference(Set<String> setPreference);
-    Set<String> setPreference();
+    boolean setSetPreference(Set<String> setPreference);
+    Set<String> getSetPreference();
     void setPreference$Add(String toAdd);
     void setPreference$Remove(String toRemove);
 
-    void listDefaultPreference(List<String> listDefault);
+    void setListDefaultPreference(List<String> listDefault);
 
     @Default(ofStatement = "new java.util.ArrayList()")
-    List<String> listDefaultPreference();
+    List<String> getListDefaultPreference();
 
-    void stringSetDefaultPreference(Set<String> stringSetDefault);
+    void setStringSetDefaultPreference(Set<String> stringSetDefault);
 
     @Default(ofStatement = "new java.util.HashSet()")
-    Set<String> stringSetDefaultPreference();
+    Set<String> getStringSetDefaultPreference();
 
+
+    @Put("realPreferenceName")
+    boolean completelyDifferentNamedSetter(Set<String> setPreference);
+    @Get("realPreferenceName")
+    Set<String> completelyDifferentNamedGetter();
+    void realPreferenceName$Add(String toAdd);
+    void realPreferenceName$Remove(String toRemove);
 }

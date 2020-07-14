@@ -32,6 +32,10 @@ public class Constants {
 
     public static final String SUFFIX_SEPARATOR = "$";
 
+    public static final String PREFIX_GET = "get";
+    public static final String PREFIX_SET = "set";
+
+
     static {
         Set<String> blacklist = new HashSet<>();
         blacklist.add(SharedPreferenceActions.class.getName());

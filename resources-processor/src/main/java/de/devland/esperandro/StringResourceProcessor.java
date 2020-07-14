@@ -16,7 +16,7 @@
 
 package de.devland.esperandro;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -25,6 +25,8 @@ import javax.lang.model.element.Element;
 
 import de.devland.esperandro.annotations.GenerateStringResources;
 import de.devland.esperandro.base.MethodAnalyzer;
+import de.devland.esperandro.base.analysis.AnnotationMethodAnalyzer;
+import de.devland.esperandro.base.analysis.NameMethodAnalyzer;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
 import de.devland.esperandro.base.processing.AbstractEsperandroProcessor;
 import de.devland.esperandro.generation.StringResourceGenerator;
@@ -37,7 +39,7 @@ public class StringResourceProcessor extends AbstractEsperandroProcessor {
 
     @Override
     protected List<? extends MethodAnalyzer> getMethodAnalyzers() {
-        return Collections.singletonList(new NameMethodAnalyzer());
+        return Arrays.asList(new NameMethodAnalyzer(), new AnnotationMethodAnalyzer());
     }
 
     @Override

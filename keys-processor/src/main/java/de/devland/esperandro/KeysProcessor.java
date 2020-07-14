@@ -20,7 +20,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -29,6 +29,8 @@ import javax.lang.model.element.Modifier;
 
 import de.devland.esperandro.base.MethodAnalyzer;
 import de.devland.esperandro.base.Utils;
+import de.devland.esperandro.base.analysis.AnnotationMethodAnalyzer;
+import de.devland.esperandro.base.analysis.NameMethodAnalyzer;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
 import de.devland.esperandro.base.processing.AbstractEsperandroProcessor;
 
@@ -36,7 +38,7 @@ import de.devland.esperandro.base.processing.AbstractEsperandroProcessor;
 public class KeysProcessor extends AbstractEsperandroProcessor {
     @Override
     protected List<? extends MethodAnalyzer> getMethodAnalyzers() {
-        return Collections.singletonList(new NameMethodAnalyzer());
+        return Arrays.asList(new NameMethodAnalyzer(), new AnnotationMethodAnalyzer());
     }
 
     @Override

@@ -18,6 +18,7 @@ package de.devland.esperandro.base.processing;
 
 import de.devland.esperandro.base.MethodAnalyzer;
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 
 public class SimpleMethodAnalyzer implements MethodAnalyzer {
@@ -35,5 +36,10 @@ public class SimpleMethodAnalyzer implements MethodAnalyzer {
     @Override
     public TypeInformation getPreferenceType(MethodInformation method) {
         return null;
+    }
+
+    @Override
+    public MethodOperation getMethodOperation(MethodInformation method) {
+        return MethodOperation.UNKNOWN;
     }
 }

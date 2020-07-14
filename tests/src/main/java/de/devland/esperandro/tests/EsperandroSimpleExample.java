@@ -28,37 +28,37 @@ import de.devland.esperandro.annotations.SharedPreferences;
 public interface EsperandroSimpleExample extends SharedPreferenceActions {
 
     @Default(ofInt = 42)
-    int integerPref();
+    int getIntegerPref();
 
-    void integerPref(int pref);
+    void setIntegerPref(int pref);
 
     @Default(ofLong = 42L)
-    long longPref();
+    long getLongPref();
 
-    void longPref(long longPref);
+    void setLongPref(long longPref);
 
     @Default(ofFloat = 4.2f)
-    float floatPref();
+    float getFloatPref();
 
-    void floatPref(float pref);
+    void setFloatPref(float pref);
 
     @Default(ofBoolean = true)
-    boolean boolPref();
+    boolean getBoolPref();
 
-    void boolPref(boolean pref);
+    void setBoolPref(boolean pref);
 
     @Default(ofString = "The truth is out there...")
-    String stringPref();
+    String getStringPref();
 
-    void stringPref(String pref);
+    void setStringPref(String pref);
 
-    Set<String> stringSetPref();
+    Set<String> getStringSetPref();
 
-    void stringSetPref(Set<String> pref);
+    void setStringSetPref(Set<String> pref);
 
     @Default(ofString = "check the return value...")
-    String stringPrefWithBooleanPutter();
+    String getStringPrefWithBooleanPutter();
 
-    boolean stringPrefWithBooleanPutter(String value);
+    boolean setStringPrefWithBooleanPutter(String value);
 
 }

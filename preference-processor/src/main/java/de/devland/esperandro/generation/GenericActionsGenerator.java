@@ -21,11 +21,17 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 
+import java.util.List;
+
 import javax.lang.model.element.Modifier;
 
 import de.devland.esperandro.SharedPreferenceActions;
 import de.devland.esperandro.Utils;
+import de.devland.esperandro.analysis.GetterAnalyzer;
+import de.devland.esperandro.analysis.PutterAnalyzer;
+import de.devland.esperandro.base.MethodAnalyzer;
 import de.devland.esperandro.base.preferences.EsperandroType;
+import de.devland.esperandro.base.preferences.MethodInformation;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
 import de.devland.esperandro.base.preferences.TypeInformation;
 
@@ -117,9 +123,11 @@ public class GenericActionsGenerator {
                 .returns(void.class)
                 .addStatement("SharedPreferences.Editor editor = preferences.edit()");
 
+        GetterAnalyzer analyzer = new GetterAnalyzer();
+
         for (String preferenceName : allPreferences.getAllPreferences()) {
             String methodSuffix = Utils.getMethodSuffix(allPreferences.getTypeOfPreference(preferenceName).getEsperandroType());
-            String value = "this." + preferenceName + "()";
+            String value = getMethodName(allPreferences, preferenceName, analyzer) + "()";
             if (allPreferences.getTypeOfPreference(preferenceName).getEsperandroType() == EsperandroType.OBJECT) {
                 value = "Esperandro.getSerializer().serialize(" + value + ")";
             }
@@ -169,14 +177,18 @@ public class GenericActionsGenerator {
 
         getValueBuilder.addStatement("String prefKey = context.getString(prefId)");
 
+        GetterAnalyzer analyzer = new GetterAnalyzer();
+
         for (String preferenceName : allPreferences.getAllPreferences()) {
             TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
+            String methodName = getMethodName(allPreferences, preferenceName, analyzer);
+
             getValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
             if (typeOfPreference.isPrimitive()) {
                 // box
-                getValueBuilder.addStatement("return (V) ($T) $L()", typeOfPreference.getObjectType(), preferenceName);
+                getValueBuilder.addStatement("return (V) ($T) $L()", typeOfPreference.getObjectType(), methodName);
             } else {
-                getValueBuilder.addStatement("return (V) $L()", preferenceName);
+                getValueBuilder.addStatement("return (V) $L()", methodName);
             }
             getValueBuilder.endControlFlow();
         }
@@ -198,18 +210,21 @@ public class GenericActionsGenerator {
 
         setValueBuilder.addStatement("String prefKey = context.getString(prefId)");
 
+        PutterAnalyzer analyzer = new PutterAnalyzer();
+
         for (String preferenceName : allPreferences.getAllPreferences()) {
             TypeInformation typeOfPreference = allPreferences.getTypeOfPreference(preferenceName);
+            String methodName = getMethodName(allPreferences, preferenceName, analyzer);
 
             setValueBuilder.beginControlFlow("if (prefKey.equals($S))", preferenceName);
             if (typeOfPreference.isPrimitive()) {
                 // box
-                setValueBuilder.addStatement("$L(($T) ($T)pref)", preferenceName, typeOfPreference.getType(), typeOfPreference.getObjectType());
+                setValueBuilder.addStatement("$L(($T) ($T)pref)", methodName, typeOfPreference.getType(), typeOfPreference.getObjectType());
             } else if (typeOfPreference.getTypeName().equals("Byte")) {
                 // box, byte is not handled as primitive
-                setValueBuilder.addStatement("$L(($T) (Byte)pref)", preferenceName, typeOfPreference.getType());
+                setValueBuilder.addStatement("$L(($T) (Byte)pref)", methodName, typeOfPreference.getType());
             } else {
-                setValueBuilder.addStatement("$L(($T)pref)", preferenceName, typeOfPreference.getType());
+                setValueBuilder.addStatement("$L(($T)pref)", methodName, typeOfPreference.getType());
             }
             setValueBuilder.addStatement("return");
             setValueBuilder.endControlFlow();
@@ -217,5 +232,16 @@ public class GenericActionsGenerator {
         setValueBuilder.addStatement("throw new $T(prefKey)", SharedPreferenceActions.UnknownKeyException.class);
 
         return setValueBuilder.build();
+    }
+
+    private static String getMethodName(PreferenceInterface allPreferences, String preferenceName, MethodAnalyzer analyzer) {
+        List<MethodInformation> methods = allPreferences.getMethodsForPreference(preferenceName);
+        String methodName = null;
+        for (MethodInformation method : methods) {
+            if (analyzer.isApplicableMethod(method)) {
+                methodName = method.methodName;
+            }
+        }
+        return methodName;
     }
 }

@@ -29,41 +29,41 @@ import de.devland.esperandro.tests.model.Container;
 public interface EsperandroDefaultsExample extends SharedPreferenceActions {
 
     @Default(ofInt = 42)
-    int integerPref();
+    int getIntegerPref();
 
     @Default(ofLong = 42L)
-    long longPref();
+    long getLongPref();
 
     @Default(ofFloat = 4.2f)
-    float floatPref();
+    float getFloatPref();
 
     @Default(ofBoolean = true)
-    boolean boolPref();
+    boolean getBoolPref();
 
-    boolean boolPref$Default(boolean defaultValue);
+    boolean getBoolPref(boolean defaultValue);
 
-    void boolPref(boolean value);
+    void setBoolPref(boolean value);
 
     @Default(ofBoolean = false)
-    boolean defaultBoolPref();
+    boolean getDefaultBoolPref();
 
     @Default(ofString = "The truth is out there...")
-    String stringPref();
+    String getStringPref();
 
-    Set<String> stringSetPref();
+    Set<String> getStringSetPref();
 
-    Set<String> stringSetPref$Default(Set<String> defaultValue);
+    Set<String> getStringSetPref(Set<String> defaultValue);
 
-    Container complexPref();
+    Container getComplexPref();
 
-    Container complexPref$Default(Container defaultValue);
+    Container getComplexPref(Container defaultValue);
 
     @Default(ofStatement = "java.lang.Math.max(5,4)")
-    int statementDefault();
-    void statementDefault(int statementDefault);
+    int getStatementDefault();
+    void setStatementDefault(int statementDefault);
 
     @Default(ofStatement = "new Container()")
-    Container complextPrefStatementDefault();
-    void complexPrefStatementDefault(Container container);
+    Container getComplexPrefStatementDefault();
+    void setComplexPrefStatementDefault(Container container);
 
 }

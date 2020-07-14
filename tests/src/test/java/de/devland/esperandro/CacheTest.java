@@ -50,7 +50,7 @@ public class CacheTest {
         prefs.edit().putString("cachedValue", "value").apply();
         assertNull(cache.get("cachedValue"));
         // after get, value should be in cache
-        assertEquals("value", cachePreferences.cachedValue());
+        assertEquals("value", cachePreferences.getCachedValue());
         assertEquals("value", cache.get("cachedValue"));
         prefs.edit().putString("cachedValue", "newValue").apply();
         // value should be the same since it's cached and value from cache should be returned
@@ -65,9 +65,9 @@ public class CacheTest {
         prefs.edit().putString("cachedValue", "value").apply();
         assertNull(cache.get("cachedValue"));
         // after get, value should be in cache
-        assertEquals("value", cachePreferences.cachedValue());
+        assertEquals("value", cachePreferences.getCachedValue());
         assertEquals("value", cache.get("cachedValue"));
-        cachePreferences.cachedValue("newValue");
+        cachePreferences.setCachedValue("newValue");
         assertNull(cache.get("cachedValue"));
     }
 
@@ -87,16 +87,16 @@ public class CacheTest {
         prefs.edit().putString("cachedValue", "value").apply();
         assertNull(cache.get("cachedValue"));
         // after get, value should be in cache
-        assertEquals("value", cacheOnPutPreferences.cachedValue());
+        assertEquals("value", cacheOnPutPreferences.getCachedValue());
         assertEquals("value", cache.get("cachedValue"));
-        cacheOnPutPreferences.cachedValue("newValue");
+        cacheOnPutPreferences.setCachedValue("newValue");
         assertEquals("newValue", cache.get("cachedValue"));
     }
 
     @Test
     public void clearAll() {
-        cacheOnPutPreferences.cachedValue("value");
-        cacheOnPutPreferences.primitive(42);
+        cacheOnPutPreferences.setCachedValue("value");
+        cacheOnPutPreferences.setPrimitive(42);
         LruCache<String, Object> cache = getCache(cacheOnPutPreferences);
         assertEquals(2, cache.size());
         cacheOnPutPreferences.clearAll();
@@ -105,8 +105,8 @@ public class CacheTest {
 
     @Test
     public void clearDefined() {
-        cacheOnPutPreferences.cachedValue("value");
-        cacheOnPutPreferences.primitive(42);
+        cacheOnPutPreferences.setCachedValue("value");
+        cacheOnPutPreferences.setPrimitive(42);
         LruCache<String, Object> cache = getCache(cacheOnPutPreferences);
         assertEquals(2, cache.size());
         cacheOnPutPreferences.clearPreferences();
@@ -115,8 +115,8 @@ public class CacheTest {
 
     @Test
     public void remove() {
-        cacheOnPutPreferences.cachedValue("value");
-        cacheOnPutPreferences.primitive(42);
+        cacheOnPutPreferences.setCachedValue("value");
+        cacheOnPutPreferences.setPrimitive(42);
         LruCache<String, Object> cache = getCache(cacheOnPutPreferences);
         assertEquals(2, cache.size());
         cacheOnPutPreferences.remove("primitive");
@@ -130,7 +130,7 @@ public class CacheTest {
         LruCache<String, Object> cache = getCache(cachePreferences);
         SharedPreferences prefs = cachePreferences.get();
         prefs.edit().putString("cachedValue", "foo").apply();
-        cachePreferences.cachedValue();
+        cachePreferences.getCachedValue();
         Assert.assertEquals("foo", cache.get("cachedValue"));
         prefs.edit().putString("cachedValue", "bar").apply();
         Assert.assertEquals("foo", cache.get("cachedValue"));
@@ -141,10 +141,10 @@ public class CacheTest {
     @Test
     public void putNull() {
         // no exception should be thrown
-        cacheOnPutPreferences.cachedValue(null);
+        cacheOnPutPreferences.setCachedValue(null);
 
-        cachePreferences.cachedValue(null);
-        cachePreferences.cachedValue();
+        cachePreferences.setCachedValue(null);
+        cachePreferences.getCachedValue();
     }
 
     private LruCache<String, Object> getCache(SharedPreferenceActions preferences) {

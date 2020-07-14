@@ -19,8 +19,11 @@ package de.devland.esperandro.analysis;
 import java.util.List;
 
 import de.devland.esperandro.Constants;
+import de.devland.esperandro.annotations.Put;
+import de.devland.esperandro.base.Utils;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 import de.devland.esperandro.generation.MethodGenerator;
 import de.devland.esperandro.generation.PutterGenerator;
@@ -36,16 +39,27 @@ public class PutterAnalyzer implements GeneratorAwareAnalyzer {
     private static boolean isApplicableMethodInternal(MethodInformation method) {
         String methodName = method.getMethodName();
 
-        boolean hasSeparator = methodName.contains(Constants.SUFFIX_SEPARATOR);
+        boolean hasPutAnnotation = method.getAnnotation(Put.class) != null;
+        boolean hasSuffixSeparator = methodName.contains(Constants.SUFFIX_SEPARATOR);
+        boolean hasSetPrefix = methodName.startsWith(Constants.PREFIX_SET);
         boolean hasValidParameter = method.parameterType != null && method.parameterType.getEsperandroType() != EsperandroType.UNKNOWN;
         boolean hasValidReturnType = method.returnType.getEsperandroType() == EsperandroType.VOID
                 || method.returnType.getEsperandroType() == EsperandroType.BOOLEAN;
 
-        return !hasSeparator && hasValidParameter && hasValidReturnType;
+        boolean validAnnotatedMethod = hasPutAnnotation && hasValidParameter && hasValidReturnType;
+        boolean validUnAnnotatedMethod = !hasSuffixSeparator && hasSetPrefix && hasValidParameter && hasValidReturnType;
+
+        return validAnnotatedMethod || validUnAnnotatedMethod;
     }
 
     private static String getPreferenceNameInternal(MethodInformation method) {
-        return method.getMethodName();
+        Put put = method.getAnnotation(Put.class);
+        if (put != null) {
+            return put.value();
+        } else {
+            String stripped = method.getMethodName().substring(Constants.PREFIX_SET.length());
+            return Utils.lowerCaseFirstLetter(stripped);
+        }
     }
 
     private static TypeInformation getPreferenceTypeInternal(MethodInformation method) {
@@ -70,5 +84,10 @@ public class PutterAnalyzer implements GeneratorAwareAnalyzer {
     @Override
     public TypeInformation getPreferenceType(MethodInformation method) {
         return getPreferenceTypeInternal(method);
+    }
+
+    @Override
+    public MethodOperation getMethodOperation(MethodInformation method) {
+        return MethodOperation.PUT;
     }
 }

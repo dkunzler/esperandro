@@ -52,14 +52,14 @@ public abstract class SerializationBaseTest {
 
     @Test
     public void simpleSerialization() {
-        Assert.assertNull(esperandroPreferences.containerValue());
+        Assert.assertNull(esperandroPreferences.getContainerValue());
         Container container = new Container();
         container.anotherValue = 5;
         container.value = "hello World";
 
-        esperandroPreferences.containerValue(container);
+        esperandroPreferences.setContainerValue(container);
 
-        Container savedContainer = esperandroPreferences.containerValue();
+        Container savedContainer = esperandroPreferences.getContainerValue();
         Assert.assertNotNull(savedContainer);
         Assert.assertEquals(container, savedContainer);
     }
@@ -67,16 +67,16 @@ public abstract class SerializationBaseTest {
 
     @Test
     public void serializedList() {
-        Assert.assertNull(esperandroPreferences.containerList());
+        Assert.assertNull(esperandroPreferences.getContainerList());
         Container container = new Container();
         container.anotherValue = 5;
         container.value = "hello World";
         ArrayList<Container> list = new ArrayList<Container>();
         list.add(container);
 
-        esperandroPreferences.containerList(list);
+        esperandroPreferences.setContainerList(list);
 
-        ArrayList<Container> savedContainerList = esperandroPreferences.containerList();
+        ArrayList<Container> savedContainerList = esperandroPreferences.getContainerList();
         Assert.assertNotNull(savedContainerList);
         Assert.assertEquals(1, savedContainerList.size());
         Container savedContainer = savedContainerList.get(0);
@@ -85,16 +85,16 @@ public abstract class SerializationBaseTest {
 
     @Test
     public void serializedListObject() {
-        Assert.assertNull(esperandroPreferences.containerListObject());
+        Assert.assertNull(esperandroPreferences.getContainerListObject());
         Container container = new Container();
         container.anotherValue = 5;
         container.value = "hello World";
         ContainerListObject list = new ContainerListObject();
         list.add(container);
 
-        esperandroPreferences.containerListObject(list);
+        esperandroPreferences.setContainerListObject(list);
 
-        ContainerListObject savedContainerListObject = esperandroPreferences.containerListObject();
+        ContainerListObject savedContainerListObject = esperandroPreferences.getContainerListObject();
         Assert.assertNotNull(savedContainerListObject);
         Assert.assertEquals(1, savedContainerListObject.size());
         Container savedContainer = savedContainerListObject.get(0);
@@ -103,9 +103,9 @@ public abstract class SerializationBaseTest {
 
     @Test
     public void testContainerDefault() {
-        Assert.assertNotNull(esperandroPreferences.containerDefault());
-        Assert.assertEquals(0, esperandroPreferences.containerDefault().anotherValue);
-        Assert.assertNull(esperandroPreferences.containerDefault().value);
+        Assert.assertNotNull(esperandroPreferences.getContainerDefault());
+        Assert.assertEquals(0, esperandroPreferences.getContainerDefault().anotherValue);
+        Assert.assertNull(esperandroPreferences.getContainerDefault().value);
     }
 
 }

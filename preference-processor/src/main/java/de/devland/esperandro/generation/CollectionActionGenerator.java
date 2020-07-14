@@ -19,11 +19,14 @@ package de.devland.esperandro.generation;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
+import java.util.List;
+
 import javax.lang.model.element.Modifier;
 
 import de.devland.esperandro.annotations.Cached;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 import de.devland.esperandro.base.processing.Environment;
 
@@ -38,21 +41,38 @@ public class CollectionActionGenerator implements MethodGenerator {
     @Override
     public void generateMethod(TypeSpec.Builder type, MethodInformation methodInformation, Cached cacheAnnotation) {
         String prefName = methodInformation.associatedPreference;
+        String setterName = null;
+        String getterName = null;
+
+        List<MethodInformation> methods = Environment.currentPreferenceInterface.getMethodsForPreference(prefName);
+        for (MethodInformation method : methods) {
+            if (method.operation == MethodOperation.GET) {
+                getterName = method.methodName;
+            }
+            if (method.operation == MethodOperation.PUT) {
+                setterName = method.methodName;
+            }
+        }
+
         TypeInformation preferenceType = Environment.currentPreferenceInterface.getTypeOfPreference(prefName);
-        MethodSpec.Builder adder = MethodSpec.methodBuilder(methodInformation.getMethodName())
+        MethodSpec.Builder action = MethodSpec.methodBuilder(methodInformation.getMethodName())
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .returns(void.class)
+                .returns(methodInformation.returnType.getType())
                 .addParameter(methodInformation.parameterType.getType(), "value")
-                .addStatement("$T __pref = this.$L()", preferenceType.getObjectType(), prefName);
+                .addStatement("$T __pref = this.$L()", preferenceType.getObjectType(), getterName);
 
         if (preferenceType.getEsperandroType() == EsperandroType.STRINGSET) {
             // special handling for Set<String> since you shouldn't edit the returned object itself as per
             // official documentation
-            adder.addStatement("__pref = new java.util.HashSet<String>(__pref)");
+            action.addStatement("__pref = new java.util.HashSet<String>(__pref)");
         }
-        adder.addStatement("__pref.$L(value)", action)
-                .addStatement("this.$L(__pref)", prefName);
-        type.addMethod(adder.build());
+
+        action.addStatement("boolean result = __pref.$L(value)", this.action)
+                .addStatement("this.$L(__pref)", setterName);
+        if (methodInformation.returnType.getEsperandroType() == EsperandroType.BOOLEAN) {
+            action.addStatement("return result");
+        }
+        type.addMethod(action.build());
     }
 }

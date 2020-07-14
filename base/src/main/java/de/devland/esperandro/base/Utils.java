@@ -21,6 +21,15 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.QualifiedNameable;
 
 public class Utils {
+
+    public static String lowerCaseFirstLetter(String string) {
+        return Character.toLowerCase(string.charAt(0)) + string.substring(1);
+    }
+
+    public static String upperCaseFirstLetter(String string) {
+        return Character.toUpperCase(string.charAt(0)) + string.substring(1);
+    }
+
     public static String classNameFromInterface(Element interfaze) {
         QualifiedNameable qualifiedNameable = (QualifiedNameable) interfaze;
         String[] split = qualifiedNameable.getQualifiedName().toString().split("\\.");

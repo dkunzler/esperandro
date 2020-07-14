@@ -15,21 +15,21 @@ import de.devland.esperandro.tests.model.ContainerListObject;
 @SharedPreferences(name = "cacheExample")
 @Cached
 public interface EsperandroCacheExample extends SharedPreferenceActions, CacheActions {
-    String cachedValue();
+    String getCachedValue();
 
-    void cachedValue(String cachedValue);
+    void setCachedValue(String cachedValue);
 
-    int primitive();
+    int getPrimitive();
 
-    void primitive(int primitive);
+    void setPrimitive(int primitive);
 
-    void containerList(ArrayList<Container> containerList);
+    void setContainerList(ArrayList<Container> containerList);
 
-    ArrayList<Container> containerList();
+    ArrayList<Container> getContainerList();
 
-    ArrayList<Container> containerList$Default(ArrayList<Container> runtimeDefault);
+    ArrayList<Container> getContainerList(ArrayList<Container> runtimeDefault);
 
-    void containerListObject(ContainerListObject containerListObject);
+    void setContainerListObject(ContainerListObject containerListObject);
 
-    ContainerListObject containerListObject();
+    ContainerListObject getContainerListObject();
 }

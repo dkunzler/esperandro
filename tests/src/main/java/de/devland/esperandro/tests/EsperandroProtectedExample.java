@@ -5,7 +5,7 @@ import de.devland.esperandro.annotations.SharedPreferences;
 @SharedPreferences
 interface EsperandroProtectedExample {
 
-    boolean value();
+    boolean getValue();
 
-    void value(boolean value);
+    void setValue(boolean value);
 }

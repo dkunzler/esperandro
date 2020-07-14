@@ -43,6 +43,7 @@ import de.devland.esperandro.base.preferences.MethodInformation;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
 import de.devland.esperandro.base.preferences.TypeInformation;
 import de.devland.esperandro.base.processing.AbstractEsperandroProcessor;
+import de.devland.esperandro.base.processing.Environment;
 import de.devland.esperandro.generation.ContainerClassGenerator;
 import de.devland.esperandro.generation.GenericActionsGenerator;
 import de.devland.esperandro.generation.PreferenceClassConstructorGenerator;
@@ -100,10 +101,20 @@ public class PreferenceProcessor extends AbstractEsperandroProcessor {
     private void addMissingRequiredMethods(PreferenceInterface preferenceInterface) {
         for (String preferenceName : preferenceInterface.getAllPreferences()) {
             if (!GetterAnalyzer.hasMatch(preferenceInterface.getMethodsForPreference(preferenceName))) {
-                preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(preferenceInterface.getTypeOfPreference(preferenceName), null));
+                if (preferenceInterface.getTypeOfPreference(preferenceName) != null) {
+                    String methodName = Constants.PREFIX_GET + Utils.upperCaseFirstLetter(preferenceName);
+                    preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(methodName, preferenceInterface.getTypeOfPreference(preferenceName), null));
+                } else {
+                    messager.emitWarning("Could not determine type for preference '" + preferenceName + "', some actions might not work.", Environment.currentElement);
+                }
             }
             if (!PutterAnalyzer.hasMatch(preferenceInterface.getMethodsForPreference(preferenceName))) {
-                preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(TypeInformation.from(void.class), preferenceInterface.getTypeOfPreference(preferenceName)));
+                if (preferenceInterface.getTypeOfPreference(preferenceName) != null) {
+                    String methodName = Constants.PREFIX_SET + Utils.upperCaseFirstLetter(preferenceName);
+                    preferenceInterface.addMethod(preferenceName, MethodInformation.internalMethod(methodName, TypeInformation.getVoid(), preferenceInterface.getTypeOfPreference(preferenceName)));
+                } else {
+                    messager.emitWarning("Could not determine type for preference '" + preferenceName + "', some actions might not work.", Environment.currentElement);
+                }
             }
         }
     }

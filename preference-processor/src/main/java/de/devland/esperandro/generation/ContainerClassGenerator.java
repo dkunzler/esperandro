@@ -24,6 +24,7 @@ import java.io.Serializable;
 
 import javax.lang.model.element.Modifier;
 
+import de.devland.esperandro.Utils;
 import de.devland.esperandro.base.preferences.PreferenceInterface;
 import java8.util.stream.StreamSupport;
 
@@ -35,7 +36,7 @@ public class ContainerClassGenerator {
                     FieldSpec serialVersionUid = FieldSpec.builder(TypeName.LONG, "serialVersionUID", Modifier.PRIVATE)
                             .initializer("1L")
                             .build();
-                    TypeSpec innerGenericType = TypeSpec.classBuilder(createClassNameForPreference(name))
+                    TypeSpec innerGenericType = TypeSpec.classBuilder(Utils.upperCaseFirstLetter(name))
                             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                             .addSuperinterface(Serializable.class)
                             .addField(serialVersionUid)
@@ -46,7 +47,4 @@ public class ContainerClassGenerator {
                 });
     }
 
-    private static String createClassNameForPreference(String valueName) {
-        return valueName.substring(0, 1).toUpperCase() + valueName.substring(1);
-    }
 }

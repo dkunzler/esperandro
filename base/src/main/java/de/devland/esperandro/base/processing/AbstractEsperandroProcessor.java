@@ -18,7 +18,6 @@ package de.devland.esperandro.base.processing;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -106,10 +105,12 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
 
                 MethodInformation methodInformation = MethodInformation.from(method);
 
-                if (getMethodAnalyzer().isApplicableMethod(methodInformation)) {
-                    String preferenceName = getMethodAnalyzer().getPreferenceName(methodInformation);
+                MethodAnalyzer analyzer = getMethodAnalyzer();
+                if (analyzer.isApplicableMethod(methodInformation)) {
+                    methodInformation.operation = analyzer.getMethodOperation(methodInformation);
+                    String preferenceName = analyzer.getPreferenceName(methodInformation);
                     preferences.addMethod(preferenceName, methodInformation);
-                    preferences.addTypeInformation(preferenceName, getMethodAnalyzer().getPreferenceType(methodInformation));
+                    preferences.addTypeInformation(preferenceName, analyzer.getPreferenceType(methodInformation));
                 }
             }
         }
@@ -123,39 +124,8 @@ public abstract class AbstractEsperandroProcessor extends AbstractProcessor {
                 if (subInterface != null) {
                     analyze(topLevelInterface, subInterface, preferences);
                 } else {
-                    try {
-                        // if interfaces from dependencies are used these are not part of the
-                        // compilation unit
-                        // Therefore these need to be obtained via reflection instead
-                        Class<?> subInterfaceClass = Class.forName(subInterfaceTypeName);
-                        analyze(subInterfaceClass, preferences);
-                    } catch (ClassNotFoundException e) {
-                        messager.emitError("Could not load Interface '" + subInterfaceTypeName + "' for generation.",
-                                topLevelInterface);
-                    }
-                }
-            }
-        }
-    }
-
-    private void analyze(Class<?> interfaceClass, PreferenceInterface preferences) {
-        for (Method method : interfaceClass.getDeclaredMethods()) {
-            if (java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
-                continue;
-            }
-
-            MethodInformation methodInformation = MethodInformation.from(method);
-
-            if (getMethodAnalyzer().isApplicableMethod(methodInformation)) {
-                String preferenceName = getMethodAnalyzer().getPreferenceName(methodInformation);
-                preferences.addMethod(preferenceName, methodInformation);
-                preferences.addTypeInformation(preferenceName, getMethodAnalyzer().getPreferenceType(methodInformation));
-            }
-
-            // recursively analyze all super interfaces
-            for (Class<?> subInterfaceClass : interfaceClass.getInterfaces()) {
-                if (subInterfaceClass.getName() != null && !Constants.SUPER_INTERFACE_BLACKLIST.contains(subInterfaceClass.getName())) {
-                    analyze(subInterfaceClass, preferences);
+                    messager.emitError("Could not load Interface '" + subInterfaceTypeName + "' for generation.",
+                            topLevelInterface);
                 }
             }
         }

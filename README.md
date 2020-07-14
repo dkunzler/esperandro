@@ -1,16 +1,12 @@
-[![Maven Central](https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&url=https%3A%2F%2Fimg.shields.io%2Fmaven-central%2Fv%2Fde.devland.esperandro%2Fesperandro-api%3Fstyle%3Dflat-square)](https://search.maven.org/search?q=g:de.devland.esperandro)
-[![Build Status](https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&url=https%3A%2F%2Fimg.shields.io%2Ftravis%2Fdkunzler%2Fesperandro%3Fstyle%3Dflat-square)](https://travis-ci.org/dkunzler/esperandro)
+[![Maven Central](https://img.shields.io/maven-central/v/de.devland.esperandro/esperandro-api?style&flat-square)](https://search.maven.org/search?q=g:de.devland.esperandro)
+[![Build Status](https://img.shields.io/travis/dkunzler/esperandro?style&flat-square)](https://travis-ci.org/dkunzler/esperandro)
 
 # esperandro
 
 
 Easy SharedPreference Engine foR ANDROid
 
-Please refer to the [wiki](https://github.com/dkunzler/esperandro/wiki) for in-depth examples.
-
-See the [changelog](changelog.md) for a brief overview of recent changes.
-
-### Short example
+### What?
 
 esperandro makes it simple to use `SharedPreference`s in a nicer and less error-prone way.
 
@@ -25,17 +21,24 @@ esperandro makes it simple to use `SharedPreference`s in a nicer and less error-
 
     @SharedPreferences
     interface MyPreferences {
-        String myPreference();
-        void myPreference(String myPreference);
+        String getMyPreference();
+        void setMyPreference(String myPreference);
     }
     
-* `String myPreference = preferences.myPreference() // load preference`
-* `preferences.myPreference(myPreference) // store preference`
+* `String myPreference = preferences.getMyPreference() // load preference`
+* `preferences.setMyPreference(myPreference) // store preference`
 
 
 Type safe, easy, less error-prone.
 
 Interested? [Get Started](https://github.com/dkunzler/esperandro/wiki/Basic-Usage)
+
+### Tell me more!
+
+Please refer to the [wiki](https://github.com/dkunzler/esperandro/wiki) for in-depth examples and all available features.
+
+See the [changelog](changelog.md) for a brief overview of recent changes.
+
 
 ### Gradle artifacts
 

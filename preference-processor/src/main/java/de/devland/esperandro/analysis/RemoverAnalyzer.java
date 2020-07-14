@@ -19,6 +19,7 @@ package de.devland.esperandro.analysis;
 import de.devland.esperandro.Constants;
 import de.devland.esperandro.base.preferences.EsperandroType;
 import de.devland.esperandro.base.preferences.MethodInformation;
+import de.devland.esperandro.base.preferences.MethodOperation;
 import de.devland.esperandro.base.preferences.TypeInformation;
 import de.devland.esperandro.generation.CollectionActionGenerator;
 import de.devland.esperandro.generation.MethodGenerator;
@@ -27,11 +28,12 @@ public class RemoverAnalyzer implements GeneratorAwareAnalyzer {
 
     @Override
     public boolean isApplicableMethod(MethodInformation method) {
-        boolean hasAdderSuffix = method.getMethodName().endsWith(Constants.SUFFIX_REMOVE);
+        boolean hasRemoverSuffix = method.getMethodName().endsWith(Constants.SUFFIX_REMOVE);
         boolean hasValidParameter = method.parameterType != null && method.parameterType.getEsperandroType() != EsperandroType.UNKNOWN;
-        boolean hasValidReturnType = method.returnType.getEsperandroType() == EsperandroType.VOID;
+        boolean hasValidReturnType = method.returnType.getEsperandroType() == EsperandroType.VOID
+                || method.returnType.getEsperandroType() == EsperandroType.BOOLEAN;
 
-        return hasAdderSuffix && hasValidParameter && hasValidReturnType;
+        return hasRemoverSuffix && hasValidParameter && hasValidReturnType;
     }
 
     @Override
@@ -44,6 +46,11 @@ public class RemoverAnalyzer implements GeneratorAwareAnalyzer {
     public TypeInformation getPreferenceType(MethodInformation method) {
         // type of preference cannot be deducted by the remover
         return null;
+    }
+
+    @Override
+    public MethodOperation getMethodOperation(MethodInformation method) {
+        return MethodOperation.REMOVE;
     }
 
     @Override
