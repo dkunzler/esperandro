@@ -5,7 +5,7 @@
     <groupId>de.devland.esperandro</groupId>
     <artifactId>esperandro-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.0</version>
+    <version>4.0.1-SNAPSHOT</version>
 
     <name>esperandro</name>
     <description>An annotation processor designed to ease the access and use of Android SharedPreferences</description>
