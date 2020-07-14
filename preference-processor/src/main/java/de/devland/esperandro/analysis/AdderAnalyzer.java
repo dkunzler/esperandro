@@ -30,7 +30,8 @@ public class AdderAnalyzer implements GeneratorAwareAnalyzer {
     public boolean isApplicableMethod(MethodInformation method) {
         boolean hasAdderSuffix = method.getMethodName().endsWith(Constants.SUFFIX_ADD);
         boolean hasValidParameter = method.parameterType != null && method.parameterType.getEsperandroType() != EsperandroType.UNKNOWN;
-        boolean hasValidReturnType = method.returnType.getEsperandroType() == EsperandroType.VOID;
+        boolean hasValidReturnType = method.returnType.getEsperandroType() == EsperandroType.VOID
+                || method.returnType.getEsperandroType() == EsperandroType.BOOLEAN;
 
         return hasAdderSuffix && hasValidParameter && hasValidReturnType;
     }

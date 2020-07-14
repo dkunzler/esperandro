@@ -17,7 +17,7 @@ import de.devland.esperandro.tests.model.Container;
 public interface EsperandroCollectionExample extends SharedPreferenceActions {
     boolean setListPreference(List<Container> listPreference);
     List<Container> getListPreference();
-    void listPreference$Add(Container toAdd);
+    boolean listPreference$Add(Container toAdd);
     boolean listPreference$Remove(Container toRemove);
 
     boolean setSetPreference(Set<String> setPreference);

@@ -59,8 +59,6 @@ public class CollectionActionGenerator implements MethodGenerator {
             }
         }
 
-        // TODO method name could be something completely different due to @Get/@Set annotations
-
         TypeInformation preferenceType = Environment.currentPreferenceInterface.getTypeOfPreference(prefName);
         MethodSpec.Builder action = MethodSpec.methodBuilder(methodInformation.getMethodName())
                 .addAnnotation(Override.class)
