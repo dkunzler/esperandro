@@ -1,5 +1,5 @@
-[![Maven Central](https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&url=https%3A%2F%2Fimg.shields.io%2Fmaven-central%2Fv%2Fde.devland.esperandro%2Fesperandro-api%3Fstyle%3Dflat-square)](https://search.maven.org/search?q=g:de.devland.esperandro)
-[![Build Status](https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&url=https%3A%2F%2Fimg.shields.io%2Ftravis%2Fdkunzler%2Fesperandro%3Fstyle%3Dflat-square)](https://travis-ci.org/dkunzler/esperandro)
+[![Maven Central](https://img.shields.io/maven-central/v/de.devland.esperandro/esperandro-api?style&flat-square)](https://search.maven.org/search?q=g:de.devland.esperandro)
+[![Build Status](https://img.shields.io/travis/dkunzler/esperandro?style&flat-square)](https://travis-ci.org/dkunzler/esperandro)
 
 # esperandro
 
