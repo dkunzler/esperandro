@@ -37,7 +37,7 @@ Interested? [Get Started](https://github.com/dkunzler/esperandro/wiki/Basic-Usag
 
 Please refer to the [wiki](https://github.com/dkunzler/esperandro/wiki) for in-depth examples and all available features.
 
-See the [changelog](changelog.md) for a brief overview of recent changes.
+See the [changelog](CHANGELOG.md) for a brief overview of recent changes.
 
 
 ### Gradle artifacts
