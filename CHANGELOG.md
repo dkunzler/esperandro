@@ -1,5 +1,18 @@
 Changelog
 =========
+4.0.0
+-----
+ * Changed default getter/putter naming scheme. Methods need a get/set prefix now. The prefence name
+ is determined by the string after get/set changing the first letter to lowercase. Example: 
+ `getStringPreference` leads to a preference key named `stringPreference`
+ * Add `@Get/@Put` annotations to be able to use arbitrary named methods.
+ * Methods with runtime defaults don't need a Suffix anymore since the name is unique now
+ * Add possibility to use boolean return type for collection actions that propagate the result
+ of `add/remove` back to the caller
+ * Removed support for reflection in the processor. That means that all used interfaces must be in
+ the same compilation unit. (not in a binary library dependency)
+
+
 3.0.3
 -----
  * fix #73
