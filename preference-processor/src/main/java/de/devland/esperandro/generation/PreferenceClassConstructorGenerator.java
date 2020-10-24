@@ -34,16 +34,14 @@ public class PreferenceClassConstructorGenerator {
         SharedPreferenceMode mode = preferenceInterface.getPreferenceAnnotation().mode();
         Cached cacheAnnotation = preferenceInterface.getCacheAnnotation();
         boolean preferenceNamePresent = !preferencesName.isEmpty();
+        // naming taken from https://android.googlesource.com/platform/frameworks/base/+/pie-release/core/java/android/preference/PreferenceManager.java#537
+        preferencesName = preferenceNamePresent ? "\"" + preferencesName + "\"" : "context.getPackageName() + \"_preferences\"";
 
         MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(ClassName.get("android.content", "Context"), "context");
-        if (preferenceNamePresent) {
-            constructor.addStatement("this.preferences = context.getSharedPreferences($S, $L)", preferencesName,
-                    mode.getSharedPreferenceModeStatement());
-        } else {
-            constructor.addStatement("this.preferences = $T.getDefaultSharedPreferences(context)", ClassName.get("android.preference", "PreferenceManager"));
-        }
+        constructor.addStatement("this.preferences = context.getSharedPreferences($L, $L)", preferencesName,
+                mode.getSharedPreferenceModeStatement());
 
         if (cacheAnnotation != null) {
             constructor.addParameter(TypeName.INT, "cacheSize");
