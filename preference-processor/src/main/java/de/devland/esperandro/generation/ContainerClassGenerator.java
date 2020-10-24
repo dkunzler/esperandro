@@ -17,6 +17,7 @@
 package de.devland.esperandro.generation;
 
 import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -36,9 +37,19 @@ public class ContainerClassGenerator {
                     FieldSpec serialVersionUid = FieldSpec.builder(TypeName.LONG, "serialVersionUID", Modifier.PRIVATE)
                             .initializer("1L")
                             .build();
+
+                    MethodSpec ctor = MethodSpec.constructorBuilder()
+                            .addParameter(preferenceInterface.getTypeOfPreference(name).getType(), "value")
+                            .addStatement("this.value = value")
+                            .build();
+
+                    MethodSpec defaultCtor = MethodSpec.constructorBuilder().build();
+
                     TypeSpec innerGenericType = TypeSpec.classBuilder(Utils.upperCaseFirstLetter(name))
                             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                             .addSuperinterface(Serializable.class)
+                            .addMethod(ctor)
+                            .addMethod(defaultCtor)
                             .addField(serialVersionUid)
                             .addField(preferenceInterface.getTypeOfPreference(name).getType(), "value", Modifier.PUBLIC)
                             .build();

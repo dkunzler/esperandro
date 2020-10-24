@@ -47,7 +47,7 @@ public class GetterGenerator implements MethodGenerator {
     public void generateMethod(TypeSpec.Builder type, MethodInformation methodInformation, Cached cacheAnnotation) {
         MethodSpec.Builder getterBuilder = initGetter(methodInformation.methodName, methodInformation.returnType, runtimeDefault, methodInformation.isInternal());
         Element element = methodInformation.element != null ? methodInformation.element : Environment.currentElement;
-        String defaultValue = getDefaultValue(methodInformation.getAnnotation(Default.class), methodInformation.returnType, element);
+        String defaultValue = getDefaultValue(methodInformation.getAnnotation(Default.class), methodInformation.associatedPreference, methodInformation.returnType, element);
         createInternal(type, element, methodInformation.returnType, cacheAnnotation, runtimeDefault, defaultValue, getterBuilder, methodInformation);
     }
 
@@ -129,7 +129,7 @@ public class GetterGenerator implements MethodGenerator {
         type.addMethod(getterBuilder.build());
     }
 
-    private String getDefaultValue(Default defaultAnnotation, TypeInformation preferenceType, Element element) {
+    private String getDefaultValue(Default defaultAnnotation, String preferenceName, TypeInformation preferenceType, Element element) {
         boolean defaultAnnotationHasValue = false;
         boolean hasDefaultAnnotation = defaultAnnotation != null;
         if (hasDefaultAnnotation) {
@@ -140,6 +140,9 @@ public class GetterGenerator implements MethodGenerator {
         if (!defaultAnnotationHasValue && hasDefaultAnnotation && !defaultAnnotation.ofStatement().equals(Default.stringDefault)) {
             defaultValue = defaultAnnotation.ofStatement();
             if (preferenceType.getEsperandroType() == EsperandroType.OBJECT) {
+                if (preferenceType.isGeneric()) {
+                    defaultValue = "new " + Utils.upperCaseFirstLetter(preferenceName) + "(" + defaultValue + ")";
+                }
                 defaultValue = "__serializer.serialize(" + defaultValue + ")";
             }
         } else {

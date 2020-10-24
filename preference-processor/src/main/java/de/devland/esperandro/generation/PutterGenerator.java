@@ -60,8 +60,7 @@ public class PutterGenerator implements MethodGenerator {
             case OBJECT:
                 if (typeInfo.isGeneric()) {
                     String genericClassName = Utils.createClassNameForPreference(methodInformation.associatedPreference);
-                    putterBuilder.addStatement("$L __container = new $L()", genericClassName, genericClassName);
-                    putterBuilder.addStatement("__container.value = $L", methodInformation.associatedPreference);
+                    putterBuilder.addStatement("$L __container = new $L($L)", genericClassName, genericClassName, methodInformation.associatedPreference);
                     value = "Esperandro.getSerializer().serialize(__container)";
                 } else {
                     value = String.format("Esperandro.getSerializer().serialize(%s)", methodInformation.associatedPreference);
