@@ -1,5 +1,10 @@
 Changelog
 =========
+4.0.1
+-----
+ * fix issue #74, `Default(ofStatement = ...)` can now correctly be used with generic classes
+ * fix issue #77, get rid of `PreferenceManager` since it's deprecated in Android 11
+
 4.0.0
 -----
  * Changed default getter/putter naming scheme. Methods need a get/set prefix now. The prefence name
